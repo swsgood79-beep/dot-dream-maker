@@ -41,7 +41,7 @@ export function onSheetReady(fn: () => void): () => void {
 
 export function frameName(stage: GrowthStage, gender: Gender, kind: 'stand' | 'read' | 'cheer'): string {
   const name = `${stage}_${gender}_${kind}`;
-  return FRAMES[name] ? name : `${stage}_${gender}_stand`; // 청년 딸은 만세 프레임이 없어 서기로 대체
+  return FRAMES[name] ? name : `${stage}_${gender}_stand`; // 프레임이 없으면 서기로 대체
 }
 
 export function characterHeight(stage: GrowthStage, gender: Gender = 'SON'): number {

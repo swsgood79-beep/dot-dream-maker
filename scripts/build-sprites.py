@@ -7,7 +7,7 @@ assets-src/character-sheet.png (흰 배경 캐릭터 시트) →
 1) 흰 배경이 아닌 픽셀을 묶어 스프라이트 19개를 자동 검출
 2) 테두리에서 이어지는 흰색만 배경으로 지움 (흰 티셔츠는 유지)
 3) 업스케일된 도트(약 5.67px = 1도트)를 원래 해상도로 축소
-4) 아들은 assets-src/son-walk-sheet.png 의 손그림 걷기 3장(A·B·C → A,B,C,B 사이클) 사용
+4) 아들/딸은 assets-src/{son,daughter}-walk-sheet.png 의 손그림 걷기 3장(A·B·C → A,B,C,B 사이클) 사용
 5) 손그림 걷기가 없는 캐릭터는 '서기' 프레임에서 생성: 다리를 좌우로 나눠 번갈아 들고,
    팔을 반대로 흔들고, 발 디딤 순간 몸이 1px 내려앉는 4프레임 사이클 → {이름}_walk0~3
 """
@@ -77,6 +77,35 @@ def load_sheet(path, names):
     return [(n, cut(img, b)) for n, b in zip(names, boxes)], img, dict(zip(names, boxes))
 
 
+def drop_specks(rgba, ratio=0.05):
+    """본체와 떨어진 작은 조각(워터마크·잡티) 제거: 가장 큰 덩어리의 5% 미만 덩어리를 지운다"""
+    a = rgba[..., 3] > 0
+    h, w = a.shape
+    lab = np.zeros((h, w), np.int32)
+    sizes = [0]
+    for y in range(h):
+        for x in range(w):
+            if a[y, x] and not lab[y, x]:
+                n = len(sizes)
+                lab[y, x] = n
+                q = deque([(y, x)])
+                cnt = 0
+                while q:
+                    cy, cx = q.popleft()
+                    cnt += 1
+                    for ny in (cy - 1, cy, cy + 1):
+                        for nx in (cx - 1, cx, cx + 1):
+                            if 0 <= ny < h and 0 <= nx < w and a[ny, nx] and not lab[ny, nx]:
+                                lab[ny, nx] = n
+                                q.append((ny, nx))
+                sizes.append(cnt)
+    big = max(sizes)
+    for i, sz in enumerate(sizes[1:], 1):
+        if sz < big * ratio:
+            rgba[lab == i] = 0
+    return rgba
+
+
 def cut(img, box, block=BLOCK):
     H, W, _ = img.shape
     x0, y0, x1, y1 = box
@@ -113,6 +142,7 @@ def cut(img, box, block=BLOCK):
     rgb = np.where(cov_s[..., None] > 0, prem_s / np.maximum(cov_s[..., None], 1e-6), 0)
     alpha = (cov_s > 0.45) * 255
     out = np.dstack([np.clip(rgb, 0, 255), alpha]).astype(np.uint8)
+    out = drop_specks(out)
     # 투명 여백 잘라내기
     ys, xs = np.where(out[..., 3] > 0)
     return out[ys.min() : ys.max() + 1, xs.min() : xs.max() + 1]
@@ -192,27 +222,40 @@ def walk_frames(s):
     return frames
 
 
-# 아들 걷기 시트: 단계별 [서기, 걷기A, 걷기B(교차), 걷기C, 독서, 만세]
-SON_SHEET = 'assets-src/son-walk-sheet.png'
-SON_NAMES = [f'{st}_SON_{k}' for st in ('CHILD', 'TEEN', 'YOUTH') for k in ('stand', 'walkA', 'walkB', 'walkC', 'read', 'cheer')]
+# 아들/딸 걷기 시트: 단계별 [서기, 걷기A, 걷기B(교차), 걷기C, 독서, 만세]
+WALK_SHEETS = {
+    'SON': 'assets-src/son-walk-sheet.png',
+    'DAUGHTER': 'assets-src/daughter-walk-sheet.png',
+}
+STAGES = ('CHILD', 'TEEN', 'YOUTH')
 
 sprites = dict(load_sheet(SRC, NAMES)[0])
-son_list, son_img, son_boxes = load_sheet(SON_SHEET, SON_NAMES)
-son = dict(son_list)
-# 걷기 그림이 서기보다 작게 그려진 경우가 있어, 교차 프레임(B) 키가 서기 키 -1px 이 되도록 축소 비율 보정
-for st in ('CHILD', 'TEEN', 'YOUTH'):
-    k = (son[f'{st}_SON_stand'].shape[0] - 1) / son[f'{st}_SON_walkB'].shape[0]
-    if abs(k - 1) > 0.02:
-        for x in 'ABC':
-            son[f'{st}_SON_walk{x}'] = cut(son_img, son_boxes[f'{st}_SON_walk{x}'], BLOCK / k)
-# 아들 프레임은 새 시트로 교체 (청년 아들 만세도 재킷 차림으로)
-for k in ('stand', 'read', 'cheer'):
-    for st in ('CHILD', 'TEEN', 'YOUTH'):
-        sprites[f'{st}_SON_{k}'] = son[f'{st}_SON_{k}']
-for st in ('CHILD', 'TEEN', 'YOUTH'):
-    a, b, c = (son[f'{st}_SON_walk{x}'] for x in 'ABC')
-    for i, f in enumerate((a, b, c, b)):  # 4프레임 사이클: 왼발 → 교차 → 오른발 → 교차
-        sprites[f'{st}_SON_walk{i}'] = f
+for g, path in WALK_SHEETS.items():
+    names_g = [f'{st}_{g}_{k}' for st in STAGES for k in ('stand', 'walkA', 'walkB', 'walkC', 'read', 'cheer')]
+    lst, sheet_img, sheet_boxes = load_sheet(path, names_g)
+    sh = dict(lst)
+    # 걷기 그림이 서기보다 작거나 크게 그려진 경우, 교차 프레임(B) 키가 서기 키 -1px 이 되도록 축소 비율 보정
+    for st in STAGES:
+        k = (sh[f'{st}_{g}_stand'].shape[0] - 1) / sh[f'{st}_{g}_walkB'].shape[0]
+        if abs(k - 1) > 0.02:
+            for x in 'ABC':
+                sh[f'{st}_{g}_walk{x}'] = cut(sheet_img, sheet_boxes[f'{st}_{g}_walk{x}'], BLOCK / k)
+    if g == 'DAUGHTER':
+        # 청년 딸 만세 그림 발 옆에 붙은 원본 워터마크(밝은 회색) 제거
+        f = sh['YOUTH_DAUGHTER_cheer']
+        h, w, _ = f.shape
+        reg = f[int(h * 0.85):, int(w * 0.6):]
+        rgb = reg[..., :3].astype(int)
+        gray = (rgb.min(axis=2) > 120) & (rgb.max(axis=2) - rgb.min(axis=2) < 30)
+        reg[gray] = 0
+        sh['YOUTH_DAUGHTER_cheer'] = drop_specks(f)
+    for st in STAGES:
+        # 서기·독서·만세도 새 시트로 교체 (청년 딸 만세 추가)
+        for k in ('stand', 'read', 'cheer'):
+            sprites[f'{st}_{g}_{k}'] = sh[f'{st}_{g}_{k}']
+        a, b, c = (sh[f'{st}_{g}_walk{x}'] for x in 'ABC')
+        for i, f in enumerate((a, b, c, b)):  # 4프레임 사이클: 왼발 → 교차 → 오른발 → 교차
+            sprites[f'{st}_{g}_walk{i}'] = f
 
 # 손그림 걷기가 없는 캐릭터(딸, 부모님)는 서기 프레임에서 생성
 for name in list(sprites):
