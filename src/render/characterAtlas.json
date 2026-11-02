@@ -1,0 +1,116 @@
+{
+ "CHILD_SON_stand": {
+  "x": 0,
+  "y": 0,
+  "w": 34,
+  "h": 65
+ },
+ "CHILD_SON_read": {
+  "x": 35,
+  "y": 0,
+  "w": 39,
+  "h": 62
+ },
+ "CHILD_SON_cheer": {
+  "x": 75,
+  "y": 0,
+  "w": 49,
+  "h": 66
+ },
+ "CHILD_DAUGHTER_stand": {
+  "x": 125,
+  "y": 0,
+  "w": 41,
+  "h": 66
+ },
+ "CHILD_DAUGHTER_read": {
+  "x": 167,
+  "y": 0,
+  "w": 46,
+  "h": 62
+ },
+ "CHILD_DAUGHTER_cheer": {
+  "x": 214,
+  "y": 0,
+  "w": 50,
+  "h": 64
+ },
+ "TEEN_SON_stand": {
+  "x": 265,
+  "y": 0,
+  "w": 35,
+  "h": 77
+ },
+ "TEEN_SON_read": {
+  "x": 301,
+  "y": 0,
+  "w": 41,
+  "h": 67
+ },
+ "TEEN_SON_cheer": {
+  "x": 343,
+  "y": 0,
+  "w": 50,
+  "h": 73
+ },
+ "TEEN_DAUGHTER_stand": {
+  "x": 394,
+  "y": 0,
+  "w": 34,
+  "h": 74
+ },
+ "TEEN_DAUGHTER_read": {
+  "x": 429,
+  "y": 0,
+  "w": 41,
+  "h": 71
+ },
+ "TEEN_DAUGHTER_cheer": {
+  "x": 471,
+  "y": 0,
+  "w": 53,
+  "h": 66
+ },
+ "YOUTH_SON_stand": {
+  "x": 525,
+  "y": 0,
+  "w": 34,
+  "h": 84
+ },
+ "YOUTH_SON_read": {
+  "x": 560,
+  "y": 0,
+  "w": 40,
+  "h": 67
+ },
+ "YOUTH_SON_cheer": {
+  "x": 601,
+  "y": 0,
+  "w": 49,
+  "h": 69
+ },
+ "YOUTH_DAUGHTER_stand": {
+  "x": 651,
+  "y": 0,
+  "w": 34,
+  "h": 80
+ },
+ "YOUTH_DAUGHTER_read": {
+  "x": 686,
+  "y": 0,
+  "w": 42,
+  "h": 74
+ },
+ "CAT_sleep": {
+  "x": 729,
+  "y": 0,
+  "w": 42,
+  "h": 25
+ },
+ "PARENT_stand": {
+  "x": 772,
+  "y": 0,
+  "w": 34,
+  "h": 78
+ }
+}

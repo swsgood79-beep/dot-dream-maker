@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Sprite } from './Sprite';
 import { useGameStore } from '../store/useGameStore';
 import type { Gender, StatKey } from '../types/game';
 import { ENDINGS } from '../data/endingData';
@@ -35,7 +36,12 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 bg-gradient-to-b from-[#2b2f5c] to-[#4a3b6b] p-6 text-center">
       <div>
-        <div className="text-5xl">🏠✨</div>
+        <div className="flex items-end justify-center gap-1">
+          <Sprite name="CHILD_SON_cheer" />
+          <Sprite name="TEEN_DAUGHTER_stand" />
+          <Sprite name="YOUTH_SON_stand" />
+          <Sprite name="CHILD_DAUGHTER_cheer" />
+        </div>
         <h1 className="mt-3 text-3xl font-bold text-gold drop-shadow-[3px_3px_0_#000]">도트 드림 메이커</h1>
         <p className="mt-1 text-xs text-white/80">Dot Dream Maker</p>
       </div>
@@ -53,7 +59,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
           <PixelButton color="bg-sky" onClick={() => setMode('book')}>
             👑 엔딩 도감 ({unlockedEndings.length}/{ENDINGS.length})
           </PixelButton>
-          <p className="mt-2 text-[10px] text-white/60">v0.3.0 · 도트 캐릭터 & 스케줄 연출</p>
+          <p className="mt-2 text-[10px] text-white/60">v0.3.1 · 캐릭터 스프라이트 시트</p>
         </div>
       )}
 

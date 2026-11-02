@@ -1,11 +1,12 @@
 import type { Gender, GrowthStage } from '../types/game';
 
 /**
- * 성장 단계별 도트 캐릭터를 코드로 그린다 (외부 이미지 없음).
+ * (폴백) 성장 단계별 도트 캐릭터를 코드로 그린다 — 스프라이트 시트 로딩 전/실패 시 사용.
  * 유년기 2등신 → 청소년기 2.5등신 → 청년기 3등신. 아들/딸 헤어·의상 분기.
  */
 export type Facing = 'L' | 'R';
-export type Pose = 'idle' | 'walk' | 'act' | 'sleep';
+/** idle/walk: 서기, read: 독서·공부, cheer: 만세 점프, work: 알바·집안일, sleep: 침대 휴식 */
+export type Pose = 'idle' | 'walk' | 'read' | 'cheer' | 'work' | 'sleep';
 
 interface Outfit {
   top: string;
@@ -46,7 +47,7 @@ const DIMS: Record<GrowthStage, { body: number; legs: number }> = {
 /** 도트 1칸 = 2px (논리 해상도) — 타일 대비 카이로소프트풍 큼직한 캐릭터 */
 export const CHAR_SCALE = 2;
 
-export function characterHeight(stage: GrowthStage) {
+export function proceduralHeight(stage: GrowthStage) {
   return (9 + DIMS[stage].body + DIMS[stage].legs) * CHAR_SCALE;
 }
 
@@ -60,12 +61,12 @@ export interface CharacterDrawOpts {
 }
 
 /** (fx, fy) = 발 중앙 화면 좌표 */
-export function drawCharacter(ctx: CanvasRenderingContext2D, fx: number, fy: number, o: CharacterDrawOpts) {
+export function drawCharacterProcedural(ctx: CanvasRenderingContext2D, fx: number, fy: number, o: CharacterDrawOpts) {
   const { body, legs } = DIMS[o.stage];
   const outfit = OUTFITS[o.stage][o.gender];
   const flip = o.facing === 'L';
   const step = Math.floor(o.time / 160) % 2; // 걷기 프레임
-  const bob = o.pose === 'act' ? (Math.floor(o.time / 220) % 2) : o.pose === 'walk' ? step : 0;
+  const bob = (o.pose === 'read' || o.pose === 'cheer' || o.pose === 'work') ? (Math.floor(o.time / 220) % 2) : o.pose === 'walk' ? step : 0;
 
   ctx.save();
   ctx.globalAlpha = o.alpha ?? 1;
@@ -137,7 +138,7 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, fx: number, fy: num
 
   // ── 팔 (걷기 시 흔들기, 행동 시 들기)
   const armSwing = o.pose === 'walk' ? (step ? 1 : -1) : 0;
-  if (o.pose === 'act') {
+  if ((o.pose === 'read' || o.pose === 'cheer' || o.pose === 'work')) {
     px(0, bodyTop - 1, 2, 4, INK);
     px(0, bodyTop - 1, 1, 1, SKIN);
     px(9, bodyTop - 1, 2, 4, INK);
@@ -174,7 +175,7 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, fx: number, fy: num
   }
   // 눈 (바라보는 쪽으로 1px 치우침)
   const eyeY = headTop + 4;
-  if (o.pose === 'act' && Math.floor(o.time / 900) % 3 === 0) {
+  if ((o.pose === 'read' || o.pose === 'cheer' || o.pose === 'work') && Math.floor(o.time / 900) % 3 === 0) {
     px(4, eyeY + 1, 2, 1, INK);
     px(7, eyeY + 1, 1, 1, INK);
   } else {

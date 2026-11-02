@@ -1,4 +1,7 @@
 import { useGameStore } from '../../store/useGameStore';
+import { Sprite } from '../Sprite';
+import { frameName, PARENT_FRAME } from '../../render/spriteCharacter';
+import { growthStage } from '../../engine/room';
 import { PixelButton } from '../ui';
 
 function childLine(stress: number, affection: number, delinquency: number) {
@@ -18,8 +21,9 @@ export function TalkPanel() {
   return (
     <div className="text-sm">
       <div className="mb-3 flex items-start gap-3">
-        <span className="text-4xl">{game.gender === 'SON' ? '👦' : '👧'}</span>
-        <div className="pixel-box flex-1 p-2 text-xs">“{childLine(stress, affection, delinquency)}”</div>
+        <Sprite name={frameName(growthStage(game.age), game.gender, game.status.affection >= 85 ? 'cheer' : 'stand')} />
+        <div className="pixel-box flex-1 self-center p-2 text-xs">“{childLine(stress, affection, delinquency)}”</div>
+        <Sprite name={PARENT_FRAME} className="opacity-90" />
       </div>
       <div className="grid grid-cols-2 gap-2">
         <PixelButton color="bg-mint" onClick={talk} disabled={game.talkedThisMonth}>

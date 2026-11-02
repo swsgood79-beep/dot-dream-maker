@@ -3,10 +3,11 @@ import { FURNITURE_MAP } from '../data/furnitureData';
 import { canPlace, computeActiveCombos, footprint, growthStage } from '../engine/room';
 import { canvasSize, COMBO_COLORS, depthSorted, furnitureBounds, renderRoom, unproject, type RoomView } from '../render/isoRenderer';
 import { FURNITURE_BODY, pixelIconUrl } from '../render/sprites';
-import { characterHeight } from '../render/character';
+import { characterHeight, RES } from '../render/spriteCharacter';
 import { besideCells, CharacterSim, doorCell, type Step } from '../render/characterSim';
 import { project } from '../render/isoRenderer';
 import type { MonthResult, WeekResult } from '../engine/simulation';
+import type { Pose } from '../render/character';
 import { useGameStore } from '../store/useGameStore';
 import { PixelButton } from './ui';
 
@@ -111,7 +112,7 @@ export function IsometricRoomCanvas({
       const a = sim.actor;
       const v = viewRef.current!;
       const [sx, sy] = project(v.n, a.gx, a.gy);
-      const top = sy - characterHeight(v.stage) - 4;
+      const top = sy - characterHeight(v.stage, game.gender) - 4;
       const items = texts.map((text, i) => ({
         id: popupSeq++,
         text,
@@ -128,7 +129,9 @@ export function IsometricRoomCanvas({
     const steps: Step[] = [];
     for (const w of playback.weeks) {
       const outside = w.actionType === 'RUNAWAY' || (!w.targetInstanceId && w.actionType !== 'REST');
-      const pose = w.actionType === 'REST' && w.targetInstanceId ? 'sleep' : 'act';
+      // 공부 → 독서 포즈, 휴식 → 침대 위에서 책 읽기, 대성공 → 만세 점프, 알바 → 바쁘게 움직이기
+      const pose: Pose =
+        w.outcome === 'GREAT' ? 'cheer' : w.actionType === 'EDUCATION' || w.actionType === 'REST' ? (w.targetInstanceId && w.actionType === 'REST' ? 'sleep' : 'read') : 'work';
       steps.push({
         kind: 'call',
         fn: () => {
@@ -143,7 +146,7 @@ export function IsometricRoomCanvas({
         steps.push({ kind: 'fade', to: 0, ms: 350 });
         steps.push({ kind: 'wait', ms: 600, pose: 'idle', onStart: () => setBubble(null) });
         steps.push({ kind: 'fade', to: 1, ms: 350 });
-        steps.push({ kind: 'wait', ms: 1300, pose: 'act', onStart: () => {
+        steps.push({ kind: 'wait', ms: 1300, pose: w.outcome === 'GREAT' ? 'cheer' : w.actionType === 'RUNAWAY' ? 'idle' : 'work', onStart: () => {
           haloRef.current = HALO[w.outcome];
           spawnPopups(w.popups.length ? w.popups : [`${w.goldDelta > 0 ? '+' : ''}${w.goldDelta}G`]);
         } });
@@ -236,7 +239,7 @@ export function IsometricRoomCanvas({
           const a = simRef.current.actor;
           const [sx, sy] = project(v.n, a.gx, a.gy);
           const sc = scaleRef.current;
-          b.style.transform = `translate(${sx * sc}px, ${(sy - characterHeight(v.stage) - 6) * sc}px) translate(-50%, -100%)`;
+          b.style.transform = `translate(${sx * sc}px, ${(sy - characterHeight(v.stage, game.gender) - 6) * sc}px) translate(-50%, -100%)`;
         }
       }
       raf = requestAnimationFrame(loop);
@@ -293,8 +296,8 @@ export function IsometricRoomCanvas({
         <div className="relative" style={{ width: w * scale, height: h * scale }}>
           <canvas
             ref={canvasRef}
-            width={w}
-            height={h}
+            width={w * RES}
+            height={h * RES}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerLeave={() => setHover(null)}

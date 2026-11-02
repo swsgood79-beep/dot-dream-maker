@@ -159,7 +159,7 @@ describe('character sim', () => {
     let done = false;
     sim.runScript([
       { kind: 'goto', resolve: () => ({ x: 5, y: 5 }) },
-      { kind: 'wait', ms: 500, pose: 'act' },
+      { kind: 'wait', ms: 500, pose: 'read' },
       { kind: 'call', fn: () => (done = true) },
     ]);
     for (let i = 0; i < 200 && !done; i++) sim.update(50, { n: 6, placed });

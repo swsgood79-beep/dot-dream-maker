@@ -1,4 +1,6 @@
 import { useGameStore } from '../../store/useGameStore';
+import { Sprite } from '../Sprite';
+import { frameName } from '../../render/spriteCharacter';
 import { APT_KEYS, STAT_KEYS } from '../../engine/simulation';
 import { growthStage } from '../../engine/room';
 import { APT_META, Bar, STAT_META } from '../ui';
@@ -39,9 +41,12 @@ export function InfoPanel() {
   return (
     <div className="text-xs">
       <p className="mb-2 text-sm font-bold">
-        {game.gender === 'SON' ? '👦' : '👧'} {game.childName} · {game.age}세 ({STAGE_LABEL[growthStage(game.age)]})
+        {game.childName} · {game.age}세 ({STAGE_LABEL[growthStage(game.age)]})
       </p>
-      <Radar values={STAT_KEYS.map((k) => stats[k])} />
+      <div className="flex items-center justify-center gap-2">
+        <Sprite name={frameName(growthStage(game.age), game.gender, 'stand')} />
+        <Radar values={STAT_KEYS.map((k) => stats[k])} />
+      </div>
       <div className="mb-3 grid grid-cols-1 gap-1">
         {STAT_KEYS.map((k) => (
           <div key={k} className="flex items-center gap-2">

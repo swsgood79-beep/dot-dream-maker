@@ -2,7 +2,7 @@ import { FURNITURE_MAP } from '../data/furnitureData';
 import { footprint, type Cell } from '../engine/room';
 import type { GrowthStage, PlacedFurniture } from '../types/game';
 import { drawPixels, FURNITURE_BODY, FURNITURE_PIXELS, shade } from './sprites';
-import { drawCharacter } from './character';
+import { CAT_FRAME, drawCharacter, drawFrame, RES } from './spriteCharacter';
 import type { Actor } from './characterSim';
 import type { Gender } from '../types/game';
 
@@ -224,6 +224,8 @@ function drawWalls(ctx: CanvasRenderingContext2D, n: number, stage: GrowthStage)
 export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
   const { n } = v;
   const { w, h } = canvasSize(n);
+  // 백버퍼는 RES배 해상도: 방은 그대로, 캐릭터 스프라이트는 원본 도트 1:1
+  ctx.setTransform(RES, 0, 0, RES, 0, 0);
   ctx.clearRect(0, 0, w, h);
   ctx.imageSmoothingEnabled = false;
 
@@ -269,23 +271,35 @@ export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
     ctx.restore();
   }
 
-  // 가구 + 캐릭터 (깊이 순서대로)
-  const at = v.actor ? v.actor.actor.drawAt ?? { gx: v.actor.actor.gx, gy: v.actor.actor.gy, lift: 0 } : null;
-  const actorKey = at ? Math.floor(at.gx) + Math.floor(at.gy) + 2.1 + (at.lift ? 0.5 : 0) : Infinity;
-  let actorDrawn = !v.actor;
-  const drawActor = () => {
-    if (!v.actor || !at) return;
-    const { actor, gender } = v.actor;
-    const [sx, sy] = project(n, at.gx, at.gy);
-    drawCharacter(ctx, sx, sy - at.lift, { stage: v.stage, gender, facing: actor.facing, pose: actor.pose, time: v.time, alpha: actor.alpha });
-    actorDrawn = true;
-  };
-  for (const p of depthSorted(v.placed)) {
+  // 가구 + 캐릭터 + 반려묘 (깊이 순서대로)
+  type Drawable = { key: number; draw: () => void };
+  const list: Drawable[] = depthSorted(v.placed).map((p, i) => {
     const r = footprintRect(p);
-    if (!actorDrawn && actorKey < r.x1 + r.y1) drawActor();
-    drawFurniture(ctx, n, p, { selected: p.instanceId === v.selectedId });
+    return { key: r.x1 + r.y1 + i * 1e-4, draw: () => drawFurniture(ctx, n, p, { selected: p.instanceId === v.selectedId }) };
+  });
+  if (v.actor) {
+    const { actor, gender } = v.actor;
+    const at = actor.drawAt ?? { gx: actor.gx, gy: actor.gy, lift: 0 };
+    list.push({
+      key: Math.floor(at.gx) + Math.floor(at.gy) + 2.1 + (at.lift ? 0.5 : 0),
+      draw: () => {
+        const [sx, sy] = project(n, at.gx, at.gy);
+        drawCharacter(ctx, sx, sy - at.lift, { stage: v.stage, gender, facing: actor.facing, pose: actor.pose, time: v.time, alpha: actor.alpha });
+      },
+    });
   }
-  if (!actorDrawn) drawActor();
+  const cat = catSpot(n, v.placed);
+  if (cat) {
+    list.push({
+      key: Math.floor(cat.gx) + Math.floor(cat.gy) + 2.05 + (cat.lift ? 0.5 : 0),
+      draw: () => {
+        const [sx, sy] = project(n, cat.gx, cat.gy);
+        const breathe = Math.floor(v.time / 900) % 2 ? -0.5 : 0;
+        drawFrame(ctx, CAT_FRAME, sx, sy - cat.lift + 2 + breathe, false);
+      },
+    });
+  }
+  list.sort((a, b) => a.key - b.key).forEach((d) => d.draw());
 
   // 배치 고스트
   if (v.ghost && FURNITURE_MAP[v.ghost.furnitureId]) {
@@ -294,4 +308,17 @@ export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
       if (c.x >= 0 && c.y >= 0 && c.x < n && c.y < n) tile(ctx, n, c.x, c.y, v.ghost.valid ? 'rgba(91,214,168,0.6)' : 'rgba(229,72,77,0.6)');
     drawFurniture(ctx, n, g, { alpha: 0.6 });
   }
+}
+
+/** 반려묘가 자는 자리: 반려묘 쿠션 위 → 침대 옆 빈 칸 → 방 구석 */
+export function catSpot(n: number, placed: PlacedFurniture[]): { gx: number; gy: number; lift: number } | null {
+  const cushion = placed.find((p) => p.furnitureId === 'cat_cushion');
+  if (cushion) return { gx: cushion.gridX + 0.5, gy: cushion.gridY + 0.5, lift: (FURNITURE_BODY.cat_cushion?.h ?? 3) + 1 };
+  const taken = new Set(placed.flatMap((p) => footprint(p).map((c) => `${c.x},${c.y}`)));
+  const prefer: Cell[] = [];
+  for (const p of placed.filter((p) => FURNITURE_MAP[p.furnitureId]?.category === 'REST'))
+    for (const c of footprint(p)) prefer.push({ x: c.x + 1, y: c.y }, { x: c.x, y: c.y + 1 });
+  prefer.push({ x: n - 1, y: 0 }, { x: n - 1, y: n - 1 });
+  const spot = prefer.find((c) => c.x >= 0 && c.y >= 0 && c.x < n && c.y < n && !taken.has(`${c.x},${c.y}`));
+  return spot ? { gx: spot.x + 0.5, gy: spot.y + 0.5, lift: 0 } : null;
 }

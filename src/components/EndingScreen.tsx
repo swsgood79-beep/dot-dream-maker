@@ -1,4 +1,6 @@
 import { CATEGORY_LABEL, ENDINGS } from '../data/endingData';
+import { Sprite } from './Sprite';
+import { frameName, PARENT_FRAME } from '../render/spriteCharacter';
 import { STAT_KEYS } from '../engine/simulation';
 import { useGameStore } from '../store/useGameStore';
 import { PixelButton, STAT_META, TIER_COLOR } from './ui';
@@ -11,7 +13,12 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
       <p className="text-sm text-gold">🎓 19세 12월 · 성인식</p>
       {game && <p className="text-xs opacity-80">{game.childName}의 12년간의 성장 이야기가 끝났습니다</p>}
       <div className="pixel-box pop-in w-full p-4 text-ink">
-        <div className="text-6xl">{game?.gender === 'SON' ? '🧑' : '👩'}</div>
+        {game && (
+          <div className="flex items-end justify-center gap-3">
+            <Sprite name={frameName('YOUTH', game.gender, 'cheer')} scale={1.5} />
+            <Sprite name={PARENT_FRAME} scale={1.2} />
+          </div>
+        )}
         <span className={`mt-2 inline-block border-3 border-ink px-3 py-1 text-lg font-bold ${TIER_COLOR[ending.tier]}`}>{ending.tier}</span>
         <h2 className="mt-2 text-2xl font-bold">{ending.title}</h2>
         <p className="text-[10px] opacity-60">{CATEGORY_LABEL[ending.category]} · {ending.id}</p>

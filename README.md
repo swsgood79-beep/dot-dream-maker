@@ -33,7 +33,8 @@ src/
   data/                   가구·콤보 / 스케줄 / 엔딩 마스터 데이터
   engine/room.ts          타일 배치, 콤보(맨해튼 2칸) 판정, 오라 합산
   engine/simulation.ts    월간 턴 진행 · 성장 공식 · 이벤트
-  render/                 아이소메트릭 캔버스 렌더러 · 코드 픽셀 스프라이트
+  render/                 아이소메트릭 캔버스 렌더러 · 픽셀 스프라이트 · 캐릭터 아틀라스
+assets-src/               캐릭터 스프라이트 시트 원본 (python3 scripts/build-sprites.py 로 아틀라스 재생성)
   store/useGameStore.ts   Zustand 스토어 (localStorage 저장)
   components/             화면 / 패널 UI
 ```
