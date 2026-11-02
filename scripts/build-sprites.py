@@ -7,7 +7,8 @@ assets-src/character-sheet.png (흰 배경 캐릭터 시트) →
 1) 흰 배경이 아닌 픽셀을 묶어 스프라이트 19개를 자동 검출
 2) 테두리에서 이어지는 흰색만 배경으로 지움 (흰 티셔츠는 유지)
 3) 업스케일된 도트(약 5.67px = 1도트)를 원래 해상도로 축소
-4) 시트에 없는 걷기 동작을 '서기' 프레임에서 생성: 다리를 좌우로 나눠 번갈아 들고,
+4) 아들은 assets-src/son-walk-sheet.png 의 손그림 걷기 3장(A·B·C → A,B,C,B 사이클) 사용
+5) 손그림 걷기가 없는 캐릭터는 '서기' 프레임에서 생성: 다리를 좌우로 나눠 번갈아 들고,
    팔을 반대로 흔들고, 발 디딤 순간 몸이 1px 내려앉는 4프레임 사이클 → {이름}_walk0~3
 """
 import json
@@ -32,11 +33,6 @@ NAMES = [
     'YOUTH_DAUGHTER_stand', 'YOUTH_DAUGHTER_read',
     'CAT_sleep', 'PARENT_stand',
 ]
-
-img = np.asarray(Image.open(SRC).convert('RGB')).astype(np.int32)
-H, W, _ = img.shape
-nonwhite = (765 - img.sum(axis=2)) > 60
-
 
 def components(mask, f=4, min_cells=200):
     h, w = mask.shape[0] // f, mask.shape[1] // f
@@ -69,14 +65,20 @@ def components(mask, f=4, min_cells=200):
     return boxes
 
 
-boxes = components(nonwhite)
-assert len(boxes) == len(NAMES), f'expected {len(NAMES)} sprites, found {len(boxes)}'
-# 행(세로 위치) → 열(가로 위치) 순 정렬
-rows = sorted({round(((b[1] + b[3]) / 2) / (H / 3) - 0.5) for b in boxes})
-boxes.sort(key=lambda b: (int(((b[1] + b[3]) / 2) // (H / 3)), b[0]))
+
+def load_sheet(path, names):
+    """시트에서 스프라이트를 찾아 (이름, 프레임) 목록으로 반환. 3행 그리드 기준 행→열 순 정렬"""
+    img = np.asarray(Image.open(path).convert('RGB')).astype(np.int32)
+    H = img.shape[0]
+    nonwhite = (765 - img.sum(axis=2)) > 60
+    boxes = components(nonwhite)
+    assert len(boxes) == len(names), f'{path}: expected {len(names)} sprites, found {len(boxes)}'
+    boxes.sort(key=lambda b: (int(((b[1] + b[3]) / 2) // (H / 3)), b[0]))
+    return [(n, cut(img, b)) for n, b in zip(names, boxes)], img, dict(zip(names, boxes))
 
 
-def cut(box):
+def cut(img, box, block=BLOCK):
+    H, W, _ = img.shape
     x0, y0, x1, y1 = box
     pad = 6
     x0, y0, x1, y1 = max(0, x0 - pad), max(0, y0 - pad), min(W, x1 + pad), min(H, y1 + pad)
@@ -103,7 +105,7 @@ def cut(box):
                 q.append((ny, nx))
     fg = (~bg).astype(np.float64)
     # 배경색이 섞이지 않도록 전경 색만 평균 (premultiplied box 축소)
-    tw, th = max(1, round(w / BLOCK)), max(1, round(h / BLOCK))
+    tw, th = max(1, round(w / block)), max(1, round(h / block))
     prem = Image.fromarray(np.uint8(np.clip(crop * fg[..., None], 0, 255)))
     cov = Image.fromarray(np.uint8(fg * 255))
     prem_s = np.asarray(prem.resize((tw, th), Image.Resampling.BOX)).astype(np.float64)
@@ -114,9 +116,6 @@ def cut(box):
     # 투명 여백 잘라내기
     ys, xs = np.where(out[..., 3] > 0)
     return out[ys.min() : ys.max() + 1, xs.min() : xs.max() + 1]
-
-
-frames = [cut(b) for b in boxes]
 
 
 def walk_frames(s):
@@ -193,14 +192,38 @@ def walk_frames(s):
     return frames
 
 
-names = list(NAMES)
-for name, f in list(zip(NAMES, frames)):
+# 아들 걷기 시트: 단계별 [서기, 걷기A, 걷기B(교차), 걷기C, 독서, 만세]
+SON_SHEET = 'assets-src/son-walk-sheet.png'
+SON_NAMES = [f'{st}_SON_{k}' for st in ('CHILD', 'TEEN', 'YOUTH') for k in ('stand', 'walkA', 'walkB', 'walkC', 'read', 'cheer')]
+
+sprites = dict(load_sheet(SRC, NAMES)[0])
+son_list, son_img, son_boxes = load_sheet(SON_SHEET, SON_NAMES)
+son = dict(son_list)
+# 걷기 그림이 서기보다 작게 그려진 경우가 있어, 교차 프레임(B) 키가 서기 키 -1px 이 되도록 축소 비율 보정
+for st in ('CHILD', 'TEEN', 'YOUTH'):
+    k = (son[f'{st}_SON_stand'].shape[0] - 1) / son[f'{st}_SON_walkB'].shape[0]
+    if abs(k - 1) > 0.02:
+        for x in 'ABC':
+            son[f'{st}_SON_walk{x}'] = cut(son_img, son_boxes[f'{st}_SON_walk{x}'], BLOCK / k)
+# 아들 프레임은 새 시트로 교체 (청년 아들 만세도 재킷 차림으로)
+for k in ('stand', 'read', 'cheer'):
+    for st in ('CHILD', 'TEEN', 'YOUTH'):
+        sprites[f'{st}_SON_{k}'] = son[f'{st}_SON_{k}']
+for st in ('CHILD', 'TEEN', 'YOUTH'):
+    a, b, c = (son[f'{st}_SON_walk{x}'] for x in 'ABC')
+    for i, f in enumerate((a, b, c, b)):  # 4프레임 사이클: 왼발 → 교차 → 오른발 → 교차
+        sprites[f'{st}_SON_walk{i}'] = f
+
+# 손그림 걷기가 없는 캐릭터(딸, 부모님)는 서기 프레임에서 생성
+for name in list(sprites):
     if name.endswith('_stand'):
         base = name[: -len('_stand')]
-        for i, wf in enumerate(walk_frames(f)):
-            names.append(f'{base}_walk{i}')
-            frames.append(wf)
+        if f'{base}_walk0' not in sprites:
+            for i, wf in enumerate(walk_frames(sprites[name])):
+                sprites[f'{base}_walk{i}'] = wf
 
+names = list(sprites)
+frames = [sprites[n] for n in names]
 gap = 1
 aw = sum(f.shape[1] for f in frames) + gap * (len(frames) - 1)
 ah = max(f.shape[0] for f in frames)
