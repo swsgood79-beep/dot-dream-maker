@@ -174,3 +174,14 @@ describe('furniture models', () => {
     for (const f of FURNITURE) expect(hasModel(f.id), f.id).toBe(true);
   });
 });
+
+import atlas from '../render/characterAtlas.json';
+describe('character atlas', () => {
+  it('has 4 walk frames for every standing character', () => {
+    const names = Object.keys(atlas);
+    for (const stand of names.filter((n) => n.endsWith('_stand'))) {
+      const base = stand.replace('_stand', '');
+      for (let i = 0; i < 4; i++) expect(names, `${base}_walk${i}`).toContain(`${base}_walk${i}`);
+    }
+  });
+});

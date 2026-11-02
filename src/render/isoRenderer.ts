@@ -3,7 +3,7 @@ import { footprint, type Cell } from '../engine/room';
 import type { GrowthStage, PlacedFurniture } from '../types/game';
 import { drawPixels, FURNITURE_BODY, FURNITURE_PIXELS, shade } from './sprites';
 const WOOD_D = '#8a5a35';
-import { CAT_FRAME, drawCharacter, drawFrame, PARENT_FRAME, RES } from './spriteCharacter';
+import { CAT_FRAME, drawCharacter, drawFrame, PARENT_FRAME, RES, walkFrame } from './spriteCharacter';
 import { drawFurnitureModel, modelHeight } from './furnitureModels';
 import type { Actor } from './characterSim';
 import type { Gender } from '../types/game';
@@ -424,8 +424,8 @@ export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
         ctx.ellipse(sx, sy - 1, 8, 3, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
-        const bob = npc.pose === 'walk' && Math.floor(v.time / 160) % 2 ? -1 : 0;
-        drawFrame(ctx, PARENT_FRAME, sx, sy + bob, npc.facing === 'L');
+        const frame = npc.pose === 'walk' ? walkFrame('PARENT', v.time) ?? PARENT_FRAME : PARENT_FRAME;
+        drawFrame(ctx, frame, sx, sy, npc.facing === 'L');
       },
     });
   }

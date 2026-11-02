@@ -87,9 +87,12 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, fx: number, fy: num
   let dy = 0;
   const t = o.time;
   switch (o.pose) {
-    case 'walk':
-      dy = Math.floor(t / 140) % 2 ? -1 : 0; // 통통 걷기
+    case 'walk': {
+      // 걷기 4프레임 사이클 (왼발 → 교차 → 오른발 → 교차)
+      const walk = walkFrame(`${o.stage}_${o.gender}`, t);
+      if (walk && drawFrame(ctx, walk, fx, fy, o.facing === 'L', o.alpha ?? 1)) return;
       break;
+    }
     case 'read':
     case 'sleep':
       kind = 'read';
@@ -126,6 +129,13 @@ export function spriteUrl(name: string): string {
   const url = cv.toDataURL();
   urlCache.set(name, url);
   return url;
+}
+
+/** 걷기 프레임 이름 (없으면 null). 130ms마다 다음 프레임 */
+export const WALK_FRAME_MS = 130;
+export function walkFrame(base: string, t: number): string | null {
+  const name = `${base}_walk${Math.floor(t / WALK_FRAME_MS) % 4}`;
+  return FRAMES[name] ? name : null;
 }
 
 export const CAT_FRAME = 'CAT_sleep';
