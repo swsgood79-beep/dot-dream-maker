@@ -1,14 +1,16 @@
 {
   "name": "dot-dream-maker",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:single": "tsc -b && vite build --mode single",
+    "build:artifact": "npm run build:single && node scripts/make-artifact.mjs"
   },
   "dependencies": {
     "galmuri": "^2.40.3",
@@ -30,6 +32,7 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",
     "vite": "^6.3.5",
+    "vite-plugin-singlefile": "^2.3.0",
     "vitest": "^3.2.7"
   }
 }

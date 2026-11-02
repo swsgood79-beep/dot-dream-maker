@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { AptitudeKey, StatKey } from '../types/game';
+import { pixelIconUrl } from '../render/sprites';
 
 export const STAT_META: Record<StatKey, { label: string; icon: string; color: string }> = {
   INT: { label: '지력', icon: '🧠', color: '#6ec3f4' },
@@ -17,23 +18,6 @@ export const APT_META: Record<AptitudeKey, { label: string; icon: string }> = {
   APT_ENT: { label: '예술', icon: '🎬' },
   APT_BIZ: { label: '경영', icon: '📈' },
   APT_ADV: { label: '모험', icon: '🗡️' },
-};
-
-/** 가구 도트 아이콘 (v0.1: 이모지 플레이스홀더, v0.2에서 픽셀 스프라이트로 교체 예정) */
-export const FURNITURE_ICON: Record<string, string> = {
-  basic_bed: '🛏️', globe: '🌍', plant: '🪴', toy_box: '🧸',
-  oak_desk: '🪑', encyclopedia_shelf: '📚', led_lamp: '💡',
-  anatomy_model: '💀', microscope_table: '🔬', medical_shelf: '📗',
-  gaming_pc: '🖥️', dual_monitor: '🖵', whiteboard: '📋',
-  grand_piano: '🎹', condenser_mic: '🎙️', sound_booth: '🚪',
-  easel: '🖼️', plaster_bust: '🗿', watercolor_kit: '🖌️',
-  treadmill: '🏃', dumbbell_rack: '🏋️', full_mirror: '🪞',
-  newspaper_stand: '📰', world_clock: '🕰️', stock_monitor: '📈',
-  mini_oven: '♨️', kitchen_counter: '🍳', spice_rack: '🧂',
-  ring_light: '⭕', broadcast_cam: '🎥', chroma_key: '🟩',
-  telescope: '🔭', planet_model: '🪐', zero_g_bed: '🛸',
-  fluffy_bed: '🛌', aroma_diffuser: '🕯️', cat_cushion: '🐈',
-  treasure_chest: '💰', wooden_sword_rack: '🗡️', magic_rug: '🔯',
 };
 
 export const TIER_COLOR: Record<string, string> = {
@@ -58,7 +42,7 @@ export function PixelButton({
   disabled?: boolean;
 }) {
   return (
-    <button disabled={disabled} onClick={onClick} className={`pixel-btn ${color} px-3 py-2 text-sm font-bold ${className}`}>
+    <button disabled={disabled} onClick={onClick} className={`pixel-btn ${color} px-3 py-2 text-sm font-bold text-ink ${className}`}>
       {children}
     </button>
   );
@@ -84,5 +68,19 @@ export function Sheet({ title, onClose, children }: { title: string; onClose: ()
         <div className="overflow-y-auto p-3">{children}</div>
       </div>
     </div>
+  );
+}
+
+/** 코드 픽셀 스프라이트로 그린 가구 아이콘 */
+export function PixelIcon({ id, size = 28, className = '' }: { id: string; size?: number; className?: string }) {
+  return (
+    <img
+      src={pixelIconUrl(id)}
+      width={size}
+      height={size}
+      alt=""
+      className={`inline-block shrink-0 ${className}`}
+      style={{ imageRendering: 'pixelated', width: size, height: size }}
+    />
   );
 }

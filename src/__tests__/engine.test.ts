@@ -116,3 +116,23 @@ describe('full playthrough', () => {
     expect(FURNITURE.length).toBe(40);
   });
 });
+
+import { FURNITURE_PIXELS, FURNITURE_BODY } from '../render/sprites';
+import { project, unproject } from '../render/isoRenderer';
+describe('sprites & iso', () => {
+  it('every furniture has an 8x8 sprite and body', () => {
+    for (const f of FURNITURE) {
+      const rows = FURNITURE_PIXELS[f.id];
+      expect(rows, f.id).toHaveLength(8);
+      rows.forEach((r) => expect(r.length, `${f.id}:${r}`).toBe(8));
+      expect(FURNITURE_BODY[f.id], f.id).toBeDefined();
+    }
+  });
+  it('unproject inverts project at tile centers', () => {
+    for (let x = 0; x < 8; x++)
+      for (let y = 0; y < 8; y++) {
+        const [sx, sy] = project(8, x + 0.5, y + 0.5);
+        expect(unproject(8, sx, sy)).toEqual({ x, y });
+      }
+  });
+});

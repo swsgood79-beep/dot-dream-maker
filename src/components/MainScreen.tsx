@@ -4,7 +4,7 @@ import { growthStage } from '../engine/room';
 import { STAT_KEYS } from '../engine/simulation';
 import { useGameStore } from '../store/useGameStore';
 import { MonthResultModal } from './MonthResultModal';
-import { RoomGrid } from './RoomGrid';
+import { IsometricRoomCanvas } from './IsometricRoomCanvas';
 import { Bar, Sheet, STAT_META } from './ui';
 import { SchedulePanel } from './panels/SchedulePanel';
 import { ShopPanel } from './panels/ShopPanel';
@@ -64,7 +64,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
 
       {/* 중앙 룸 (64%) */}
       <main className="relative min-h-0 flex-1">
-        <RoomGrid placingId={placingId} onPlaced={() => setPlacingId(null)} />
+        <IsometricRoomCanvas placingId={placingId} onPlaced={() => setPlacingId(null)} />
         {game.activeCombos.length > 0 && (
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {game.activeCombos.map((id) => (

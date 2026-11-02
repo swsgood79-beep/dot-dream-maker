@@ -12,6 +12,7 @@ npm install
 npm run dev      # 개발 서버
 npm test         # 엔진 테스트
 npm run build    # 배포 빌드 (dist/)
+npm run build:artifact  # 단일 HTML 빌드 (dist-single/artifact.html)
 ```
 
 ## 버전 로드맵
@@ -19,7 +20,7 @@ npm run build    # 배포 빌드 (dist/)
 | 버전 | 내용 | 상태 |
 | --- | --- | --- |
 | v0.1.0 | 데이터 · 50종 엔딩 엔진 · 스토어 · 최소 플레이 UI | ✅ |
-| v0.2.0 | 아이소메트릭 도트 방 렌더러 (Canvas), 픽셀 가구 스프라이트, 콤보 오라 하이라이트 | ⏳ |
+| v0.2.0 | 아이소메트릭 도트 방 렌더러 (Canvas), 픽셀 가구 스프라이트, 콤보 오라 하이라이트 | ✅ |
 | v0.3.0 | 성장 단계별 도트 캐릭터 · 가구로 이동하는 스케줄 실행 연출 · 플로팅 팝업 | ⏳ |
 | v0.4.0 | 레트로 UI 모달 다듬기 · 연간 대회 이벤트 연출 · 엔딩 일러스트 · 효과음(ZzFX) | ⏳ |
 | v0.5.0 | 밸런스 조정 · PWA/모바일 패키징 | ⏳ |
@@ -32,6 +33,7 @@ src/
   data/                   가구·콤보 / 스케줄 / 엔딩 마스터 데이터
   engine/room.ts          타일 배치, 콤보(맨해튼 2칸) 판정, 오라 합산
   engine/simulation.ts    월간 턴 진행 · 성장 공식 · 이벤트
+  render/                 아이소메트릭 캔버스 렌더러 · 코드 픽셀 스프라이트
   store/useGameStore.ts   Zustand 스토어 (localStorage 저장)
   components/             화면 / 패널 UI
 ```

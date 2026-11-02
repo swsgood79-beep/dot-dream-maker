@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { FURNITURE_MAP, COMBO_MAP } from '../data/furnitureData';
 import { ACTION_MAP } from '../data/scheduleData';
 import { ENDING_MAP } from '../data/endingData';
@@ -37,6 +37,31 @@ interface GameStore {
 }
 
 let toastSeq = 1;
+
+/** localStorage 접근이 막힌 환경(사생활 보호 모드, 미리보기)에서도 게임이 돌아가도록 안전 래핑 */
+const safeStorage = createJSONStorage(() => ({
+  getItem: (k: string) => {
+    try {
+      return localStorage.getItem(k);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (k: string, v: string) => {
+    try {
+      localStorage.setItem(k, v);
+    } catch {
+      /* 저장 불가 환경: 무시 */
+    }
+  },
+  removeItem: (k: string) => {
+    try {
+      localStorage.removeItem(k);
+    } catch {
+      /* 무시 */
+    }
+  },
+}));
 
 export const useGameStore = create<GameStore>()(
   persist(
@@ -179,6 +204,7 @@ export const useGameStore = create<GameStore>()(
     {
       name: 'dot-dream-maker-save',
       version: 1,
+      storage: safeStorage,
       partialize: (st) => ({
         game: st.game,
         unlockedEndings: st.unlockedEndings,

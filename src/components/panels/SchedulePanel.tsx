@@ -86,7 +86,7 @@ export function SchedulePanel({ onRun }: { onRun: () => void }) {
           </div>
         </div>
       ))}
-      <PixelButton className="sticky bottom-0 mt-2 w-full" color="bg-accent text-white" onClick={onRun}>
+      <PixelButton className="sticky bottom-0 mt-2 w-full" color="bg-accent !text-white" onClick={onRun}>
         ▶ 이번 달 진행하기
       </PixelButton>
     </div>

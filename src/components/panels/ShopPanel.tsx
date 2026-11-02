@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { COMBOS, FURNITURE, FURNITURE_MAP } from '../../data/furnitureData';
 import { useGameStore } from '../../store/useGameStore';
 import type { FurnitureCategory } from '../../types/game';
-import { FURNITURE_ICON, STAT_META } from '../ui';
+import { PixelIcon, STAT_META } from '../ui';
 
 const CAT_LABEL: Record<FurnitureCategory, string> = {
   STUDY: '📚 공부', ART: '🎨 예술', TECH: '🛠️ 기술', FITNESS: '💪 운동', REST: '🛏️ 휴식', DECO: '✨ 장식',
@@ -44,7 +44,7 @@ export function ShopPanel({ onPlaceMode }: { onPlaceMode: (furnitureId: string) 
               if (f.aptitudeBonus) Object.entries(f.aptitudeBonus).forEach(([k, v]) => aura.push(`${k.replace('APT_', '')}+${v}exp`));
               return (
                 <div key={f.id} className="flex items-center gap-2 border-2 border-ink bg-white px-2 py-1">
-                  <span className="text-2xl">{FURNITURE_ICON[f.id]}</span>
+                  <PixelIcon id={f.id} size={32} />
                   <div className="min-w-0 flex-1">
                     <p className="font-bold">
                       {f.name} {owned && <span className="text-emerald-700">✔</span>} {f.width > 1 && <span className="opacity-60">({f.width}칸)</span>}
@@ -82,7 +82,7 @@ export function ShopPanel({ onPlaceMode }: { onPlaceMode: (furnitureId: string) 
                 <p className="text-[10px]">
                   {c.requiredFurnitureIds.map((id) => (
                     <span key={id} className={game.collectedFurniture.includes(id) ? '' : 'opacity-40'}>
-                      {FURNITURE_ICON[id]}{FURNITURE_MAP[id].name}{' '}
+                      <PixelIcon id={id} size={14} className="align-middle" /> {FURNITURE_MAP[id].name}{' '}
                     </span>
                   ))}
                 </p>
@@ -99,7 +99,7 @@ export function ShopPanel({ onPlaceMode }: { onPlaceMode: (furnitureId: string) 
           {game.inventory.length === 0 && <p className="opacity-60">창고가 비었어요. 방에서 가구를 선택해 '보관'할 수 있어요.</p>}
           {Array.from(new Set(game.inventory)).map((id) => (
             <div key={id} className="flex items-center gap-2 border-2 border-ink bg-white px-2 py-1">
-              <span className="text-2xl">{FURNITURE_ICON[id]}</span>
+              <PixelIcon id={id} size={32} />
               <span className="flex-1 font-bold">{FURNITURE_MAP[id].name} x{game.inventory.filter((x) => x === id).length}</span>
               <button className="pixel-btn bg-mint px-2 py-1" onClick={() => onPlaceMode(id)}>배치하기</button>
             </div>
