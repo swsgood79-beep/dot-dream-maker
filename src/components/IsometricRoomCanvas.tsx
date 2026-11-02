@@ -6,6 +6,7 @@ import { FURNITURE_BODY, pixelIconUrl } from '../render/sprites';
 import { characterHeight, RES } from '../render/spriteCharacter';
 import { besideCells, CharacterSim, doorCell, type Step } from '../render/characterSim';
 import { project } from '../render/isoRenderer';
+import { sfx } from '../audio/sfx';
 import type { MonthResult, WeekResult } from '../engine/simulation';
 import type { Pose } from '../render/character';
 import { useGameStore } from '../store/useGameStore';
@@ -148,6 +149,11 @@ export function IsometricRoomCanvas({
         kind: popupKind(text),
       }));
       setPopups((p) => [...p, ...items]);
+      // 효과음: 대성공/실패/레벨업/일반 스탯
+      if (texts.includes('대성공!')) sfx('great');
+      else if (texts.some((t) => t === '실패...' || t === '가출...')) sfx('fail');
+      else if (texts.some((t) => t.includes('Lv.'))) sfx('levelup');
+      else sfx('stat');
       const ids = new Set(items.map((x) => x.id));
       setTimeout(() => setPopups((p) => p.filter((x) => !ids.has(x.id))), 1800 + items.length * 220);
     };
@@ -168,6 +174,7 @@ export function IsometricRoomCanvas({
       if (outside) {
         steps.push({ kind: 'goto', resolve: (wd) => doorCell(wd.n) });
         steps.push({ kind: 'call', fn: () => setBubble(ACT_BUBBLE[w.actionType]) });
+        steps.push({ kind: 'call', fn: () => sfx('door') });
         steps.push({ kind: 'fade', to: 0, ms: 350 });
         steps.push({ kind: 'wait', ms: 600, pose: 'idle', onStart: () => setBubble(null) });
         steps.push({ kind: 'fade', to: 1, ms: 350 });

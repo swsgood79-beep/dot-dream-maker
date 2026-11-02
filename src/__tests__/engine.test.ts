@@ -185,3 +185,22 @@ describe('character atlas', () => {
     }
   });
 });
+
+import { ENDING_SCENE } from '../data/endingScenes';
+describe('v0.5 events & ending', () => {
+  it('every ending has an illustration scene', () => {
+    for (const e of ENDINGS) expect(ENDING_SCENE[e.id], e.id).toBeDefined();
+  });
+  it('contest months return structured results and history is recorded yearly', () => {
+    const rng = mulberry32(3);
+    let s = createNewGame('t', 'SON', 'STR');
+    const contests: string[] = [];
+    for (let m = 0; m < 24; m++) {
+      const r = runMonth(s, rng);
+      if (r.contest) contests.push(`${r.contest.id}@${r.contest.age}`);
+      s = r.state;
+    }
+    expect(contests).toEqual(['SPORTS@8', 'ARTFEST@8', 'EXAM@8', 'SPORTS@9', 'ARTFEST@9', 'EXAM@9']);
+    expect(s.history?.map((h) => h.age)).toEqual([8, 9, 10]);
+  });
+});

@@ -36,6 +36,7 @@ export interface SaveState extends GameState {
   talkedThisMonth: boolean;
   burstCount: number; // 스트레스 폭발 횟수
   instanceSeq: number;
+  history?: GrowthSnapshot[]; // 매년 1월 스탯 기록 (성장 앨범)
 }
 
 export type Rng = () => number;
@@ -57,10 +58,31 @@ export interface WeekResult {
   targetInstanceId?: string; // 이번 주 사용한 방 안 가구 (연출용)
 }
 
+/** 연간 대회 결과 (연출용) */
+export interface ContestResult {
+  id: 'SPORTS' | 'ARTFEST' | 'EXAM';
+  title: string;
+  stat: StatKey;
+  score: number;
+  threshold: number;
+  win: boolean;
+  rank: number; // 1 = 우승, 2~3 = 입상권 근처, 0 = 참가
+  rewards: string[];
+  age: number;
+}
+
+/** 성장 앨범용 연도별 기록 */
+export interface GrowthSnapshot {
+  age: number;
+  stats: CharacterStats;
+  fame: number;
+}
+
 export interface MonthResult {
   state: SaveState;
   weeks: WeekResult[];
   events: string[];
+  contest?: ContestResult;
   ending?: EndingDefinition;
 }
 
@@ -114,6 +136,7 @@ export function createNewGame(
     talkedThisMonth: false,
     burstCount: 0,
     instanceSeq: 1,
+    history: [{ age: 8, stats: { ...stats }, fame: 0 }],
   };
 }
 
@@ -333,51 +356,60 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
 function contest(s: SaveState, stat: StatKey, rng: Rng) {
   const threshold = 40 + (s.age - 8) * 60;
   const score = Math.round(s.stats[stat] * (0.85 + rng() * 0.3));
-  return { win: score >= threshold, score, threshold };
+  const win = score >= threshold;
+  const rank = win ? 1 : score >= threshold * 0.85 ? 2 : score >= threshold * 0.7 ? 3 : 0;
+  return { win, score, threshold, rank };
 }
 
-function monthEvents(s: SaveState, rng: Rng, events: string[]) {
+function monthEvents(s: SaveState, rng: Rng, events: string[]): ContestResult | undefined {
   switch (s.month) {
     case 3:
       s.ideaPoints += 5;
       events.push(s.age === 8 ? '🌸 초등학교 입학! 새로운 시작 (💡+5)' : '🌸 새 학기 진급! (💡+5)');
-      break;
+      return;
     case 5: {
       const r = contest(s, 'STR', rng);
+      const rewards: string[] = [];
       if (r.win) {
         s.actionCounts.WIN_SPORTS = (s.actionCounts.WIN_SPORTS ?? 0) + 1;
         s.status.fame = clamp(s.status.fame + 15, 0, 500);
         s.gold += 200;
+        rewards.push('명성 +15', '200G');
         events.push(`🏃 5월 체육대회 우승! (점수 ${r.score}/${r.threshold}) 명성 +15, 200G`);
       } else events.push(`🏃 5월 체육대회 참가... 아쉽게 탈락 (점수 ${r.score}/${r.threshold})`);
-      break;
+      return { age: s.age, id: 'SPORTS', title: '5월 체육대회', stat: 'STR', ...r, rewards };
     }
     case 8:
       s.status.stress = clamp(s.status.stress - 20, 0, 100);
       s.status.affection = clamp(s.status.affection + 5, 0, 100);
       events.push('🏖️ 8월 여름 바캉스! 스트레스 -20, 친밀도 +5');
-      break;
+      return;
     case 10: {
       const r = contest(s, 'ART', rng);
+      const rewards: string[] = [];
       if (r.win) {
         s.actionCounts.WIN_ARTFEST = (s.actionCounts.WIN_ARTFEST ?? 0) + 1;
         s.status.fame = clamp(s.status.fame + 15, 0, 500);
         s.ideaPoints += 5;
+        rewards.push('명성 +15', '💡+5');
         events.push(`🎭 10월 예술제 입상! (점수 ${r.score}/${r.threshold}) 명성 +15, 💡+5`);
       } else events.push(`🎭 10월 예술제 참가... 입상 실패 (점수 ${r.score}/${r.threshold})`);
-      break;
+      return { age: s.age, id: 'ARTFEST', title: '10월 예술제', stat: 'ART', ...r, rewards };
     }
     case 12: {
       const r = contest(s, 'INT', rng);
+      const rewards: string[] = [];
       if (r.win) {
         s.actionCounts.WIN_EXAM = (s.actionCounts.WIN_EXAM ?? 0) + 1;
         s.status.fame = clamp(s.status.fame + 10, 0, 500);
         s.gold += 300;
+        rewards.push('명성 +10', '300G');
         events.push(`📝 12월 기말시험 1등! (점수 ${r.score}/${r.threshold}) 명성 +10, 300G`);
       } else events.push(`📝 12월 기말시험 결과... 평범했다 (점수 ${r.score}/${r.threshold})`);
-      break;
+      return { age: s.age, id: 'EXAM', title: '12월 기말시험', stat: 'INT', ...r, rewards };
     }
   }
+  return;
 }
 
 /** 콤보 재계산 + 최초 달성 콤보 플래그 기록 */
@@ -428,7 +460,7 @@ export function runMonth(input: SaveState, rng: Rng = Math.random): MonthResult 
   if (s.status.stress < 50 && s.status.affection >= 50 && s.status.delinquency > 0) {
     s.status.delinquency = clamp(s.status.delinquency - 1, 0, 100);
   }
-  monthEvents(s, rng, events);
+  const contestResult = monthEvents(s, rng, events);
 
   // STEP 5. 재화 정산 (부모 월급)
   const allowance = monthlyAllowance(s.age);
@@ -441,17 +473,19 @@ export function runMonth(input: SaveState, rng: Rng = Math.random): MonthResult 
     if (s.burstCount === 0 && !s.flags.includes('NO_BURST')) s.flags.push('NO_BURST');
     const ending = evaluateEnding(s, s.collectedFurniture);
     if (!s.unlockedEndings.includes(ending.id)) s.unlockedEndings.push(ending.id);
-    return { state: s, weeks, events, ending };
+    s.history = [...(s.history ?? []), { age: 20, stats: { ...s.stats }, fame: s.status.fame }];
+    return { state: s, weeks, events, contest: contestResult, ending };
   }
   s.month += 1;
   if (s.month > 12) {
     s.month = 1;
     s.age += 1;
+    s.history = [...(s.history ?? []), { age: s.age, stats: { ...s.stats }, fame: s.status.fame }];
     const newSize = roomSizeForAge(s.age);
     if (newSize > s.roomSize) {
       s.roomSize = newSize;
       events.push(`🏠 ${s.age}세! 방이 ${newSize}x${newSize}로 넓어졌다`);
     } else events.push(`🎂 ${s.age}세가 되었다!`);
   }
-  return { state: s, weeks, events };
+  return { state: s, weeks, events, contest: contestResult };
 }

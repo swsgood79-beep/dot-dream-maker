@@ -4,6 +4,9 @@ import { growthStage } from '../engine/room';
 import { STAT_KEYS } from '../engine/simulation';
 import { useGameStore } from '../store/useGameStore';
 import { MonthResultModal } from './MonthResultModal';
+import { ContestModal } from './ContestModal';
+import { sfx } from '../audio/sfx';
+import type { MonthResult } from '../engine/simulation';
 import { IsometricRoomCanvas } from './IsometricRoomCanvas';
 import { Sheet, STAT_META } from './ui';
 import { SchedulePanel } from './panels/SchedulePanel';
@@ -37,6 +40,10 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const { runMonth, dismissResult, endPlayback } = useGameStore();
   const [tab, setTab] = useState<Tab | null>(null);
   const [placingId, setPlacingId] = useState<string | null>(null);
+  const [contestSeen, setContestSeen] = useState<MonthResult | null>(null);
+  const muted = useGameStore((s) => s.muted);
+  const toggleMute = useGameStore((s) => s.toggleMute);
+  const showContest = !!(lastResult && !playing && lastResult.contest && contestSeen !== lastResult);
 
   const stress = game.status.stress;
   const stressColor = stress >= 80 ? '#e5484d' : stress >= 50 ? '#ff9f43' : '#5bd6a8';
@@ -80,6 +87,9 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
               <div className="hud-slot flex items-center gap-1 rounded px-1.5 py-1 font-bold" title="영감 포인트">
                 💡<span className="tabular-nums">{game.ideaPoints}</span>
               </div>
+              <button onClick={toggleMute} className="hud-slot rounded px-1" title={muted ? '소리 켜기' : '소리 끄기'}>
+                {muted ? '🔇' : '🔊'}
+              </button>
               <button onClick={onTitle} className="hud-slot rounded px-1.5" title="타이틀로">
                 ⌂
               </button>
@@ -125,7 +135,13 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
       {/* 하단 독 — 컬러 버튼 */}
       <nav className={`wood-frame grid shrink-0 grid-cols-5 gap-1.5 p-1.5 ${playing ? 'pointer-events-none opacity-60' : ''}`}>
         {TABS.map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)} className="dock-btn flex flex-col items-center py-1.5 text-[10px] font-bold" style={{ background: t.color }}>
+          <button
+            key={t.id}
+            onClick={() => {
+              sfx('page');
+              setTab(t.id);
+            }}
+            className="dock-btn flex flex-col items-center py-1.5 text-[10px] font-bold" style={{ background: t.color }}>
             <span className="text-2xl leading-tight drop-shadow-[1px_1px_0_#1b1f3b]">{t.icon}</span>[{t.label}]
           </button>
         ))}
@@ -167,7 +183,10 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
         </Sheet>
       )}
 
-      {lastResult && !playing && <MonthResultModal result={lastResult} onClose={dismissResult} />}
+      {showContest && lastResult?.contest && (
+        <ContestModal contest={lastResult.contest} gender={game.gender} age={lastResult.contest.age} onClose={() => setContestSeen(lastResult)} />
+      )}
+      {lastResult && !playing && !showContest && <MonthResultModal result={lastResult} onClose={dismissResult} />}
     </div>
   );
 }

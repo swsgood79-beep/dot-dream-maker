@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { setMuted, sfx } from '../audio/sfx';
 import { FURNITURE_MAP, COMBO_MAP } from '../data/furnitureData';
 import { ACTION_MAP } from '../data/scheduleData';
 import { ENDING_MAP } from '../data/endingData';
@@ -19,6 +20,9 @@ interface GameStore {
   lastResult: MonthResult | null;
   /** 월간 스케줄 실행 연출 재생 중 */
   playing: boolean;
+  /** 효과음 끄기 */
+  muted: boolean;
+  toggleMute: () => void;
   endPlayback: () => void;
   ending: EndingDefinition | null;
   toasts: Toast[];
@@ -79,6 +83,7 @@ export const useGameStore = create<GameStore>()(
         const newly = refreshCombos(next);
         set({ game: next });
         newly.forEach((id) => get().pushToast(`✨ 전문 구역 콤보 발동! [${COMBO_MAP[id].name}]`));
+        if (newly.length) setTimeout(() => sfx('combo'), 150);
         return true;
       };
 
@@ -89,6 +94,13 @@ export const useGameStore = create<GameStore>()(
         playthrough: 1,
         lastResult: null,
         playing: false,
+        muted: false,
+        toggleMute: () => {
+          const m = !get().muted;
+          setMuted(m);
+          set({ muted: m });
+          if (!m) sfx('click');
+        },
         ending: null,
         toasts: [],
         endPlayback: () => set({ playing: false }),
@@ -128,9 +140,11 @@ export const useGameStore = create<GameStore>()(
             if (spot) {
               g.placedFurniture.push({ instanceId: `f${g.instanceSeq++}`, furnitureId, gridX: spot.x, gridY: spot.y, rotation: 0 });
               get().pushToast(`${def.name} 구매 완료! 방에 배치했어요`);
+              sfx('buy');
             } else {
               g.inventory.push(furnitureId);
               get().pushToast(`${def.name} 구매! 빈 자리가 없어 창고에 보관`);
+              sfx('buy');
             }
           });
         },
@@ -210,7 +224,11 @@ export const useGameStore = create<GameStore>()(
       name: 'dot-dream-maker-save',
       version: 1,
       storage: safeStorage,
+      onRehydrateStorage: () => (st) => {
+        if (st) setMuted(st.muted);
+      },
       partialize: (st) => ({
+        muted: st.muted,
         game: st.game,
         unlockedEndings: st.unlockedEndings,
         carryIdea: st.carryIdea,

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { AptitudeKey, StatKey } from '../types/game';
 import { pixelIconUrl } from '../render/sprites';
+import { sfx } from '../audio/sfx';
 
 export const STAT_META: Record<StatKey, { label: string; icon: string; color: string }> = {
   INT: { label: '지력', icon: '🧠', color: '#6ec3f4' },
@@ -42,7 +43,13 @@ export function PixelButton({
   disabled?: boolean;
 }) {
   return (
-    <button disabled={disabled} onClick={onClick} className={`pixel-btn ${color} px-3 py-2 text-sm font-bold text-ink ${className}`}>
+    <button
+      disabled={disabled}
+      onClick={() => {
+        sfx('click');
+        onClick?.();
+      }}
+      className={`pixel-btn ${color} px-3 py-2 text-sm font-bold text-ink ${className}`}>
       {children}
     </button>
   );
