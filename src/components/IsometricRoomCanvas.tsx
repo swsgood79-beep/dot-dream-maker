@@ -35,6 +35,23 @@ const HALO: Record<WeekResult['outcome'], string> = {
   NO_GOLD: '#9aa0ad',
 };
 
+/** 스탯별 팝업 색 (참고 이미지: +INT 초록, +ART 분홍) */
+const STAT_POP_COLOR: Record<string, string> = {
+  INT: '#8dff6a',
+  STR: '#ffa860',
+  ART: '#ff7ae0',
+  CHA: '#ff9ec7',
+  MOR: '#7ae8ff',
+  TEC: '#ffe14d',
+};
+function popupColor(p: Popup): string {
+  if (p.kind === 'combo') return '#5bffd0';
+  if (p.kind === 'great') return '#ffe14d';
+  if (p.kind === 'bad') return '#ff8a8a';
+  const stat = Object.keys(STAT_POP_COLOR).find((k) => p.text.includes(k));
+  return stat ? STAT_POP_COLOR[stat] : '#ffffff';
+}
+
 function popupKind(text: string): Popup['kind'] {
   if (text.startsWith('Combo') || text.includes('Lv.')) return 'combo';
   if (text === '대성공!') return 'great';
@@ -61,6 +78,14 @@ export function IsometricRoomCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [scale, setScale] = useState(2);
   const simRef = useRef(new CharacterSim());
+  // 부모님 NPC: 방 안을 느긋하게 돌아다님
+  const npcRef = useRef<CharacterSim>(null);
+  if (!npcRef.current) {
+    npcRef.current = new CharacterSim();
+    npcRef.current.actor.gx = 4.5;
+    npcRef.current.actor.gy = 3.5;
+    npcRef.current.actor.facing = 'L';
+  }
   const [popups, setPopups] = useState<Popup[]>([]);
   const [banner, setBanner] = useState<string | null>(null);
   const [bubble, setBubble] = useState<string | null>(null);
@@ -95,7 +120,7 @@ export function IsometricRoomCanvas({
     if (!el) return;
     const ro = new ResizeObserver(() => {
       const r = el.getBoundingClientRect();
-      setScale(Math.max(1, Math.min((r.width - 8) / w, (r.height - 8) / h)));
+      setScale(Math.max(1, Math.min((r.width - 4) / w, (r.height - 4) / h)));
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -209,6 +234,7 @@ export function IsometricRoomCanvas({
     selectedId: playback ? null : selected,
     placingCells,
     actor: { actor: simRef.current.actor, gender: game.gender },
+    npc: npcRef.current.actor,
     ghost:
       hover && (placingId || movingId)
         ? (() => {
@@ -232,6 +258,7 @@ export function IsometricRoomCanvas({
       const v = viewRef.current;
       if (v) {
         simRef.current.update(dt, { n: v.n, placed: v.placed });
+        npcRef.current?.update(dt * 0.6, { n: v.n, placed: v.placed });
         renderRoom(ctx, { ...v, time: t, actorHalo: haloRef.current });
         // 말풍선이 캐릭터 머리 위를 따라다니도록 DOM 위치 갱신
         const b = bubbleRef.current;
@@ -311,10 +338,8 @@ export function IsometricRoomCanvas({
           {popups.map((p) => (
             <span
               key={p.id}
-              className={`popup-float pointer-events-none absolute text-[13px] font-bold whitespace-nowrap ${
-                p.kind === 'combo' ? 'text-mint' : p.kind === 'great' ? 'text-gold' : p.kind === 'bad' ? 'text-[#ff8a8a]' : 'text-white'
-              }`}
-              style={{ left: p.x * scale, top: p.y * scale - p.stack * 16, animationDelay: `${p.delay}ms` }}
+              className="popup-float pointer-events-none absolute text-[16px] font-bold whitespace-nowrap"
+              style={{ left: p.x * scale, top: p.y * scale - p.stack * 19, animationDelay: `${p.delay}ms`, color: popupColor(p) }}
             >
               {p.text}
             </span>

@@ -167,3 +167,10 @@ describe('character sim', () => {
     expect(sim.cell()).toEqual({ x: 5, y: 5 });
   });
 });
+
+import { hasModel } from '../render/furnitureModels';
+describe('furniture models', () => {
+  it('every furniture has a 3D dot model', () => {
+    for (const f of FURNITURE) expect(hasModel(f.id), f.id).toBe(true);
+  });
+});
