@@ -2,6 +2,9 @@ import { FURNITURE_MAP } from '../data/furnitureData';
 import { footprint, type Cell } from '../engine/room';
 import type { GrowthStage, PlacedFurniture } from '../types/game';
 import { drawPixels, FURNITURE_BODY, FURNITURE_PIXELS, shade } from './sprites';
+import { drawCharacter } from './character';
+import type { Actor } from './characterSim';
+import type { Gender } from '../types/game';
 
 /** 아이소메트릭 2:1 타일 (논리 해상도 px) */
 export const TW = 32;
@@ -29,6 +32,8 @@ export interface RoomView {
   ghost: { furnitureId: string; x: number; y: number; rotation: PlacedFurniture['rotation']; valid: boolean } | null;
   placingCells: Set<string> | null; // 배치 가능한 빈 칸 하이라이트
   time: number; // ms (오라 펄스 애니메이션)
+  actor?: { actor: Actor; gender: Gender } | null;
+  actorHalo?: string | null; // 행동 중 발밑 하이라이트 색
 }
 
 export function canvasSize(n: number) {
@@ -205,6 +210,15 @@ function drawWalls(ctx: CanvasRenderingContext2D, n: number, stage: GrowthStage)
     [lift(project(n, 0, 1.5), 28), lift(project(n, 0, 2.1), 28), lift(project(n, 0, 2.1), 42), lift(project(n, 0, 1.5), 42)],
     '#fff6e5',
   );
+
+  // 문 (왼쪽 벽 앞쪽 끝) — 외출/알바 시 이 문으로 나간다
+  const d0 = project(n, 0, n - 0.85);
+  const d1 = project(n, 0, n - 0.15);
+  poly(ctx, [d0, d1, lift(d1, 40), lift(d0, 40)], '#8a5a35', '#1b1f3b');
+  poly(ctx, [lift(d0, 3), lift(d1, 3), lift(d1, 37), lift(d0, 37)], '#a8703f');
+  ctx.fillStyle = '#ffd84d';
+  const knob = lift(project(n, 0, n - 0.3), 20);
+  ctx.fillRect(Math.round(knob[0]) - 1, Math.round(knob[1]), 2, 2);
 }
 
 export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
@@ -245,10 +259,33 @@ export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
   const sel = v.placed.find((p) => p.instanceId === v.selectedId);
   if (sel) for (const c of footprint(sel)) tile(ctx, n, c.x, c.y, 'rgba(255,122,89,0.45)', '#ff7a59');
 
-  // 가구
+  // 캐릭터 발밑 하이라이트 (행동 중)
+  if (v.actor && v.actorHalo) {
+    const cx = Math.floor(v.actor.actor.gx);
+    const cy = Math.floor(v.actor.actor.gy);
+    ctx.save();
+    ctx.globalAlpha = 0.5 + 0.3 * Math.sin(v.time / 150);
+    tile(ctx, n, cx, cy, v.actorHalo);
+    ctx.restore();
+  }
+
+  // 가구 + 캐릭터 (깊이 순서대로)
+  const at = v.actor ? v.actor.actor.drawAt ?? { gx: v.actor.actor.gx, gy: v.actor.actor.gy, lift: 0 } : null;
+  const actorKey = at ? Math.floor(at.gx) + Math.floor(at.gy) + 2.1 + (at.lift ? 0.5 : 0) : Infinity;
+  let actorDrawn = !v.actor;
+  const drawActor = () => {
+    if (!v.actor || !at) return;
+    const { actor, gender } = v.actor;
+    const [sx, sy] = project(n, at.gx, at.gy);
+    drawCharacter(ctx, sx, sy - at.lift, { stage: v.stage, gender, facing: actor.facing, pose: actor.pose, time: v.time, alpha: actor.alpha });
+    actorDrawn = true;
+  };
   for (const p of depthSorted(v.placed)) {
+    const r = footprintRect(p);
+    if (!actorDrawn && actorKey < r.x1 + r.y1) drawActor();
     drawFurniture(ctx, n, p, { selected: p.instanceId === v.selectedId });
   }
+  if (!actorDrawn) drawActor();
 
   // 배치 고스트
   if (v.ghost && FURNITURE_MAP[v.ghost.furnitureId]) {

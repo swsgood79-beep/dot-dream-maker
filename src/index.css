@@ -92,3 +92,19 @@ button {
 .pop-in {
   animation: pop-in 0.18s ease-out;
 }
+
+/* 머리 위 스탯 팝업: 도트 그림자 + 위로 솟아오름 */
+@keyframes popup-float {
+  0% { transform: translate(-50%, 4px) scale(0.6); opacity: 0; }
+  12% { transform: translate(-50%, -4px) scale(1.15); opacity: 1; }
+  25% { transform: translate(-50%, -8px) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -40px); opacity: 0; }
+}
+.popup-float {
+  animation: popup-float 1.6s ease-out both;
+  text-shadow: 1px 0 #1b1f3b, -1px 0 #1b1f3b, 0 1px #1b1f3b, 0 -1px #1b1f3b, 2px 2px 0 #1b1f3b;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup-float, .float-up, .aura-pulse, .pop-in { animation-duration: 0.01ms; }
+}

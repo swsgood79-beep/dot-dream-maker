@@ -14,10 +14,11 @@ const OUTCOME_LABEL = {
 
 /** 1주~4주를 순차적으로 보여주는 월간 결과 모달 (팝업 텍스트가 솟아오름) */
 export function MonthResultModal({ result, onClose }: { result: MonthResult; onClose: () => void }) {
+  // 방 안 연출을 이미 봤으므로 주간 결과는 빠르게 펼친다
   const [shown, setShown] = useState(0);
   useEffect(() => {
     if (shown >= result.weeks.length) return;
-    const t = setTimeout(() => setShown((s) => s + 1), 650);
+    const t = setTimeout(() => setShown((s) => s + 1), 120);
     return () => clearTimeout(t);
   }, [shown, result.weeks.length]);
   const done = shown >= result.weeks.length;

@@ -136,3 +136,34 @@ describe('sprites & iso', () => {
       }
   });
 });
+
+import { besideCells, CharacterSim, pathToward } from '../render/characterSim';
+describe('character sim', () => {
+  const placed = [
+    { instanceId: 'a', furnitureId: 'oak_desk', gridX: 2, gridY: 0, rotation: 0 as const },
+    { instanceId: 'b', furnitureId: 'encyclopedia_shelf', gridX: 2, gridY: 1, rotation: 0 as const },
+    { instanceId: 'c', furnitureId: 'led_lamp', gridX: 2, gridY: 2, rotation: 0 as const },
+  ];
+  it('paths around furniture', () => {
+    const path = pathToward(6, placed, { x: 0, y: 0 }, [{ x: 4, y: 0 }]);
+    expect(path[path.length - 1]).toEqual({ x: 4, y: 0 });
+    for (const c of path) expect(placed.some((p) => p.gridX === c.x && p.gridY === c.y)).toBe(false);
+  });
+  it('finds free cells beside a furniture', () => {
+    const cells = besideCells(6, placed, placed[1]);
+    expect(cells.length).toBeGreaterThan(0);
+    for (const c of cells) expect(c.x === 1 || c.x === 3).toBe(true);
+  });
+  it('runs a script to completion', () => {
+    const sim = new CharacterSim();
+    let done = false;
+    sim.runScript([
+      { kind: 'goto', resolve: () => ({ x: 5, y: 5 }) },
+      { kind: 'wait', ms: 500, pose: 'act' },
+      { kind: 'call', fn: () => (done = true) },
+    ]);
+    for (let i = 0; i < 200 && !done; i++) sim.update(50, { n: 6, placed });
+    expect(done).toBe(true);
+    expect(sim.cell()).toEqual({ x: 5, y: 5 });
+  });
+});

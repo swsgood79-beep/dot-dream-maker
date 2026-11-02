@@ -9,6 +9,7 @@ import type {
   EndingDefinition,
   Gender,
   GameState,
+  ScheduleActionType,
   StatKey,
 } from '../types/game';
 import { computeActiveCombos, computeAura, roomSizeForAge } from './room';
@@ -52,6 +53,8 @@ export interface WeekResult {
   usedCombos: string[];
   popups: string[]; // 머리 위 팝업 텍스트 ("+12 INT!", "Combo x1.3!")
   notes: string[];
+  actionType: ScheduleActionType | 'RUNAWAY';
+  targetInstanceId?: string; // 이번 주 사용한 방 안 가구 (연출용)
 }
 
 export interface MonthResult {
@@ -178,6 +181,7 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
     return {
       week, actionId, actionName: '가출 중...', emoji: '🏃', outcome: 'RUNAWAY', statDelta: {}, stressDelta: 0, goldDelta: 0,
       comboMultiplier: 1, usedCombos: [], popups: ['가출...'], notes: [`${a?.name ?? '스케줄'} 취소 (가출 중)`],
+      actionType: 'RUNAWAY',
     };
   }
   if (s.forcedRestWeeks > 0) {
@@ -321,6 +325,7 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
   return {
     week, actionId: action.id, actionName: action.name, emoji: action.emoji, outcome, statDelta, stressDelta, goldDelta,
     comboMultiplier: maxMult, usedCombos, popups, notes,
+    actionType: action.type, targetInstanceId: aura.target?.instanceId,
   };
 }
 

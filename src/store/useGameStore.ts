@@ -17,6 +17,9 @@ interface GameStore {
   carryIdea: number;
   playthrough: number;
   lastResult: MonthResult | null;
+  /** 월간 스케줄 실행 연출 재생 중 */
+  playing: boolean;
+  endPlayback: () => void;
   ending: EndingDefinition | null;
   toasts: Toast[];
 
@@ -85,8 +88,10 @@ export const useGameStore = create<GameStore>()(
         carryIdea: 0,
         playthrough: 1,
         lastResult: null,
+        playing: false,
         ending: null,
         toasts: [],
+        endPlayback: () => set({ playing: false }),
 
         newGame: (name, gender, bonus) => {
           const { unlockedEndings, carryIdea } = get();
@@ -103,11 +108,11 @@ export const useGameStore = create<GameStore>()(
           if (!g) return;
           const result = runMonth(g);
           const unlocked = Array.from(new Set([...get().unlockedEndings, ...result.state.unlockedEndings]));
-          set({ game: result.state, lastResult: result, unlockedEndings: unlocked });
+          set({ game: result.state, lastResult: result, unlockedEndings: unlocked, playing: true });
           if (result.ending) set({ ending: result.ending });
         },
 
-        dismissResult: () => set({ lastResult: null }),
+        dismissResult: () => set({ lastResult: null, playing: false }),
 
         buyFurniture: (furnitureId) => {
           const def = FURNITURE_MAP[furnitureId];

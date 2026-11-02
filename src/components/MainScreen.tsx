@@ -25,7 +25,8 @@ const STAGE_ICON = { CHILD: '🐣', TEEN: '🐥', YOUTH: '🐓' };
 export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const game = useGameStore((s) => s.game)!;
   const lastResult = useGameStore((s) => s.lastResult);
-  const { runMonth, dismissResult } = useGameStore();
+  const playing = useGameStore((s) => s.playing);
+  const { runMonth, dismissResult, endPlayback } = useGameStore();
   const [tab, setTab] = useState<Tab | null>(null);
   const [placingId, setPlacingId] = useState<string | null>(null);
 
@@ -64,8 +65,13 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
 
       {/* 중앙 룸 (64%) */}
       <main className="relative min-h-0 flex-1">
-        <IsometricRoomCanvas placingId={placingId} onPlaced={() => setPlacingId(null)} />
-        {game.activeCombos.length > 0 && (
+        <IsometricRoomCanvas
+          placingId={placingId}
+          onPlaced={() => setPlacingId(null)}
+          playback={playing ? lastResult : null}
+          onPlaybackDone={endPlayback}
+        />
+        {game.activeCombos.length > 0 && !playing && (
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {game.activeCombos.map((id) => (
               <span key={id} className="border-2 border-ink bg-mint px-1 text-[10px] font-bold">✨ {COMBO_MAP[id].name}</span>
@@ -80,7 +86,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
       </main>
 
       {/* 하단 독 (18%) */}
-      <nav className="m-2 mt-0 grid shrink-0 grid-cols-5 gap-1">
+      <nav className={`m-2 mt-0 grid shrink-0 grid-cols-5 gap-1 ${playing ? 'pointer-events-none opacity-50' : ''}`}>
         {TABS.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)} className="pixel-btn flex flex-col items-center bg-panel py-1.5 text-[10px] font-bold">
             <span className="text-xl">{t.icon}</span>
@@ -125,7 +131,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
         </Sheet>
       )}
 
-      {lastResult && <MonthResultModal result={lastResult} onClose={dismissResult} />}
+      {lastResult && !playing && <MonthResultModal result={lastResult} onClose={dismissResult} />}
     </div>
   );
 }
