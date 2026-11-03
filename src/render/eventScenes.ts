@@ -1,10 +1,10 @@
 import { EVENT_MAP, PARENTING_EVENTS } from '../data/parentingData';
 import type { Gender } from '../types/game';
 
-/** 이벤트 장면 일러스트 (scripts/build-event-scenes.py → src/assets/events/{이벤트ID}_{SON|DAUGHTER}.jpg) */
+/** 이벤트 장면 일러스트 (scripts/build-event-scenes.py → src/assets/events/{이벤트ID}_{SON|DAUGHTER}.webp) */
 const IMG = Object.fromEntries(
-  Object.entries(import.meta.glob('../assets/events/*.jpg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>).map(
-    ([k, v]) => [k.split('/').pop()!.replace('.jpg', ''), v],
+  Object.entries(import.meta.glob('../assets/events/*.webp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>).map(
+    ([k, v]) => [k.split('/').pop()!.replace('.webp', ''), v],
   ),
 );
 

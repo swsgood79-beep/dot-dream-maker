@@ -568,6 +568,9 @@ for g in ('SON', 'DAUGHTER'):
         blk = float(np.median(tall[3:])) / sprites[f'{st}_{g}_stand'].shape[0]
         for key, b in boxes_a.items():
             sprites[f'{st}_{g}_{key}'] = defringe(cut(img_a, b, blk))
+            # 장면 화면용 고해상도 원본 (폰 화면에서 흐려지지 않게)
+            os.makedirs('src/assets/acts', exist_ok=True)
+            Image.fromarray(defringe(cut(img_a, b, 1.0))).save(f'src/assets/acts/{st}_{g}_{key}.webp', quality=90, method=6)
         print(f'  활동 포즈: {path} → 12동작')
 
 # 부모님 캐릭터는 게임에서 사용하지 않음 (v0.5.17) → 아틀라스에서 제외

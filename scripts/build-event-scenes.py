@@ -1,5 +1,5 @@
 """이벤트 장면 시트 (assets-src/events/event-e01~e21.png, 2×2 패널, 마지막 장은 1패널)
-→ src/assets/events/{이벤트ID}_{SON|DAUGHTER}.jpg
+→ src/assets/events/{이벤트ID}_{SON|DAUGHTER}.webp
 실행: python3 scripts/build-event-scenes.py SON   (딸 시트는 assets-src/events-daughter/ 에 두고 DAUGHTER)
 칸 순서는 scripts/make-event-scene-requests.py 의 장면 목록 순서 그대로."""
 import os, re, sys
@@ -9,7 +9,7 @@ from PIL import Image
 GENDER = sys.argv[1] if len(sys.argv) > 1 else 'SON'
 SRC = 'assets-src/events' if GENDER == 'SON' else 'assets-src/events-daughter'
 OUT = 'src/assets/events'
-W = 400
+W = 1000  # 이보다 크면 줄임 (원본 해상도 유지)
 
 ids = re.findall(r"^ \('([A-Z0-9_]+)','", open('scripts/make-event-scene-requests.py', encoding='utf-8').read(), re.M)
 assert len(ids) == 81, len(ids)
@@ -45,7 +45,8 @@ for n, chunk in enumerate(chunks, 1):
             print('  패널을 못 찾음:', n, gid)
             continue
         crop = Image.fromarray(img[box[1]:box[3], box[0]:box[2]].astype(np.uint8))
-        crop = crop.resize((W, round(crop.height * W / crop.width)), Image.LANCZOS)
-        crop.save(f'{OUT}/{gid}_{GENDER}.jpg', quality=85, optimize=True)
+        if crop.width > W:  # 원본 해상도 유지 (폰 화면은 2~3배 밀도라 줄이면 흐려짐)
+            crop = crop.resize((W, round(crop.height * W / crop.width)), Image.LANCZOS)
+        crop.save(f'{OUT}/{gid}_{GENDER}.webp', quality=86, method=6)
         done += 1
 print(f'{done} scenes → {OUT} ({GENDER})')

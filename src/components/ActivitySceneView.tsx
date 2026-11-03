@@ -9,10 +9,16 @@ import { ko } from './ui';
 
 type Stage = 'CHILD' | 'TEEN' | 'YOUTH';
 
-/** Gemini로 만든 장소 배경 (scripts/build-scenes.py → src/assets/scenes/{행동ID}.jpg) */
+/** Gemini로 만든 장소 배경 (scripts/build-scenes.py → src/assets/scenes/{행동ID}.webp) */
 const BG = Object.fromEntries(
-  Object.entries(import.meta.glob('../assets/scenes/*.jpg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>).map(
-    ([k, v]) => [k.split('/').pop()!.replace('.jpg', ''), v],
+  Object.entries(import.meta.glob('../assets/scenes/*.webp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>).map(
+    ([k, v]) => [k.split('/').pop()!.replace('.webp', ''), v],
+  ),
+);
+/** 활동 포즈 고해상도 원본 (scripts/build-sprites.py → src/assets/acts/{STAGE}_{G}_{동작}.webp) */
+const HI = Object.fromEntries(
+  Object.entries(import.meta.glob('../assets/acts/*.webp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>).map(
+    ([k, v]) => [k.split('/').pop()!.replace('.webp', ''), v],
   ),
 );
 export const sceneBg = (id: string): string | undefined => BG[id];
@@ -82,7 +88,7 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
           />
         )}
         <div className={great ? 'scene-hop' : fail ? 'scene-wobble' : ''} style={bg && light ? { filter: `drop-shadow(0 0 3px ${light.glow})` } : undefined}>
-          <Sprite name={frameName(stage, gender, pose)} scale={2.1} light={bg ? light : null} />
+          <Sprite name={frameName(stage, gender, pose)} scale={2.1} light={bg ? light : null} hiSrc={HI[frameName(stage, gender, pose)]} />
         </div>
         {(fail ? ['💦', '😵'] : sc.fx).concat(great ? ['✨', '⭐'] : []).map((e, i) => (
           <span

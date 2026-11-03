@@ -4,8 +4,10 @@ import { litSprite, type Light } from '../render/sceneLight';
 import atlas from '../render/characterAtlas.json';
 
 /** 스프라이트 시트의 한 프레임을 도트 그대로 표시 (light가 있으면 장면 조명 색을 입힘) */
-export function Sprite({ name, scale = 1, className = '', light }: { name: string; scale?: number; className?: string; light?: Light | null }) {
-  const [url, setUrl] = useState(() => spriteUrl(name));
+export function Sprite({ name, scale = 1, className = '', light, hiSrc }: { name: string; scale?: number; className?: string; light?: Light | null; hiSrc?: string }) {
+  const [atlasUrl, setUrl] = useState(() => spriteUrl(name));
+  // hiSrc: 같은 그림의 고해상도 원본이 있으면 그걸 같은 크기로 표시 (폰 고밀도 화면에서 선명)
+  const url = hiSrc || atlasUrl;
   const [lit, setLit] = useState('');
   useEffect(() => onSheetReady(() => setUrl(spriteUrl(name))), [name]);
   useEffect(() => {
@@ -22,7 +24,7 @@ export function Sprite({ name, scale = 1, className = '', light }: { name: strin
   const src = light ? lit || url : url;
   return (
     <span className={`inline-block shrink-0 ${className}`} style={{ width: f.w * scale, height: f.h * scale }}>
-      {src && <img src={src} alt="" style={{ width: f.w * scale, height: f.h * scale, imageRendering: 'pixelated' }} />}
+      {src && <img src={src} alt="" style={{ width: f.w * scale, height: f.h * scale, imageRendering: hiSrc ? 'auto' : 'pixelated' }} />}
     </span>
   );
 }

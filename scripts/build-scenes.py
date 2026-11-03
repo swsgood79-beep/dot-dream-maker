@@ -1,4 +1,4 @@
-"""연출 장소 배경 (assets-src/scene-s1~s7.png, 2×2 패널) → src/assets/scenes/{행동ID}.jpg
+"""연출 장소 배경 (assets-src/scene-s1~s7.png, 2×2 패널) → src/assets/scenes/{행동ID}.webp
 실행: python3 scripts/build-scenes.py
 패널은 흰 여백으로 나뉘어 있으므로 사분면마다 흰색이 아닌 영역의 테두리를 찾아 자르고, 외곽선 몇 픽셀을 안쪽으로 깎는다."""
 import os
@@ -15,7 +15,7 @@ SHEETS = {
     's7': ['RUNAWAY', 'CONTEST_SPORTS', 'CONTEST_ARTFEST', 'CONTEST_EXAM'],
 }
 OUT = 'src/assets/scenes'
-W = 360  # 게임 안 장면 폭 (세로는 비율대로)
+W = 1000  # 이보다 크면 줄임 (원본 해상도 유지)
 
 
 def span(v, frac):
@@ -44,6 +44,7 @@ for sid, ids in SHEETS.items():
         inset = 6
         box = (x0 + xs[0] + inset, y0 + ys[0] + inset, x0 + xs[1] - inset, y0 + ys[1] - inset)
         crop = Image.fromarray(img[box[1]:box[3], box[0]:box[2]].astype(np.uint8))
-        crop = crop.resize((W, round(crop.height * W / crop.width)), Image.LANCZOS)
-        crop.save(f'{OUT}/{gid}.jpg', quality=86, optimize=True)
+        if crop.width > W:  # 원본 해상도 유지 (폰 화면은 2~3배 밀도라 줄이면 흐려짐)
+            crop = crop.resize((W, round(crop.height * W / crop.width)), Image.LANCZOS)
+        crop.save(f'{OUT}/{gid}.webp', quality=88, method=6)
         print(f'  {sid} → {gid}: {box[2] - box[0]}×{box[3] - box[1]} → {crop.size}')
