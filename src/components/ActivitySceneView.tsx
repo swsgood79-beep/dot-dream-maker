@@ -8,6 +8,14 @@ import { ko } from './ui';
 
 type Stage = 'CHILD' | 'TEEN' | 'YOUTH';
 
+/** Gemini로 만든 장소 배경 (scripts/build-scenes.py → src/assets/scenes/{행동ID}.jpg) */
+const BG = Object.fromEntries(
+  Object.entries(import.meta.glob('../assets/scenes/*.jpg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>).map(
+    ([k, v]) => [k.split('/').pop()!.replace('.jpg', ''), v],
+  ),
+);
+export const sceneBg = (id: string): string | undefined => BG[id];
+
 /** 바깥 활동 중 방 대신 보여 주는 장소 장면 */
 export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; stage: Stage; gender: Gender }) {
   const sc = sceneFor(week);
@@ -22,17 +30,22 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
   const great = week.outcome === 'GREAT';
   const fail = week.outcome === 'FAIL';
   const pose = great ? 'cheer' : fail ? 'tired' : sc.pose;
+  const bg = sceneBg(week.outcome === 'RUNAWAY' ? 'RUNAWAY' : week.actionId);
 
   return (
     <div className="scene-in absolute inset-0 z-20 overflow-hidden" style={{ background: `linear-gradient(${sc.sky[0]}, ${sc.sky[1]})` }}>
-      {/* 바닥 */}
-      <div className="absolute inset-x-0 bottom-0 h-[30%] border-t-4 border-black/20" style={{ background: sc.floor }} />
+      {bg ? (
+        <img src={bg} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      ) : (
+        /* 바닥 */
+        <div className="absolute inset-x-0 bottom-0 h-[30%] border-t-4 border-black/20" style={{ background: sc.floor }} />
+      )}
       {/* 장소 이름 */}
       <div className={`absolute top-10 left-1/2 -translate-x-1/2 rounded border-2 border-ink px-2 py-0.5 text-[11px] font-bold whitespace-nowrap ${sc.dark ? 'bg-[#fff6e5]' : 'bg-white'}`}>
         📍 {sc.place}
       </div>
       {/* 칠판·화면 */}
-      {sc.board && (
+      {!bg && sc.board && (
         <div
           className="absolute top-[22%] left-1/2 -translate-x-1/2 rounded border-4 border-[#6b4a2a] px-3 py-2 text-center text-sm leading-snug font-bold whitespace-pre"
           style={{ background: sc.board.bg, color: sc.board.color }}
@@ -41,7 +54,7 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
         </div>
       )}
       {/* 소품 */}
-      {sc.props.map(([e, x, y, size], i) => (
+      {!bg && sc.props.map(([e, x, y, size], i) => (
         <span key={i} className="absolute leading-none drop-shadow-[2px_2px_0_rgba(0,0,0,.25)]" style={{ left: `${x}%`, bottom: `${y + 22}%`, fontSize: size * 1.3, transform: 'translateX(-50%)' }}>
           {e}
         </span>
