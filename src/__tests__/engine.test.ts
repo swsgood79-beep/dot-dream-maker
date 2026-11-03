@@ -551,3 +551,39 @@ describe('parent profile', () => {
     expect(ids).not.toContain('P_DOCTOR');
   });
 });
+
+import { writeDiary, readDiary, skipDiary, respondCaught } from '../engine/diary';
+
+describe('diary', () => {
+  it('a stressed child always writes a secret diary', () => {
+    const s = newGame_('하나', 'DAUGHTER', 'INT');
+    s.status.stress = 70;
+    writeDiary(s, [], undefined, () => 0.5);
+    expect(s.diaryNew?.secret?.kind).toBe('STRESS');
+  });
+
+  it('reading may be caught; skipping is respected', () => {
+    const s = newGame_('하나', 'DAUGHTER', 'INT', [], 0, 'SHY');
+    s.status.stress = 70;
+    writeDiary(s, [], undefined, () => 0.5);
+    const r = readDiary(s, () => 0)!; // 0 → 반드시 들킴
+    expect(r.caught).toBe(true);
+    const aff = s.status.affection;
+    respondCaught(s, 1);
+    expect(s.status.affection).toBeLessThan(aff);
+    writeDiary(s, [], undefined, () => 0.5);
+    skipDiary(s);
+    expect(s.diaryRespected).toBe(1);
+    expect(s.diaryNew).toBeNull();
+  });
+
+  it('a temperament secret in the diary becomes an observation clue', () => {
+    const s = newGame_('하나', 'DAUGHTER', 'INT', [], 0, 'ACTIVE');
+    s.status.affection = 60;
+    writeDiary(s, [], undefined, () => 0.1);
+    expect(s.diaryNew?.secret?.kind).toBe('TEMPER');
+    const r = readDiary(s, () => 0.99)!;
+    expect(r.clue).toBeTruthy();
+    expect(s.clues!.length).toBe(1);
+  });
+});

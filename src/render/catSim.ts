@@ -49,6 +49,13 @@ export class CatSim {
     return occupiedCells(this.actor.gx, this.actor.gy, this.path, 1);
   }
 
+  /** 누르면 멈춰서 기지개를 켜거나 그루밍 */
+  poke() {
+    this.path = [];
+    this.actor.pose = this.rng() < 0.5 ? 'stretch' : 'groom';
+    this.timer = 2200;
+  }
+
   /** avoid: 아이·부모님이 서 있거나 지나갈 칸 (고양이가 양보) */
   update(dt: number, n: number, placed: PlacedFurniture[], avoid: Set<string> = new Set()) {
     const a = this.actor;

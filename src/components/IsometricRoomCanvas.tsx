@@ -13,6 +13,7 @@ import type { MonthResult, WeekResult } from '../engine/simulation';
 import type { Pose } from '../render/character';
 import { useGameStore } from '../store/useGameStore';
 import { PixelButton, ko } from './ui';
+import { catTapLine, childTapLine } from '../data/roomTalk';
 
 /**
  * 카이로소프트풍 2D 아이소메트릭 도트 방 (HTML5 Canvas)
@@ -106,6 +107,10 @@ export function IsometricRoomCanvas({
   const [bubble, setBubble] = useState<string | null>(null);
   const haloRef = useRef<string | null>(null);
   const bubbleRef = useRef<HTMLDivElement>(null);
+  const [catBubble, setCatBubble] = useState<string | null>(null);
+  const catBubbleRef = useRef<HTMLDivElement>(null);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const petChild = useGameStore((s) => s.petChild);
   const doneRef = useRef(onPlaybackDone);
   doneRef.current = onPlaybackDone;
 
@@ -300,6 +305,11 @@ export function IsometricRoomCanvas({
           const sc = scaleRef.current;
           b.style.transform = `translate(${sx * sc}px, ${(sy - characterHeight(v.stage, game.gender) - 6) * sc}px) translate(-50%, -100%)`;
         }
+        const cb = catBubbleRef.current;
+        if (cb) {
+          const [cx, cy] = project(v.n, cat.actor.gx, cat.actor.gy);
+          cb.style.transform = `translate(${cx * scaleRef.current}px, ${(cy - 22) * scaleRef.current}px) translate(-50%, -100%)`;
+        }
       }
       raf = requestAnimationFrame(loop);
     };
@@ -320,6 +330,33 @@ export function IsometricRoomCanvas({
     if (placingId) {
       if (cell && placeFromInventory(placingId, cell.x, cell.y)) onPlaced();
       else pushToast('여기엔 놓을 수 없어요');
+      return;
+    }
+
+    // 아이·고양이를 누르면 반응 (가구 배치 중이 아닐 때)
+    const onActor = (gx: number, gy: number, height: number, width: number) => {
+      const [sx, sy] = project(n, gx, gy);
+      return lx >= sx - width / 2 && lx <= sx + width / 2 && ly >= sy - height && ly <= sy + 3;
+    };
+    const ch = simRef.current.actor;
+    if (!sel && onActor(ch.gx, ch.gy, characterHeight(growthStage(game.age), game.gender), 24)) {
+      const r = childTapLine(game);
+      const petted = petChild();
+      simRef.current.runScript([{ kind: 'wait', ms: 1600, pose: r.pose }]);
+      setBubble(petted ? `❤️ ${r.text}` : r.text);
+      sfx(r.pose === 'cheer' ? 'happy' : r.pose === 'tired' ? 'sad' : 'page');
+      if (petted) pushToast('🤚 쓰다듬어 줬어요! 친밀도 +1 (한 달에 한 번)');
+      if (tapTimer.current) clearTimeout(tapTimer.current);
+      tapTimer.current = setTimeout(() => setBubble(null), 1800);
+      return;
+    }
+    const catA = catRef.current.actor;
+    const catShown = !game.placedFurniture.some((p) => p.furnitureId === 'cat_cushion');
+    if (!sel && catShown && onActor(catA.gx, catA.gy, 18, 24)) {
+      catRef.current.poke();
+      setCatBubble(catTapLine());
+      sfx('stat');
+      setTimeout(() => setCatBubble(null), 1500);
       return;
     }
 
@@ -366,6 +403,9 @@ export function IsometricRoomCanvas({
           <div ref={bubbleRef} className="pointer-events-none absolute top-0 left-0" style={{ visibility: bubble ? 'visible' : 'hidden' }}>
             <div className="pop-in border-2 border-ink bg-white px-1 text-sm leading-tight shadow-[2px_2px_0_rgba(0,0,0,.4)]">{bubble}</div>
           </div>
+          <div ref={catBubbleRef} className="pointer-events-none absolute top-0 left-0" style={{ visibility: catBubble ? 'visible' : 'hidden' }}>
+            <div className="pop-in border-2 border-ink bg-[#fff6e5] px-1 text-xs leading-tight shadow-[2px_2px_0_rgba(0,0,0,.4)]">{catBubble}</div>
+          </div>
           {/* 플로팅 스탯 팝업 */}
           {popups.map((p) => (
             <span
@@ -411,7 +451,7 @@ export function IsometricRoomCanvas({
             <PixelButton className="!px-2 !py-1 !text-[10px]" color="bg-white" onClick={() => setSelected(null)}>✕</PixelButton>
           </div>
         ) : (
-          <span className="opacity-70">가구를 탭해서 선택 → 빈 바닥을 탭해서 이동</span>
+          <span className="opacity-70">아이·고양이를 눌러 보세요 · 가구를 탭해서 선택 → 빈 바닥을 탭해서 이동</span>
         )}
       </div>
     </div>

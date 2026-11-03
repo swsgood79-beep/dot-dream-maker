@@ -9,6 +9,7 @@ import { ContestModal, ContestReveal } from './ContestModal';
 import { EventModal } from './EventModal';
 import { CutsceneModal } from './CutsceneModal';
 import { ReportCardModal } from './ReportCardModal';
+import { DiaryModal } from './DiaryModal';
 import { WISH_MAP } from '../data/parentingData';
 import { sfx } from '../audio/sfx';
 import type { ContestId, MonthResult } from '../engine/simulation';
@@ -53,6 +54,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   // 선택 후 아이 반응을 보여 주는 동안 모달을 유지하기 위해 표시 중인 상황 ID를 따로 보관
   const [eventShown, setEventShown] = useState<string | null>(null);
   const [reportShown, setReportShown] = useState(false);
+  const [diaryOpen, setDiaryOpen] = useState(false);
   // 대회 미니게임: 판정 후 결과 연출이 끝날 때까지 유지
   const [contestShown, setContestShown] = useState<{ id: ContestId; age: number } | null>(null);
   const contestOpen = playing ? null : (contestShown ?? game.pendingContest ?? null);
@@ -161,6 +163,17 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
           playback={playing ? lastResult : null}
           onPlaybackDone={endPlayback}
         />
+        {game.diaryNew && !playing && !placingId && (
+          <button
+            onClick={() => {
+              sfx('page');
+              setDiaryOpen(true);
+            }}
+            className="pop-in absolute top-2 right-2 z-10 flex items-center gap-1 rounded border-2 border-ink bg-[#fff6e5] px-2 py-1 text-[11px] font-bold shadow-[2px_2px_0_rgba(0,0,0,.35)]"
+          >
+            <span className="animate-bounce text-base">📔</span> 일기장이 놓여 있다
+          </button>
+        )}
         {game.activeCombos.length > 0 && !playing && (
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {game.activeCombos.map((id) => (
@@ -253,6 +266,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
         />
       )}
       {lastResult && !playing && !showContest && !contestOpen && <MonthResultModal result={lastResult} onClose={dismissResult} />}
+      {diaryOpen && <DiaryModal onClose={() => setDiaryOpen(false)} />}
       {openCut && <CutsceneModal key={openCut} id={openCut} />}
       {openReport && <ReportCardModal onPick={() => setReportShown(true)} onClose={() => setReportShown(false)} />}
       {openEvent && <EventModal key={openEvent} id={openEvent} onPick={() => setEventShown(openEvent)} onClose={() => setEventShown(null)} />}

@@ -10,6 +10,7 @@ import { DEFAULT_PARENT, parentTalkBonus, type ParentProfile } from '../data/par
 import { canPlace, findFreeSpot } from '../engine/room';
 import { resolveParentingEvent, type EventOutcome } from '../engine/parenting';
 import { resolveReport } from '../engine/school';
+import { readDiary as readDiaryEngine, respondCaught as respondCaughtEngine, skipDiary as skipDiaryEngine } from '../engine/diary';
 import { CUTSCENE_MAP } from '../data/cutsceneData';
 import type { Effect, ParentStyle } from '../data/parentingData';
 import { addPhoto, finishContest, perfFactor, type ContestResult, createNewGame, refreshCombos, runMonth, type MonthResult, type SaveState } from '../engine/simulation';
@@ -50,6 +51,11 @@ interface GameStore {
   /** 육아 상황에 대한 부모의 선택 → 아이 반응 */
   resolveEvent: (choiceIndex: number) => EventOutcome | null;
   finishCutscene: () => void;
+  /** 방에서 아이 쓰다듬기 (한 달에 한 번 친밀도 +1) */
+  petChild: () => boolean;
+  readDiary: () => ReturnType<typeof readDiaryEngine>;
+  skipDiary: () => void;
+  respondCaught: (i: number) => { reply: string; delta: Effect } | null;
   /** 대회 판정: perf(0~1)=미니게임 성적, null=응원만 하기(무작위) */
   playContest: (perf: number | null) => ContestResult | null;
   reactReport: (style: ParentStyle) => { reply: string; delta: Effect } | null;
@@ -247,6 +253,32 @@ export const useGameStore = create<GameStore>()(
             if (!pc) return false;
             out = finishContest(g, pc.id, perf === null ? 0.85 + Math.random() * 0.3 : perfFactor(perf), [], pc.age);
             g.pendingContest = null;
+          });
+          return out;
+        },
+
+        petChild: () =>
+          mutate((g) => {
+            if (g.pettedThisMonth) return false;
+            g.pettedThisMonth = true;
+            g.status.affection = Math.min(100, g.status.affection + 1);
+          }),
+
+        readDiary: () => {
+          let out: ReturnType<typeof readDiaryEngine> = null;
+          mutate((g) => {
+            out = readDiaryEngine(g, Math.random);
+            if (!out) return false;
+          });
+          return out;
+        },
+
+        skipDiary: () => void mutate((g) => skipDiaryEngine(g)),
+
+        respondCaught: (i) => {
+          let out: { reply: string; delta: Effect } | null = null;
+          mutate((g) => {
+            out = respondCaughtEngine(g, i);
           });
           return out;
         },

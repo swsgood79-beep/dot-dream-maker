@@ -9,6 +9,7 @@ import { STYLE_META, type ParentStyle } from '../../data/parentingData';
 import { dominantStyle } from '../../engine/parenting';
 import { CLUES_TO_REVEAL, TEMPERAMENT_MAP } from '../../data/temperamentData';
 import { PhotoAlbum } from '../PhotoAlbum';
+import { DiaryPage } from '../DiaryModal';
 import { ABILITIES, ABILITY_META, describeParent } from '../../data/parentData';
 import { useState } from 'react';
 
@@ -45,6 +46,8 @@ function Radar({ values }: { values: number[] }) {
 export function InfoPanel() {
   const game = useGameStore((s) => s.game)!;
   const [allPhotos, setAllPhotos] = useState(false);
+  const [showDiary, setShowDiary] = useState(false);
+  const diaries = game.diaryRead ?? [];
   const temper = game.temperament ? TEMPERAMENT_MAP[game.temperament] : null;
   const photos = game.photos ?? [];
   const { stats, status, aptitudes } = game;
@@ -149,6 +152,23 @@ export function InfoPanel() {
       <div className="mb-3 rounded border-2 border-ink bg-[#e9dcc0]">
         <PhotoAlbum photos={[...photos].reverse()} gender={game.gender} limit={allPhotos ? undefined : 6} />
       </div>
+      {diaries.length > 0 && (
+        <>
+          <p className="mb-1 flex items-center justify-between font-bold">
+            <span>📔 몰래 읽은 일기 ({diaries.length}편)</span>
+            <button className="text-[10px] underline" onClick={() => setShowDiary((v) => !v)}>
+              {showDiary ? '접기' : '펼치기'}
+            </button>
+          </p>
+          {showDiary && (
+            <div className="mb-3 flex flex-col gap-2">
+              {[...diaries].reverse().map((d, i) => (
+                <DiaryPage key={i} e={d} name={game.childName} />
+              ))}
+            </div>
+          )}
+        </>
+      )}
       <p className="mb-1 font-bold">6대 분야 적성</p>
       <div className="grid grid-cols-1 gap-1">
         {APT_KEYS.map((k) => (

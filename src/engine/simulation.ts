@@ -14,6 +14,7 @@ import type {
 } from '../types/game';
 import { computeActiveCombos, computeAura, roomSizeForAge } from './room';
 import { rollParentingEvent, updateWish } from './parenting';
+import { writeDiary, type DiaryEntry } from './diary';
 import type { ParentStyle } from '../data/parentingData';
 import { TEMPERAMENT_MAP, type TemperamentId } from '../data/temperamentData';
 import { CUTSCENES, pickFriend } from '../data/cutsceneData';
@@ -72,6 +73,12 @@ export interface SaveState extends GameState {
   pendingReport?: boolean; // 이번 달 성적표 확인 대기
   pendingContest?: { id: ContestId; age: number } | null; // v0.11 미니게임 대기 중인 대회 (열린 해의 나이)
   parent?: ParentProfile; // v0.13 부모 직업·능력치
+  // ── v0.14 살아있는 방·일기장
+  pettedThisMonth?: boolean;
+  diaryNew?: DiaryEntry | null; // 책상 위에 놓인 새 일기
+  diaryRead?: DiaryEntry[]; // 몰래 읽은 일기
+  diaryCaught?: number; // 읽다 들킨 횟수
+  diaryRespected?: number; // 읽지 않고 둔 횟수
 }
 
 export interface Photo {
@@ -552,6 +559,8 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
   updateWish(s, weeks, rng, events);
   const contestResult = monthEvents(s, rng, events, !!opts.interactiveContest);
 
+  writeDiary(s, weeks, contestResult, rng);
+
   // STEP 5. 재화 정산 (부모 월급)
   const allowance = Math.round(monthlyAllowance(s.age) * parentAllowanceMul(s.parent?.points));
   s.gold += allowance;
@@ -560,6 +569,7 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
   // 턴 종료
   s.talkedThisMonth = false;
   s.talkKind = null;
+  s.pettedThisMonth = false;
   if (s.month === 12 && s.age === 19) {
     if (s.burstCount === 0 && !s.flags.includes('NO_BURST')) s.flags.push('NO_BURST');
     const ending = evaluateEnding(s, s.collectedFurniture);

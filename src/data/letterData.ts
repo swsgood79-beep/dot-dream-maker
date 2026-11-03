@@ -82,6 +82,9 @@ export function buildLetter(s: SaveState, ending: EndingDefinition): { greeting:
   if (style) body.push(STYLE_LINE[style]);
   if (s.burstCount >= 2) body.push('힘들어서 많이 아팠던 날들도 있었지만, 그때마다 곁에 있어 줘서 버틸 수 있었어요.');
 
+  if ((s.diaryCaught ?? 0) > 0) body.push('제 일기 몰래 읽으셨던 거... 그땐 정말 화났는데, 이제는 웃으면서 얘기할 수 있어요.');
+  else if ((s.diaryRespected ?? 0) >= 5 && !(s.diaryRead ?? []).length) body.push('책상 위 일기장, 한 번도 안 펼쳐 보신 거 알아요. 믿어 줘서 고마워요.');
+
   const pr = s.parent;
   if (pr) {
     const job = pr.job !== 'CUSTOM' ? PARENT_JOB_MAP[pr.job] : null;
