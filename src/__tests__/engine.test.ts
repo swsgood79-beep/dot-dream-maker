@@ -320,7 +320,7 @@ describe('korean labels & icons', () => {
 });
 
 describe('job costumes', () => {
-  it('son has costume sprites for endings 01~45', () => {
-    for (let i = 1; i <= 45; i++) expect(Object.keys(atlas)).toContain(`JOB_END_${String(i).padStart(2, '0')}_SON`);
+  it('son has costume sprites for all 50 endings', () => {
+    for (let i = 1; i <= 50; i++) expect(Object.keys(atlas)).toContain(`JOB_END_${String(i).padStart(2, '0')}_SON`);
   });
 });
