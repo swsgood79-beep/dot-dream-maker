@@ -276,3 +276,30 @@ describe('walking direction', () => {
     expect(flips).toBeLessThanOrEqual(1);
   });
 });
+
+describe('characters do not overlap', () => {
+  it('child, parent and cat rarely share a cell', () => {
+    const child = new CharacterSim();
+    const npc = new CharacterSim();
+    const cat = new CatSim(mulberry32(9));
+    child.actor.gx = 1.5; child.actor.gy = 1.5;
+    npc.actor.gx = 4.5; npc.actor.gy = 3.5;
+    const placed = [{ instanceId: 'd', furnitureId: 'oak_desk', gridX: 3, gridY: 0, rotation: 0 as const }];
+    const here = (a: { gx: number; gy: number }) => `${Math.floor(a.gx)},${Math.floor(a.gy)}`;
+    const rng = mulberry32(2);
+    let overlap = 0;
+    const N = 6000;
+    for (let i = 0; i < N; i++) {
+      if (!child.scripted && i % 300 === 0) {
+        const goal = { x: Math.floor(rng() * 6), y: Math.floor(rng() * 6) };
+        child.runScript([{ kind: 'goto', resolve: () => goal }, { kind: 'wait', ms: 800, pose: 'read' }]);
+      }
+      child.update(50, { n: 6, placed, avoid: new Set([here(npc.actor), here(cat.actor)]) }, rng);
+      npc.update(30, { n: 6, placed, avoid: new Set([...child.occupied(), here(cat.actor)]) }, rng);
+      cat.update(50, 6, placed, new Set([...child.occupied(), ...npc.occupied()]));
+      const cells = [here(child.actor), here(npc.actor), here(cat.actor)];
+      if (new Set(cells).size < 3) overlap++;
+    }
+    expect(overlap / N).toBeLessThan(0.03);
+  });
+});

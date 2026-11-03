@@ -59,7 +59,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
           <PixelButton color="bg-sky" onClick={() => setMode('book')}>
             👑 엔딩 도감 ({unlockedEndings.length}/{ENDINGS.length})
           </PixelButton>
-          <p className="mt-2 text-[10px] text-white/60">v0.5.14 · 뒷모습 색감 보정</p>
+          <p className="mt-2 text-[10px] text-white/60">v0.5.15 · 캐릭터끼리 안 겹치기</p>
         </div>
       )}
 

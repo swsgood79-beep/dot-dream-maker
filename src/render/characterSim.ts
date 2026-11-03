@@ -24,6 +24,34 @@ export type Step =
 export interface World {
   n: number;
   placed: PlacedFurniture[];
+  /** 다른 캐릭터(아이·부모님·고양이)가 서 있거나 지나갈 칸 → 겹치지 않게 피함 */
+  avoid?: Set<string>;
+}
+
+/** 지금 칸 + 앞으로 지나갈 몇 칸 + 도착 칸 (다른 캐릭터가 피할 칸) */
+export function occupiedCells(gx: number, gy: number, path: Cell[], ahead = 2): Set<string> {
+  const s = new Set<string>([`${Math.floor(gx)},${Math.floor(gy)}`]);
+  path.slice(0, ahead).forEach((c) => s.add(key(c)));
+  if (path.length) s.add(key(path[path.length - 1]));
+  return s;
+}
+
+/** 다른 캐릭터와 겹쳤을 때 비켜설 가장 가까운 빈 칸 */
+export function nearestFreeCell(n: number, placed: PlacedFurniture[], from: Cell, avoid: Set<string>): Cell | null {
+  const blocked = blockedSet(placed);
+  let best: Cell | null = null;
+  let bestD = Infinity;
+  for (let y = 0; y < n; y++)
+    for (let x = 0; x < n; x++) {
+      const k = `${x},${y}`;
+      if (blocked.has(k) || avoid.has(k)) continue;
+      const d = Math.abs(x - from.x) + Math.abs(y - from.y);
+      if (d < bestD) {
+        bestD = d;
+        best = { x, y };
+      }
+    }
+  return best;
 }
 
 const SPEED = 2.6; // 칸/초
@@ -65,8 +93,9 @@ function buildPath(prev: Map<string, string | null>, goal: string): Cell[] {
 }
 
 /** 갈 수 있는 칸 중 target에 가장 가까운 칸으로의 경로 */
-export function pathToward(n: number, placed: PlacedFurniture[], start: Cell, targets: Cell[]): Cell[] {
+export function pathToward(n: number, placed: PlacedFurniture[], start: Cell, targets: Cell[], avoid?: Set<string>): Cell[] {
   const blocked = blockedSet(placed);
+  avoid?.forEach((k) => blocked.add(k)); // 다른 캐릭터가 있는 칸도 피함
   blocked.delete(key(start));
   const prev = bfs(n, blocked, start);
   let best: string | null = null;
@@ -172,7 +201,16 @@ export class CharacterSim {
   }
 
   private walkTo(w: World, goals: Cell[]) {
-    this.path = pathToward(w.n, w.placed, this.cell(), goals);
+    this.path = pathToward(w.n, w.placed, this.cell(), goals, w.avoid);
+    // 다른 캐릭터를 피해서는 갈 수 없으면 일단 가구만 피해서
+    if (!this.path.length && w.avoid?.size) this.path = pathToward(w.n, w.placed, this.cell(), goals);
+  }
+
+  private waitMs = 0;
+
+  /** 다른 캐릭터가 피해야 할 칸 */
+  occupied(): Set<string> {
+    return occupiedCells(this.actor.gx, this.actor.gy, this.path);
   }
 
   /** dt: ms */
@@ -193,6 +231,20 @@ export class CharacterSim {
     }
 
     // 경로 이동
+    if (this.path.length && w.avoid?.has(key(this.path[0]))) {
+      // 바로 다음 칸에 다른 캐릭터가 있음 → 돌아가는 길을 찾고, 없으면 잠깐 기다림
+      this.waitMs -= dt;
+      if (this.waitMs <= 0) {
+        const goal = this.path[this.path.length - 1];
+        const detour = pathToward(w.n, w.placed, this.cell(), [goal], w.avoid);
+        if (detour.length && !w.avoid.has(key(detour[0]))) this.path = detour;
+        this.waitMs = 300;
+      }
+      if (w.avoid.has(key(this.path[0]))) {
+        a.pose = 'idle';
+        return;
+      }
+    }
     if (this.path.length) {
       const next = this.path[0];
       const tx = next.x + 0.5;
@@ -223,6 +275,14 @@ export class CharacterSim {
       return;
     }
 
+    // 자유 행동 중 다른 캐릭터와 같은 칸(또는 그 캐릭터가 갈 길)에 서 있으면 비켜섬
+    if (w.avoid?.has(key(this.cell()))) {
+      const spot = nearestFreeCell(w.n, w.placed, this.cell(), w.avoid);
+      if (spot) {
+        this.walkTo(w, [spot]);
+        if (this.path.length) return;
+      }
+    }
     // 자유 행동: 가끔 근처를 돌아다님
     a.pose = 'idle';
     this.idleTimer -= dt;

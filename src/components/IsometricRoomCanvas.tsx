@@ -288,9 +288,16 @@ export function IsometricRoomCanvas({
       last = t;
       const v = viewRef.current;
       if (v) {
-        simRef.current.update(dt, { n: v.n, placed: v.placed });
-        npcRef.current?.update(dt * 0.6, { n: v.n, placed: v.placed });
-        catRef.current.update(dt, v.n, v.placed);
+        // 서로 겹치지 않기: 아이 → 부모님 → 고양이 순으로 우선 (뒤가 앞에게 양보)
+        const child = simRef.current;
+        const npc = npcRef.current!;
+        const cat = catRef.current;
+        const catOn = !!v.cat;
+        const union = (...sets: Set<string>[]) => new Set(sets.flatMap((x) => [...x]));
+        const here = (gx: number, gy: number) => new Set([`${Math.floor(gx)},${Math.floor(gy)}`]);
+        child.update(dt, { n: v.n, placed: v.placed, avoid: union(here(npc.actor.gx, npc.actor.gy), catOn ? here(cat.actor.gx, cat.actor.gy) : new Set()) });
+        npc.update(dt * 0.6, { n: v.n, placed: v.placed, avoid: union(child.occupied(), catOn ? here(cat.actor.gx, cat.actor.gy) : new Set()) });
+        if (catOn) cat.update(dt, v.n, v.placed, union(child.occupied(), npc.occupied()));
         renderRoom(ctx, { ...v, time: t, actorHalo: haloRef.current });
         // 말풍선이 캐릭터 머리 위를 따라다니도록 DOM 위치 갱신
         const b = bubbleRef.current;

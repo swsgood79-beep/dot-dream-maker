@@ -1,7 +1,7 @@
 import type { Cell } from '../engine/room';
 import type { PlacedFurniture } from '../types/game';
 import type { Facing } from './character';
-import { blockedSet, lookDirection, pathToward } from './characterSim';
+import { blockedSet, lookDirection, nearestFreeCell, occupiedCells, pathToward } from './characterSim';
 
 /** 반려묘 행동: 걷기 → 멈춰서 앉기/그루밍/기지개/식빵/잠 → 다시 걷기 */
 export type CatPose = 'walk' | 'sit' | 'groom' | 'stretch' | 'loaf' | 'sleep';
@@ -44,7 +44,13 @@ export class CatSim {
     return RESTS[0];
   }
 
-  update(dt: number, n: number, placed: PlacedFurniture[]) {
+  /** 다른 캐릭터가 피해야 할 칸 */
+  occupied(): Set<string> {
+    return occupiedCells(this.actor.gx, this.actor.gy, this.path, 1);
+  }
+
+  /** avoid: 아이·부모님이 서 있거나 지나갈 칸 (고양이가 양보) */
+  update(dt: number, n: number, placed: PlacedFurniture[], avoid: Set<string> = new Set()) {
     const a = this.actor;
     const blocked = blockedSet(placed);
     const cx = Math.floor(a.gx);
@@ -67,6 +73,17 @@ export class CatSim {
         a.gy = best.y + 0.5;
       }
       this.path = [];
+    }
+
+    // 가는 길이나 지금 자리에 사람이 오면 다른 곳으로 비켜감
+    const here = `${Math.floor(a.gx)},${Math.floor(a.gy)}`;
+    if ((this.path.length && avoid.has(`${this.path[0].x},${this.path[0].y}`)) || (!this.path.length && avoid.has(here))) {
+      const spot = nearestFreeCell(n, placed, { x: Math.floor(a.gx), y: Math.floor(a.gy) }, avoid);
+      this.path = spot ? pathToward(n, placed, { x: Math.floor(a.gx), y: Math.floor(a.gy) }, [spot], avoid) : [];
+      if (!this.path.length) {
+        a.pose = 'sit';
+        return;
+      }
     }
 
     if (this.path.length) {
@@ -103,7 +120,7 @@ export class CatSim {
         x: Math.max(0, Math.min(n - 1, cx + Math.round((this.rng() - 0.5) * 6))),
         y: Math.max(0, Math.min(n - 1, cy + Math.round((this.rng() - 0.5) * 6))),
       };
-      this.path = pathToward(n, placed, { x: cx, y: cy }, [goal]);
+      this.path = pathToward(n, placed, { x: cx, y: cy }, [goal], avoid);
       if (!this.path.length) this.timer = 1500;
     }
   }
