@@ -15,7 +15,7 @@ CENTER = Alignment(horizontal='center', vertical='top', wrap_text=True)
 thin = Side(style='thin', color='C8B8A0')
 BOX = Border(left=thin, right=thin, top=thin, bottom=thin)
 INPUT_FILL = PatternFill('solid', fgColor='FFF59D')
-PRI_FILL = {1: 'FFD6D6', 2: 'FFE8C8', 3: 'FFF6D6', 4: 'E6F0DC', 5: 'DCEBF7', 6: 'EDE3F7'}
+PRI_FILL = {1: 'FFD6D6', 2: 'FFE8C8', 3: 'FFF6D6', 4: 'E6F0DC', 5: 'DCEBF7', 6: 'EDE3F7', 7: 'FDE2F0'}
 
 STYLE = ("Cute 16-bit pixel art in the style of cozy Japanese management sim games (Kairosoft-like). "
          "Clean dark outlines, soft warm palette, crisp pixels with no anti-aliasing blur, no dithering noise. "
@@ -183,6 +183,97 @@ for g, gk, gen_en in GEN:
                   + '\n'.join(f"Row {r+1}, left to right: " + '; '.join(f"({c+1}) {chunk[r*3+c][2]}" for c in range(3) if r*3+c < len(chunk)) + '.' for r in range(rows)) + '\n' + STYLE)
         sheets.append((6, f'J{s+1}-{g}', f'job-{g.lower()}-{s+1}.png', rows, 3, f'직업 의상 {gk} {s*9+1}~{s*9+len(chunk)}번', items, prompt, False))
 
+# ── 7순위: 스케줄 연출 (v0.19) ──────────────────────────────
+# 장소 배경: 세로 3:4 패널 4장씩. 칠판·화면 글씨와 아이 캐릭터는 게임이 위에 그리므로 비워 둔다.
+BG_STYLE = ("Cute 16-bit pixel art in the cozy style of Japanese management sim games (Kairosoft-like): crisp pixels, no blur, "
+            "clean dark outlines, soft warm palette.\n"
+            "LAYOUT: exactly 2 rows x 2 columns = 4 separate scene panels. Every panel is a PORTRAIT rectangle with a 3:4 ratio "
+            "(taller than wide) and a thin dark outline. Panels are separated by wide pure white (#FFFFFF) gaps, and the whole "
+            "image background around the panels is pure white. Image size 2048x2048.\n"
+            "VIEW: flat side view like a 2D stage set (NOT isometric), camera at a child's eye level. The bottom 30% of every panel "
+            "is floor or ground. Keep the CENTER-BOTTOM third of every panel EMPTY (just floor) because a game character will be "
+            "drawn standing there. Put props on the left and right sides and on the back wall.\n"
+            "NO people, NO characters, NO text, NO letters, NO numbers, NO logos, NO watermark, NO signature. "
+            "Blackboards, screens and signs must be BLANK (the game writes on them).")
+BGS = [
+ ('S1', '학원 ①', [
+   ('BG_EDU_01', '종합 보습학원 교실', '칠판 교실, 나무 책걸상, 벽시계', 'a cozy after-school academy classroom: a large BLANK dark-green blackboard on the back wall, two small wooden student desks with chairs on the left and right, a round wall clock, warm daylight from a window'),
+   ('BG_EDU_02', '영재 과학·의학 학원', '실험실, 현미경, 비커', 'a bright science lab classroom: white lab benches on both sides with a microscope, colorful beakers and test tubes, a DNA poster (no text), light-blue walls'),
+   ('BG_EDU_03', '논술반 교실', '토론 교실, 단상, 책장', 'a calm debate classroom: a small wooden podium on the right, bookshelves with old books on the left, a BLANK cream-colored whiteboard on the back wall, beige walls'),
+   ('BG_EDU_04', '코딩 부트캠프', '어두운 코딩실, 모니터', 'a dark coding lab at night: desks with glowing monitors on both sides, a large BLANK dark screen on the back wall, cables and a game controller, navy and purple tones with screen glow')]),
+ ('S2', '학원 ②', [
+   ('BG_EDU_05', '실용음악·댄스 아카데미', '보라 무대, 조명, 피아노', 'a music and dance practice stage: purple walls, a spotlight cone from the ceiling onto the empty center, a digital piano on the left, a microphone stand on the right, a wall mirror'),
+   ('BG_EDU_06', '미술·웹툰 화실', '화실, 이젤, 물감', 'a warm art studio: an easel with a blank canvas on the left, a table with paint jars and brushes on the right, framed paintings on the wall (abstract, no text), paint stains on the wooden floor'),
+   ('BG_EDU_07', '체육·무술 도장', '도장 매트, 도복 걸이', 'a martial arts dojo: green and red floor mats, a rack with hanging white uniforms on the left, a punching bag on the right, a wooden wall with a medal shelf'),
+   ('BG_EDU_08', '경제·리더십 스쿨', '회의실, 그래프 보드', 'a kids business school meeting room: a long table on the left, an easel with a rising bar chart (no numbers) on the right, a BLANK whiteboard on the back wall, light-blue walls')]),
+ ('S3', '아르바이트 ①', [
+   ('BG_JOB_01', '집 대청소', '거실, 빨래 바구니, 양동이', 'a cozy family living room during cleaning day: a laundry basket on the left, a bucket and mop on the right, a sofa against the back wall, sunlight through curtains, wooden floor'),
+   ('BG_JOB_02', '동네 베이커리', '빵 진열대, 오븐', 'a small neighborhood bakery: a glass display case full of bread and croissants on the left, a brick oven glowing orange on the right, shelves of baguettes on the back wall, warm cream tones'),
+   ('BG_JOB_03', '도서관', '높은 책장, 대출 데스크', 'a quiet library: tall bookshelves full of colorful books on both sides, a wooden return cart, a potted plant, soft light from tall windows'),
+   ('BG_JOB_04', '동물병원', '진료대, 케이지', 'a friendly animal clinic: a white exam table on the left, animal cages with a sleepy puppy and kitten on the right, a medicine shelf, mint-green walls')]),
+ ('S4', '아르바이트 ②', [
+   ('BG_JOB_05', '인디게임 회사', '어두운 사무실, 모니터', 'an indie game studio office at night: desks with monitors and game controllers on both sides, a BLANK big screen on the back wall, coffee cups, sticky notes (blank), purple and navy tones'),
+   ('BG_JOB_06', '저녁 거리 버스킹', '밤 거리, 가로등', 'a lively city street at dusk: shop fronts with warm lights on both sides, a street lamp, a small amplifier on the left, an open guitar case on the ground on the right, purple evening sky'),
+   ('BG_JOB_07', '법률사무소', '서류 캐비닛, 책상', 'a tidy law office: filing cabinets and stacks of folders on the left, a wooden desk with a balance-scale statue on the right, bookshelves of thick law books, beige walls'),
+   ('BG_JOB_08', '밤거리 골목', '어두운 골목, 상자', 'a dim back alley at night: brick walls, cardboard boxes and a delivery crate on the left, a construction barrier on the right, a single flickering street light, dark blue tones')]),
+ ('S5', '휴식·외출 ①', [
+   ('BG_REST_01', '방에서 휴식', '아늑한 방, 침대, TV', 'a cozy kid bedroom for relaxing: a bed with a pink blanket on the left, a small TV on a low cabinet on the right, cushions and snacks on the floor, warm afternoon light'),
+   ('BG_REST_02', '가족 캠핑', '밤 숲, 텐트, 모닥불', 'a family campsite at night: a tent on the left, a crackling campfire on the right, pine trees, a starry sky with a crescent moon, grassy ground'),
+   ('BG_OUT_SHOP', '백화점', '옷 진열대, 쇼윈도', 'a bright department store floor: clothing racks with colorful clothes on the left, a shoe display and a standing mirror on the right, shopping bags, pink and white tones'),
+   ('BG_OUT_BOOK', '동네 서점', '책 진열대, 카페 테이블', 'a warm neighborhood bookstore: wooden bookshelves on both sides, a table of new books, a small coffee cup on a reading table, hanging lamps')]),
+ ('S6', '휴식·외출 ②', [
+   ('BG_OUT_SCI', '과학관', '공룡 화석, 행성 모형', 'a science museum hall: a big dinosaur skeleton on the left, a large telescope on the right, planets hanging from the dark-blue starry ceiling, a small rocket model'),
+   ('BG_OUT_ARCADE', '오락실', '오락기, 네온', 'a retro arcade: rows of colorful arcade cabinets with BLANK glowing screens on both sides, neon lights on the dark purple walls, a claw machine'),
+   ('BG_OUT_RUINS', '고대 유적', '석상, 기둥, 사막', 'ancient ruins in the desert: a giant stone head statue on the left, broken stone pillars and a temple gate on the right, cactus, a bright sun in an orange sky, sandy ground'),
+   ('BG_OUT_ALLEY', '뒷골목', '낙서 벽, 쓰레기통', 'a gloomy back street: a brick wall with colorful graffiti shapes (no letters), trash bins on the right, puddles, a moon in the dark sky')]),
+ ('S7', '가출·대회', [
+   ('BG_RUNAWAY', '가출 (비 오는 정류장)', '비 오는 밤 버스 정류장', 'a lonely bus stop on a rainy night: a bus shelter with a bench on the right, rain falling, puddles reflecting a street light, dark blue-gray tones'),
+   ('BG_CONTEST_SPORTS', '체육대회 운동장', '운동장, 만국기, 관중석', 'a school sports field on sports day: a running track, colorful pennant flags strung overhead, bleachers with a crowd silhouette in the distance, blue sky'),
+   ('BG_CONTEST_ARTFEST', '예술제 강당 무대', '강당 무대, 붉은 커튼', 'a school auditorium stage: heavy red curtains on both sides, warm stage lights, a wooden stage floor, dark audience seats in the front'),
+   ('BG_CONTEST_EXAM', '기말시험 교실', '시험 교실, 책상 줄', 'a classroom during a final exam: rows of student desks with answer sheets (blank), a BLANK blackboard, a wall clock, quiet afternoon light')]),
+]
+BG_EN = {'S1': 'academies 1', 'S2': 'academies 2', 'S3': 'part-time jobs 1', 'S4': 'part-time jobs 2', 'S5': 'rest and outings 1', 'S6': 'rest and outings 2', 'S7': 'runaway night and school contests'}
+for sid, title, cells in BGS:
+    items = [(i // 2 + 1, i % 2 + 1, gid, kname, kdesc, '-', '필수' if sid != 'S7' else ('필수' if gid == 'BG_RUNAWAY' else '선택')) for i, (gid, kname, kdesc, _) in enumerate(cells)]
+    lines = [f"Panel {i + 1} ({'top' if i < 2 else 'bottom'}-{'left' if i % 2 == 0 else 'right'}): {c[3]}." for i, c in enumerate(cells)]
+    prompt = f"Create a pixel art BACKGROUND sheet for a cozy child-raising sim game: 4 location scenes ({BG_EN[sid]}).\n" + BG_STYLE + '\n' + '\n'.join(lines)
+    sheets.append((7, sid, f'scene-{sid.lower()}.png', 2, 2, f'연출 배경 · {title}', items, prompt, False))
+
+# 활동 포즈 12종: 나이대·성별마다 1장씩 (36장을 한 번에 그리면 칸이 틀어지기 쉬움)
+ACTS = [('bake', '빵 굽기', '빵이 담긴 쟁반 들기', 'holding a baking tray with fresh bread, wearing oven mitts'),
+        ('sweep', '청소', '빗자루로 쓸기', 'sweeping the floor with a broom'),
+        ('guitar', '버스킹', '통기타 치며 노래', 'standing and playing an acoustic guitar while singing'),
+        ('dance', '댄스', '한 팔 들고 춤추기', 'dancing with one arm raised, energetic pose'),
+        ('kick', '태권도', '발차기', 'doing a taekwondo high kick (keep the same outfit)'),
+        ('experiment', '실험', '시험관 들고 관찰', 'wearing safety goggles and holding up a test tube to look at it'),
+        ('pet', '동물 돌보기', '강아지 안기', 'hugging a small brown puppy'),
+        ('shopping', '쇼핑', '쇼핑백 양손에 들기', 'holding colorful shopping bags in both hands, happy'),
+        ('camp', '캠핑', '마시멜로 굽기', 'standing and holding a long stick with a toasted marshmallow'),
+        ('arcade', '오락', '조이스틱 잡고 게임', 'gripping an arcade joystick and pressing buttons, excited'),
+        ('explore', '탐험', '지도와 손전등', 'holding a treasure map and a flashlight, adventurous'),
+        ('raise', '발표', '손 번쩍 들기', 'raising one hand high to answer in class')]
+STAGE_EN = {'CHILD': ('child, age 8-11 (FIRST row of the reference)', '유년'),
+            'TEEN': ('teenager, age 12-16 (SECOND row of the reference)', '청소년'),
+            'YOUTH': ('young adult, age 17-19 (THIRD row of the reference)', '청년')}
+for g, gk, gen_en in GEN:
+    for st, _ in STAGES:
+        en, kst = STAGE_EN[st]
+        items = [(i // 4 + 1, i % 4 + 1, f'{st}_{g}_{k}', f'{kst} {gk} · {n}', d, '-', '필수' if i < 8 else '선택') for i, (k, n, d, _) in enumerate(ACTS)]
+        prompt = (f"Create a pixel art ACTION POSE sprite sheet of the {gen_en} character as a {en}: 3 rows x 4 columns = 12 full-body poses, "
+                  "each pose holding the described prop.\n" + CHAR_REF + '\n' + LOOK[g] + f"\nUse ONLY the {en.split(' (')[0]} outfit from the reference for all 12 poses.\n"
+                  + '\n'.join(f"Row {r + 1}, left to right: " + '; '.join(f"({c + 1}) {ACTS[r * 4 + c][3]}" for c in range(4)) + '.' for r in range(3)) + '\n' + STYLE)
+        sheets.append((7, f'A-{st}-{g}', f'act-{st.lower()}-{g.lower()}.png', 3, 4, f'활동 포즈 · {kst} {gk}', items, prompt, False))
+
+# 효과 아이콘 16종 (지금은 이모지로 대신하는 것)
+FX = [[('FX_NOTE', '음표', 'a single music note'), ('FX_NOTES', '겹음표', 'two beamed music notes'), ('FX_SWEAT', '땀방울', 'a blue sweat drop'), ('FX_SPARKLE', '반짝', 'a four-point sparkle')],
+      [('FX_PAINT', '물감', 'a colorful paint splash'), ('FX_STAR', '별', 'a yellow star'), ('FX_HEART', '하트', 'a small pink heart'), ('FX_COIN', '동전', 'a gold coin')],
+      [('FX_ZZZ', '잠', 'the letters Zzz as a sleep symbol (only exception to the no-text rule)'), ('FX_STEAM', '김', 'a white steam puff'), ('FX_BUBBLE', '거품', 'a soap bubble'), ('FX_BULB', '아이디어', 'a glowing light bulb')],
+      [('FX_BUG', '버그', 'a small green cartoon bug'), ('FX_GEM', '보석', 'a blue gem'), ('FX_IMPACT', '타격', 'an orange comic impact burst'), ('FX_RAIN', '빗방울', 'a falling rain drop')]]
+items = [(r + 1, c + 1, k, n, d, '-', '선택') for r, row in enumerate(FX) for c, (k, n, d) in enumerate(row)]
+prompt = ("Create a pixel art EFFECT ICON sheet: 4 rows x 4 columns, 16 small effect icons that float above a character, all the same size, bold, readable at 16 pixels.\n"
+          + '\n'.join(f"Row {r + 1}, left to right: " + '; '.join(f"({c + 1}) {it[2]}" for c, it in enumerate(row)) + '.' for r, row in enumerate(FX)) + '\n' + STYLE)
+sheets.append((7, 'X1', 'fx-icons.png', 4, 4, '연출 효과 아이콘', items, prompt, False))
+
 # 부모님 캐릭터는 사용하지 않기로 함 → N1 시트 제외, 반려묘 프롬프트의 엄마 설명 제거
 sheets = [x for x in sheets if x[1] != 'N1']
 
@@ -213,7 +304,8 @@ rows = [
  ('• 이미지 크기는 2752×1536(16:9) 정도면 충분', None),
  ('', None),
  ('우선순위', 'h'),
- ('1순위 가구(4장) → 2순위 행동 포즈(2장) → 3순위 뒷모습 걷기(2장) → 4순위 반려묘(1장) → 5순위 UI 아이콘(1장) → 6순위 직업 의상(선택, 12장)', None),
+ ('1순위 가구(4장) → 2순위 행동 포즈(2장) → 3순위 뒷모습 걷기(2장) → 4순위 반려묘(1장) → 5순위 UI 아이콘(1장) → 6순위 직업 의상(선택, 12장) → 7순위 스케줄 연출(배경 7장 · 활동 포즈 6장 · 효과 1장)', None),
+ ('7순위 연출 배경(S1~S7)은 흰 배경 규칙의 예외입니다: 패널 안은 장소 그림으로 꽉 채우고, 패널 바깥 여백만 흰색. 사람·글자는 넣지 않습니다(칠판·화면은 빈칸).', None),
  ('[필수/선택] 칸이 "선택"인 그림은 없어도 게임이 동작합니다 (예: 아빠, 잠자기 포즈, 직업 의상).', None),
  ('', None),
  ('색 표시: 노란 칸 = 직접 입력하는 칸 (완료 여부)', None),
