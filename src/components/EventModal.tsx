@@ -7,6 +7,7 @@ import { frameName } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
 import { EffectChips, PixelButton } from './ui';
+import { TEMPERAMENT_MAP } from '../data/temperamentData';
 
 /** 육아 상황: 부모가 대응을 고르면 아이의 반응과 변화를 보여 준다 (결과는 미리 공개하지 않음) */
 export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => void; onClose: () => void }) {
@@ -63,6 +64,19 @@ export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => 
               <p className="rounded border-2 border-ink bg-[#fff1c2] px-2 py-1 text-[11px]">
                 💭 새 부탁: “{result.out.wishText}”
               </p>
+            )}
+            {result.out.clue && (
+              <p className="w-full rounded border-2 border-dashed border-ink/50 bg-[#f3efe2] px-2 py-1 text-[11px]">
+                🔍 관찰 노트: {result.out.clue}
+              </p>
+            )}
+            {result.out.revealed && (
+              <div className="pop-in w-full rounded border-3 border-ink bg-gold p-2 text-center text-xs">
+                <p className="font-bold">
+                  ✨ 알았다! 우리 아이는 {TEMPERAMENT_MAP[result.out.revealed].emoji} {TEMPERAMENT_MAP[result.out.revealed].label} 아이예요
+                </p>
+                <p className="mt-0.5 text-[10px]">{TEMPERAMENT_MAP[result.out.revealed].tip}</p>
+              </div>
             )}
             <p className="text-[10px] opacity-60">
               {STYLE_META[result.style as keyof typeof STYLE_META].emoji} {STYLE_META[result.style as keyof typeof STYLE_META].label} 선택

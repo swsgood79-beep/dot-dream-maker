@@ -6,6 +6,7 @@ import { ENDINGS } from '../data/endingData';
 import { PixelButton, STAT_META } from './ui';
 import { Icon } from './Icon';
 import { EncyclopediaPanel } from './panels/EncyclopediaPanel';
+import { TEMPERAMENTS, type TemperamentId } from '../data/temperamentData';
 
 const WISHES: { stat: StatKey; text: string }[] = [
   { stat: 'INT', text: '똑똑한 아이로' },
@@ -22,6 +23,9 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
   const [name, setName] = useState('');
   const [gender, setGender] = useState<Gender>('DAUGHTER');
   const [bonus, setBonus] = useState<StatKey>('INT');
+  const [temper, setTemper] = useState<TemperamentId | 'RANDOM'>('RANDOM');
+  // 엔딩을 한 번이라도 본 뒤부터 기질을 직접 고를 수 있다
+  const canPickTemper = unlockedEndings.length > 0;
 
   if (mode === 'book') {
     return (
@@ -60,7 +64,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
           <PixelButton color="bg-sky" onClick={() => setMode('book')}>
             👑 엔딩 도감 ({unlockedEndings.length}/{ENDINGS.length})
           </PixelButton>
-          <p className="mt-2 text-[10px] text-white/60">v0.8.0 · 육아 일기</p>
+          <p className="mt-2 text-[10px] text-white/60">v0.9.0 · 기질과 기억</p>
         </div>
       )}
 
@@ -100,6 +104,33 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
               </button>
             ))}
           </div>
+          <p className="mb-2 font-bold">아이의 기질</p>
+          {canPickTemper ? (
+            <div className="mb-4 grid grid-cols-3 gap-1.5">
+              {(['RANDOM', ...TEMPERAMENTS.map((t) => t.id)] as const).map((id) => {
+                const t = id === 'RANDOM' ? null : TEMPERAMENTS.find((x) => x.id === id)!;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setTemper(id)}
+                    title={t?.desc ?? '키우면서 알아가요'}
+                    className={`pixel-btn px-1 py-1.5 text-[11px] ${temper === id ? 'bg-gold' : 'bg-white'}`}
+                  >
+                    {t ? `${t.emoji} ${t.label}` : '🎲 랜덤(비밀)'}
+                  </button>
+                );
+              })}
+              <p className="col-span-3 text-[10px] opacity-70">
+                {temper === 'RANDOM' ? '키우면서 관찰 노트로 알아가요' : TEMPERAMENTS.find((x) => x.id === temper)!.desc}
+              </p>
+            </div>
+          ) : (
+            <p className="mb-4 rounded border-2 border-dashed border-ink/40 p-2 text-[11px] opacity-80">
+              🎲 아이마다 타고난 기질이 있어요. 어떤 아이인지는 키우면서 알게 돼요.
+              <br />
+              <span className="opacity-70">(엔딩을 한 번 보면 다음부터 직접 고를 수 있어요)</span>
+            </p>
+          )}
           {carryIdea > 0 && <p className="mb-3 text-xs text-wood">💡 이전 회차에서 영감 포인트 {carryIdea} 인계!</p>}
           <div className="flex gap-2">
             <PixelButton color="bg-white" onClick={() => setMode('menu')}>취소</PixelButton>
@@ -108,7 +139,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
               color="bg-mint"
               disabled={!name.trim()}
               onClick={() => {
-                newGame(name.trim(), gender, bonus);
+                newGame(name.trim(), gender, bonus, canPickTemper ? temper : 'RANDOM');
                 onStart();
               }}
             >

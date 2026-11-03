@@ -5,6 +5,7 @@ import { FURNITURE_MAP, COMBO_MAP } from '../data/furnitureData';
 import { ACTION_MAP } from '../data/scheduleData';
 import { ENDING_MAP } from '../data/endingData';
 import type { EndingDefinition, Gender, StatKey } from '../types/game';
+import { TEMPERAMENTS, type TemperamentId } from '../data/temperamentData';
 import { canPlace, findFreeSpot } from '../engine/room';
 import { resolveParentingEvent, type EventOutcome } from '../engine/parenting';
 import { createNewGame, refreshCombos, runMonth, type MonthResult, type SaveState } from '../engine/simulation';
@@ -28,7 +29,8 @@ interface GameStore {
   ending: EndingDefinition | null;
   toasts: Toast[];
 
-  newGame: (name: string, gender: Gender, bonus: StatKey) => void;
+  /** temperament: 'RANDOM'이면 랜덤으로 정하고 숨김, 직접 고르면 처음부터 공개 */
+  newGame: (name: string, gender: Gender, bonus: StatKey, temperament?: TemperamentId | 'RANDOM') => void;
   setScheduleSlot: (slot: number, actionId: string) => void;
   runMonth: () => void;
   dismissResult: () => void;
@@ -108,9 +110,16 @@ export const useGameStore = create<GameStore>()(
         toasts: [],
         endPlayback: () => set({ playing: false }),
 
-        newGame: (name, gender, bonus) => {
+        newGame: (name, gender, bonus, temperament = 'RANDOM') => {
           const { unlockedEndings, carryIdea } = get();
-          set({ game: createNewGame(name, gender, bonus, [...unlockedEndings], carryIdea), lastResult: null, ending: null, carryIdea: 0 });
+          const random = temperament === 'RANDOM';
+          const t = random ? TEMPERAMENTS[Math.floor(Math.random() * TEMPERAMENTS.length)].id : temperament;
+          set({
+            game: createNewGame(name, gender, bonus, [...unlockedEndings], carryIdea, t, !random),
+            lastResult: null,
+            ending: null,
+            carryIdea: 0,
+          });
         },
 
         setScheduleSlot: (slot, actionId) =>

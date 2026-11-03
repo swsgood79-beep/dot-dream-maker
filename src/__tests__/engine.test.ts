@@ -401,7 +401,48 @@ describe('parenting events & wishes', () => {
       if (r.ending) break;
     }
     expect(events).toBeGreaterThan(15);
-    expect((s.wishesGranted ?? 0) + (s.wishesFailed ?? 0)).toBeGreaterThan(5);
+    // 부탁을 계속 무시하면 3번째 실패 뒤 마음을 닫는다
+    expect(s.wishesFailed ?? 0).toBeGreaterThanOrEqual(3);
+    expect(s.photos!.length).toBeGreaterThan(20);
     void applyEffect;
+  });
+});
+
+import { TEMPERAMENT_MAP } from '../data/temperamentData';
+import { buildLetter } from '../data/letterData';
+
+describe('temperament, memories, letter', () => {
+  it('temperament changes the result of the same choice and reveals after 3 clues', () => {
+    const shy = newGame_('하나', 'DAUGHTER', 'INT', [], 0, 'SHY');
+    const act = newGame_('하나', 'DAUGHTER', 'INT', [], 0, 'ACTIVE');
+    shy.pendingEvent = act.pendingEvent = 'C_FRIEND_FIGHT';
+    const a = resolveParentingEvent(shy, 1)!; // 엄격
+    const b = resolveParentingEvent(act, 1)!;
+    expect(a.delta.stress!).toBeGreaterThan(b.delta.stress!);
+    expect(a.clue).toBe(TEMPERAMENT_MAP.SHY.clue.STRICT);
+    for (const id of ['C_BROKEN_VASE', 'C_SPARROW']) {
+      shy.pendingEvent = id;
+      resolveParentingEvent(shy, 0);
+    }
+    expect(shy.temperRevealed).toBe(true);
+  });
+
+  it('a past choice unlocks its memory event years later', () => {
+    const s = newGame_('하나', 'DAUGHTER', 'INT');
+    s.pendingEvent = 'C_BROKEN_VASE';
+    resolveParentingEvent(s, 0);
+    s.age = 14;
+    expect(eligibleEvents(s).some((e) => e.id === 'M_VASE_WARM')).toBe(true);
+    expect(eligibleEvents(s).some((e) => e.id === 'M_VASE_STRICT')).toBe(false);
+  });
+
+  it('letter quotes memories and the ending', () => {
+    const s = newGame_('하나', 'DAUGHTER', 'INT', [], 0, 'STUBBORN', true);
+    s.memories = ['C_FEVER:WARM', 'T_BULLY:WARM'];
+    s.status.affection = 90;
+    const l = buildLetter(s, ENDING_MAP.END_01);
+    expect(l.body.join(' ')).toContain('잡아 준 손');
+    expect(l.body.join(' ')).toContain('천재 외과의사');
+    expect(l.closing).toContain('사랑');
   });
 });

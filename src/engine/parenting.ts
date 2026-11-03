@@ -11,7 +11,8 @@ import {
   type ParentStyle,
 } from '../data/parentingData';
 import type { StatKey } from '../types/game';
-import type { Rng, SaveState, WeekResult } from './simulation';
+import { addPhoto, type Rng, type SaveState, type WeekResult } from './simulation';
+import { CLUES_TO_REVEAL, TEMPERAMENT_MAP, type TemperamentId } from '../data/temperamentData';
 
 const STATS: StatKey[] = ['INT', 'STR', 'ART', 'CHA', 'MOR', 'TEC'];
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -98,6 +99,17 @@ export interface EventOutcome {
   reply: string;
   delta: Effect;
   wishText?: string;
+  /** 관찰 노트에 새로 적힌 단서 */
+  clue?: string;
+  /** 이번 선택으로 기질을 알아챘다 */
+  revealed?: TemperamentId;
+}
+
+function mergeFx(a: Effect, b?: Effect): Effect {
+  if (!b) return a;
+  const out: Effect = { ...a };
+  for (const [k, v] of Object.entries(b) as [EffectKey, number][]) out[k] = (out[k] ?? 0) + v;
+  return out;
 }
 
 /** 부모의 선택 적용 */
@@ -106,16 +118,33 @@ export function resolveParentingEvent(s: SaveState, choiceIndex: number): EventO
   if (!ev) return null;
   const c = ev.choices[choiceIndex];
   if (!c) return null;
-  const delta = applyEffect(s, c.fx);
+  const temper = s.temperament ? TEMPERAMENT_MAP[s.temperament] : null;
+  // 같은 대응이라도 아이 기질에 따라 결과가 달라진다
+  const delta = applyEffect(s, mergeFx(c.fx, temper?.styleFx[c.style]));
   bumpStyle(s, c.style);
   s.seenEvents = [...(s.seenEvents ?? []), ev.id];
+  s.memories = [...(s.memories ?? []), `${ev.id}:${c.style}`];
   s.pendingEvent = null;
+  const reply = fillName(c.reply, s.childName);
+  addPhoto(s, { emoji: ev.emoji, title: ev.title, caption: reply, pose: (delta.affection ?? 0) >= 0 ? 'cheer' : 'stand' });
+  if (c.reopenWishes) s.wishClosed = false;
   let wishText: string | undefined;
   if (c.wish && !s.wish && WISH_MAP[c.wish]) {
     startWish(s, c.wish);
     wishText = WISH_MAP[c.wish].text;
   }
-  return { reply: fillName(c.reply, s.childName), delta, wishText };
+  // 관찰 노트: 기질을 모를 때 아이 반응에서 단서를 얻는다
+  let clue: string | undefined;
+  let revealed: TemperamentId | undefined;
+  if (temper && !s.temperRevealed) {
+    clue = temper.clue[c.style];
+    s.clues = [...(s.clues ?? []), clue];
+    if (s.clues.length >= CLUES_TO_REVEAL) {
+      s.temperRevealed = true;
+      revealed = temper.id;
+    }
+  }
+  return { reply, delta, wishText, clue, revealed };
 }
 
 /* ───────── 아이의 부탁 ───────── */
@@ -148,6 +177,7 @@ export function updateWish(s: SaveState, weeks: WeekResult[], rng: Rng, events: 
       if (s.wish.progress >= wishGoal(def.id)) {
         applyEffect(s, def.reward);
         s.wishesGranted = (s.wishesGranted ?? 0) + 1;
+        addPhoto(s, { emoji: def.emoji, title: '들어준 부탁', caption: def.done, pose: 'cheer' });
         events.push(`💝 부탁을 들어줬다! "${def.done}"`);
         s.wish = null;
       } else {
@@ -156,12 +186,15 @@ export function updateWish(s: SaveState, weeks: WeekResult[], rng: Rng, events: 
           applyEffect(s, WISH_FAIL);
           s.wishesFailed = (s.wishesFailed ?? 0) + 1;
           events.push(`💔 부탁을 들어주지 못했다... 아이가 서운해한다 (친밀도 ${WISH_FAIL.affection})`);
+          // 여러 번 무시당하면 마음을 닫고 더는 부탁하지 않는다
+          if (s.wishesFailed >= 3 && s.wishesFailed > (s.wishesGranted ?? 0)) s.wishClosed = true;
           s.wish = null;
         }
       }
       return; // 부탁이 끝난 달에는 새 부탁을 하지 않는다
     }
   }
+  if (s.wishClosed) return;
   if (rng() >= WISH_CHANCE) return;
   const pool = WISHES.filter(
     (w) =>

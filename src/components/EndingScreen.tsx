@@ -12,8 +12,11 @@ import { Bar, PixelButton, STAT_META, TIER_COLOR } from './ui';
 import { Icon } from './Icon';
 import { STYLE_META } from '../data/parentingData';
 import { dominantStyle } from '../engine/parenting';
+import { PhotoAlbum } from './PhotoAlbum';
+import { buildLetter } from '../data/letterData';
+import { TEMPERAMENT_MAP } from '../data/temperamentData';
 
-type Step = 'intro' | 'album' | 'drum' | 'reveal';
+type Step = 'intro' | 'album' | 'photos' | 'drum' | 'reveal' | 'letter';
 
 const STAGE_TITLE = { CHILD: '유년기', TEEN: '청소년기', YOUTH: '청년기' };
 
@@ -127,13 +130,65 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
                 다음 장 ▶
               </PixelButton>
             ) : (
-              <PixelButton className="flex-1" color="bg-gold" onClick={() => setStep('drum')}>
-                🎉 진로 발표!
+              <PixelButton
+                className="flex-1"
+                color="bg-gold"
+                onClick={() => setStep((game.photos?.length ?? 0) > 1 ? 'photos' : 'drum')}
+              >
+                {(game.photos?.length ?? 0) > 1 ? '📷 가족 사진첩 ▶' : '🎉 진로 발표!'}
               </PixelButton>
             )}
           </div>
         </div>
       )}
+
+      {step === 'photos' && (
+        <div className="pop-in flex min-h-0 w-full flex-1 flex-col items-center gap-2">
+          <p className="text-xs text-gold">📷 가족 사진첩 · {game.photos!.length}장의 추억</p>
+          <div className="min-h-0 w-full flex-1 overflow-y-auto rounded border-3 border-ink bg-[#e9dcc0]">
+            <PhotoAlbum photos={game.photos!} gender={game.gender} />
+          </div>
+          <PixelButton className="w-full" color="bg-gold" onClick={() => setStep('drum')}>
+            🎉 진로 발표!
+          </PixelButton>
+        </div>
+      )}
+
+      {step === 'letter' &&
+        (() => {
+          const l = buildLetter(game, ending);
+          const t = game.temperament && game.temperRevealed ? TEMPERAMENT_MAP[game.temperament] : null;
+          return (
+            <div className="pop-in flex min-h-0 w-full flex-1 flex-col items-center gap-2">
+              <p className="text-xs text-gold">📮 {game.childName}의 편지</p>
+              <div className="min-h-0 w-full flex-1 overflow-y-auto rounded-sm border-3 border-ink bg-[repeating-linear-gradient(#fffaf0_0_22px,#e8dcc4_22px_23px)] p-3 text-left text-[13px] leading-[23px] text-ink">
+                <p className="font-bold">{l.greeting},</p>
+                <br />
+                {l.body.map((line, i) => (
+                  <p key={i}>{line}</p>
+                ))}
+                <br />
+                <p>{l.closing}</p>
+                <p className="text-right">— {game.childName} 올림</p>
+              </div>
+              {t && (
+                <p className="text-[10px] opacity-80">
+                  {t.emoji} {t.label} 아이 · 들어준 부탁 {game.wishesGranted ?? 0}번 · 함께한 사건 {game.seenEvents?.length ?? 0}가지
+                </p>
+              )}
+              <PixelButton
+                className="w-full"
+                color="bg-gold"
+                onClick={() => {
+                  finishEnding();
+                  onDone();
+                }}
+              >
+                타이틀로 (다음 회차 💡 30% 인계)
+              </PixelButton>
+            </div>
+          );
+        })()}
 
       {step === 'drum' && (
         <div className="flex flex-col items-center gap-3">
@@ -213,14 +268,8 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
           <p className="text-xs">
             👑 엔딩 도감 {unlockedEndings.length} / {ENDINGS.length} · 도감에 등록되었습니다
           </p>
-          <PixelButton
-            color="bg-gold"
-            onClick={() => {
-              finishEnding();
-              onDone();
-            }}
-          >
-            타이틀로 (다음 회차 💡 30% 인계)
+          <PixelButton color="bg-gold" onClick={() => setStep('letter')}>
+            📮 {game.childName}의 편지 읽기
           </PixelButton>
         </div>
       )}

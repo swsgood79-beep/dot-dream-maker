@@ -21,6 +21,8 @@ export interface EventChoice {
   reply: string;
   /** 이 선택으로 아이가 부탁을 하게 됨 */
   wish?: string;
+  /** 닫혔던 마음이 열려 다시 부탁을 하게 됨 */
+  reopenWishes?: boolean;
 }
 
 export interface ParentingEvent {
@@ -37,6 +39,9 @@ export interface ParentingEvent {
   weight?: number;
   choices: EventChoice[];
 }
+
+/** 예전 선택 기억: '이벤트ID:스타일' */
+const mem = (s: SaveState, ...tags: string[]) => tags.some((t) => (s.memories ?? []).includes(t));
 
 const partTimeCount = (s: SaveState) =>
   Object.entries(s.actionCounts).reduce((a, [k, v]) => a + (k.startsWith('JOB_') ? v : 0), 0);
@@ -376,6 +381,128 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
       { label: '반은 저금, 반은 쓰고 싶은 데 쓰기', style: 'WARM', fx: { gold: 200, MOR: 3, affection: 3 }, reply: '반은 저금통, 반은 떡볶이!' },
       { label: '전부 통장에 저금한다', style: 'STRICT', fx: { gold: 300, MOR: 5, affection: -2 }, reply: '...통장 숫자가 늘어나는 건 좋다.' },
       { label: '네 돈이니 네가 알아서', style: 'FREE', fx: { stress: -10, affection: 4, gold: 100 }, reply: '앗싸! 문구점 털러 가자!' },
+    ],
+  },
+
+  // ───────── 기억: 예전에 했던 선택이 몇 년 뒤 돌아온다
+  {
+    id: 'M_VASE_WARM', emoji: '🏺', title: '그때 그 꽃병', minAge: 13, maxAge: 17, weight: 3,
+    cond: (s) => mem(s, 'C_BROKEN_VASE:WARM'),
+    text: '{name이} 불쑥 말해요. "어릴 때 꽃병 깬 거 기억나? 그때 혼내지 않아서... 그 뒤로 솔직하게 말하는 게 하나도 안 무서웠어."',
+    choices: [
+      { label: '그때 솔직하게 말해 줘서 고마웠어', style: 'WARM', fx: { affection: 8, MOR: 5 }, reply: '앞으로도 뭐든 말할게.' },
+      { label: '앞으로도 지금처럼 정직하게 살자', style: 'STRICT', fx: { MOR: 8, affection: 4 }, reply: '응. 약속.' },
+      { label: '근데 그 꽃병 꽤 비쌌다?', style: 'FREE', fx: { affection: 5, CHA: 3 }, reply: '헉... 알바비로 갚을게! ㅋㅋ' },
+    ],
+  },
+  {
+    id: 'M_VASE_STRICT', emoji: '🏺', title: '늦은 고백', minAge: 13, maxAge: 17, weight: 3,
+    cond: (s) => mem(s, 'C_BROKEN_VASE:STRICT'),
+    text: '"어릴 때 꽃병 기억나? 사실 그거 내가 깼어. 그때 너무 무서워서 말을 못 했어..."',
+    choices: [
+      { label: '말해 줘서 고마워. 그때 무섭게 해서 미안해', style: 'WARM', fx: { affection: 10, stress: -5, MOR: 5 }, reply: '...나도 미안해. 이제 다 털어놔서 시원하다.' },
+      { label: '거짓말은 나쁜 거야', style: 'STRICT', fx: { MOR: 6, affection: -4 }, reply: '...그러니까 이제라도 말한 거잖아.' },
+      { label: '다 지난 일이지 뭐', style: 'FREE', fx: { affection: 4, stress: -3 }, reply: '헤헤, 그치?' },
+    ],
+  },
+  {
+    id: 'M_SPARROW', emoji: '🐦', title: '그 참새 기억나?', minAge: 14, maxAge: 19, weight: 3,
+    cond: (s) => mem(s, 'C_SPARROW:WARM', 'C_SPARROW:STRICT'),
+    text: '"어릴 때 그 참새 기억나? 그때부터 아픈 동물을 보면 그냥 못 지나치겠어."',
+    choices: [
+      { label: '넌 마음이 참 따뜻한 아이야', style: 'WARM', fx: { MOR: 8, affection: 5 }, reply: '엄마 아빠 닮아서 그래.' },
+      { label: '그 마음으로 수의사를 해 보는 건 어때?', style: 'STRICT', fx: { INT: 6, MOR: 4 }, reply: '수의사... 생각해 볼게!' },
+      { label: '네 마음 가는 대로 해', style: 'FREE', fx: { MOR: 6, CHA: 2 }, reply: '이번 주에 유기견 보호소 가 보려고.' },
+    ],
+  },
+  {
+    id: 'M_FEVER', emoji: '🌙', title: '잡아 준 손', minAge: 14, maxAge: 19, weight: 3,
+    cond: (s) => mem(s, 'C_FEVER:WARM'),
+    text: '"나 어릴 때 열났을 때 밤새 손 잡아 준 거... 아직도 기억나."',
+    choices: [
+      { label: '너도 아프면 언제든 말해', style: 'WARM', fx: { affection: 10, stress: -8 }, reply: '...응. 이제 내가 간호해 줄 차례야.' },
+      { label: '이제 건강 관리는 스스로 해야지', style: 'STRICT', fx: { STR: 6, MOR: 4 }, reply: '알지~ 요즘 운동도 해.' },
+      { label: '기억력 좋네~', style: 'FREE', fx: { affection: 5 }, reply: '그런 건 안 잊어버려.' },
+    ],
+  },
+  {
+    id: 'M_DREAM_FREE', emoji: '🌟', title: '좋아하는 걸 하라던 말', minAge: 17, maxAge: 19, weight: 3,
+    cond: (s) => mem(s, 'C_DREAM:FREE'),
+    text: '"어릴 때 커서 뭐 될지 물었을 때 \'좋아하는 거 하면 돼\'라고 했던 거 기억나? 그 말 덕분에 여기까지 왔어."',
+    choices: [
+      { label: '지금도 그 생각엔 변함없어', style: 'FREE', fx: { stress: -10, affection: 6 }, reply: '고마워. 끝까지 가 볼게.' },
+      { label: '대신 책임도 네 몫이야', style: 'STRICT', fx: { MOR: 6, INT: 4 }, reply: '응, 알아.' },
+      { label: '네가 자랑스러워', style: 'WARM', fx: { affection: 10 }, reply: '(울컥) ...갑자기 왜 그래.' },
+    ],
+  },
+  {
+    id: 'M_DREAM_STRICT', emoji: '🌟', title: '의사나 변호사', minAge: 17, maxAge: 19, weight: 3,
+    cond: (s) => mem(s, 'C_DREAM:STRICT'),
+    text: '"어릴 때 의사나 변호사 하라고 했던 거 기억나? ...솔직히 그거 꽤 부담이었어."',
+    choices: [
+      { label: '몰랐어. 미안해, 네 꿈을 말해 줄래?', style: 'WARM', fx: { affection: 10, stress: -10 }, reply: '...사실 하고 싶은 게 있어. 들어 줄래?' },
+      { label: '그래도 덕분에 열심히 했잖아', style: 'STRICT', fx: { INT: 8, affection: -4 }, reply: '...그건 그렇지만.' },
+      { label: '이제 네가 정하면 돼', style: 'FREE', fx: { stress: -8, affection: 4 }, reply: '진짜? 고마워.' },
+    ],
+  },
+  {
+    id: 'M_DREAM_WARM', emoji: '🚒', title: '첫 번째 꿈', minAge: 17, maxAge: 19, weight: 3,
+    cond: (s) => mem(s, 'C_DREAM:WARM'),
+    text: '"직업 체험관 갔던 거 기억나? 소방관 옷 입어 본 날, 처음으로 꿈이라는 걸 생각해 봤어."',
+    choices: [
+      { label: '그날 네 눈이 반짝였지', style: 'WARM', fx: { affection: 8, CHA: 3 }, reply: '사진 아직 있어? 보고 싶다!' },
+      { label: '그 꿈은 아직 있니?', style: 'STRICT', fx: { MOR: 5, INT: 3 }, reply: '음... 모양은 좀 바뀌었지만 아직 있어.' },
+      { label: '또 가 볼까?', style: 'FREE', fx: { stress: -8, affection: 4 }, reply: '이 나이에? ...좋아!' },
+    ],
+  },
+  {
+    id: 'M_SANTA', emoji: '🎅', title: '산타의 정체', minAge: 13, maxAge: 16, weight: 3, months: [12],
+    cond: (s) => mem(s, 'C_CHRISTMAS:WARM'),
+    text: '"사실... 산타가 엄마 아빠였던 거, 2학년 때부터 알았어. 근데 모른 척하는 게 더 재밌었어."',
+    choices: [
+      { label: '올해도 양말 걸어 둘래?', style: 'WARM', fx: { affection: 8, stress: -6 }, reply: '당연하지! 큰 양말로!' },
+      { label: '이제 네가 산타 해 볼래?', style: 'FREE', fx: { MOR: 6, CHA: 4 }, reply: '좋아! 동네 꼬마들한테 선물 돌릴래.' },
+      { label: '알면서 선물은 다 받았구나?', style: 'STRICT', fx: { affection: 4, CHA: 3 }, reply: '헤헤, 그건 그거고!' },
+    ],
+  },
+  {
+    id: 'M_PHONE', emoji: '📱', title: '폰 없던 시절', minAge: 15, maxAge: 18, weight: 3,
+    cond: (s) => mem(s, 'C_SMARTPHONE:STRICT'),
+    text: '"초등학생 때 폰 안 사 준 거 엄청 원망했는데... 지금 보니 우리 반에서 책은 내가 제일 많이 읽었더라."',
+    choices: [
+      { label: '그때 서운했지? 미안했어', style: 'WARM', fx: { affection: 8 }, reply: '이제 괜찮아. 고마운 게 더 커.' },
+      { label: '거봐, 다 이유가 있었다니까', style: 'STRICT', fx: { INT: 5, affection: 2 }, reply: '네네~ 엄마 아빠 말이 맞았어요~' },
+      { label: '그래도 원망은 했구나?', style: 'FREE', fx: { affection: 4, CHA: 3 }, reply: '조금? 아주 조금!' },
+    ],
+  },
+  {
+    id: 'M_BULLY', emoji: '🛡️', title: '네 편', minAge: 17, maxAge: 19, weight: 3,
+    cond: (s) => mem(s, 'T_BULLY:WARM', 'T_BULLY:STRICT'),
+    text: '"중학교 때 단톡방 일 기억나? 그때 엄마 아빠가 내 편이 되어 준 게... 제일 큰 힘이었어."',
+    choices: [
+      { label: '언제까지나 네 편이야', style: 'WARM', fx: { affection: 10, stress: -8 }, reply: '...알아. 그래서 버틸 수 있었어.' },
+      { label: '이제 네가 누군가의 편이 되어 줘', style: 'STRICT', fx: { MOR: 10 }, reply: '응. 요즘 전학 온 애 챙기고 있어.' },
+      { label: '잘 이겨 낸 건 너야', style: 'FREE', fx: { CHA: 6, affection: 5 }, reply: '헤헤. 그런가?' },
+    ],
+  },
+  {
+    id: 'M_SORRY', emoji: '🙏', title: '어른도 사과할 수 있구나', minAge: 17, maxAge: 19, weight: 3,
+    cond: (s) => mem(s, 'T_FIGHT_PARENT:WARM'),
+    text: '"그때 저녁 먹다 싸웠을 때, 엄마 아빠가 먼저 사과했잖아. 어른도 사과할 수 있구나, 그때 처음 알았어."',
+    choices: [
+      { label: '너도 그때 사과해 줬잖아', style: 'WARM', fx: { affection: 8, MOR: 4 }, reply: '닮았나 봐, 우리.' },
+      { label: '잘못하면 누구든 사과해야지', style: 'STRICT', fx: { MOR: 8 }, reply: '응. 나도 그렇게 살 거야.' },
+      { label: '그날 반찬이 뭐였더라?', style: 'FREE', fx: { affection: 5, stress: -5 }, reply: '김치찌개! 그건 확실해. ㅋㅋ' },
+    ],
+  },
+  {
+    id: 'M_WISH_CLOSED', emoji: '🔒', title: '닫힌 마음', minAge: 10, maxAge: 19, weight: 4,
+    cond: (s) => !!s.wishClosed,
+    text: '요즘 {name이} 아무것도 해 달라고 하지 않아요. 이유를 물으니 "어차피 말해도 안 들어줄 거잖아."',
+    choices: [
+      { label: '미안해. 이번엔 꼭 들어줄게', style: 'WARM', fx: { affection: 8, stress: -5 }, reply: '...진짜지? 그럼 하나만 말해 볼게.', reopenWishes: true },
+      { label: '부모도 사정이 있는 거야', style: 'STRICT', fx: { MOR: 4, affection: -5 }, reply: '...응. 알아. 그러니까 이제 안 말하는 거야.' },
+      { label: '스스로 해결하는 것도 좋지', style: 'FREE', fx: { MOR: 3, TEC: 3, affection: -2 }, reply: '...그래. 혼자 할게.' },
     ],
   },
 ];

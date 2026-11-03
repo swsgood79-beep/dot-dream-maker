@@ -15,6 +15,7 @@ import type {
 import { computeActiveCombos, computeAura, roomSizeForAge } from './room';
 import { rollParentingEvent, updateWish } from './parenting';
 import type { ParentStyle } from '../data/parentingData';
+import { TEMPERAMENT_MAP, type TemperamentId } from '../data/temperamentData';
 
 export const STAT_KEYS: StatKey[] = ['INT', 'STR', 'ART', 'CHA', 'MOR', 'TEC'];
 export const APT_KEYS: AptitudeKey[] = ['APT_MED', 'APT_LAW', 'APT_IT', 'APT_ENT', 'APT_BIZ', 'APT_ADV'];
@@ -48,6 +49,27 @@ export interface SaveState extends GameState {
   wishesFailed?: number;
   parenting?: Record<ParentStyle, number>; // 양육 스타일 선택 횟수
   talkKind?: 'talk' | 'praise' | 'scold' | null; // 이번 달 대화 종류
+  // ── v0.9 기질·기억·사진첩
+  temperament?: TemperamentId; // 타고난 기질 (없으면 기질 효과 없음: 옛 저장)
+  temperRevealed?: boolean; // 부모가 기질을 알아챘는지
+  clues?: string[]; // 관찰 노트
+  memories?: string[]; // '이벤트ID:스타일' — 몇 년 뒤 돌아오는 기억, 엔딩 편지 재료
+  photos?: Photo[]; // 가족 사진첩
+  wishClosed?: boolean; // 부탁을 자주 무시당해 마음을 닫음
+}
+
+export interface Photo {
+  age: number;
+  month: number;
+  emoji: string;
+  title: string;
+  caption: string;
+  pose: 'stand' | 'cheer' | 'tired';
+}
+
+export const MAX_PHOTOS = 80;
+export function addPhoto(s: SaveState, p: Omit<Photo, 'age' | 'month'>) {
+  s.photos = [...(s.photos ?? []), { age: s.age, month: s.month, ...p }].slice(-MAX_PHOTOS);
 }
 
 export type Rng = () => number;
@@ -119,6 +141,8 @@ export function createNewGame(
   bonusStat: StatKey,
   unlockedEndings: string[] = [],
   carryIdea = 0,
+  temperament?: TemperamentId,
+  temperRevealed = false,
 ): SaveState {
   const stats: CharacterStats = { INT: 20, STR: 20, ART: 20, CHA: 20, MOR: 40, TEC: 15 };
   stats[bonusStat] += 30;
@@ -155,6 +179,12 @@ export function createNewGame(
     wishesFailed: 0,
     parenting: { WARM: 0, STRICT: 0, FREE: 0 },
     talkKind: null,
+    temperament,
+    temperRevealed,
+    clues: [],
+    memories: [],
+    photos: [{ age: 8, month: 1, emoji: '🎒', title: '우리 집에 온 날', caption: `${childName}의 12년 이야기가 시작됐다.`, pose: 'stand' }],
+    wishClosed: false,
   };
 }
 
@@ -241,6 +271,7 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
   }
 
   const stress = s.status.stress;
+  const temper = s.temperament ? TEMPERAMENT_MAP[s.temperament] : null;
   // 이번 행동에 실제로 영향을 주는 콤보만 사용
   const usedCombos = s.activeCombos.filter((id) => {
     const c = COMBO_MAP[id];
@@ -290,7 +321,8 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
       else {
         const m = comboMult(k);
         maxMult = Math.max(maxMult, m);
-        gain = Math.round((base + auraV) * GAIN_SCALE * growthCurve(s.stats[k]) * m * conditionFactor);
+        const tm = temper?.statMul[k] ?? 1;
+        gain = Math.round((base + auraV) * GAIN_SCALE * growthCurve(s.stats[k]) * m * conditionFactor * tm);
       }
     }
     if (gain !== 0) {
@@ -307,7 +339,7 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
   let stressDelta = action.weeklyStressDelta;
   if (stressDelta > 0) {
     const mul = usedCombos.reduce((m, id) => m + (COMBO_MAP[id].stressMultiplier ?? 0), 1);
-    stressDelta = Math.max(0, Math.round(stressDelta * mul - aura.stressReduction));
+    stressDelta = Math.max(0, Math.round(stressDelta * mul * (temper?.stressMul ?? 1) - aura.stressReduction));
   } else if (stressDelta < 0) {
     const rb = usedCombos.reduce((m, id) => m + (COMBO_MAP[id].restBonus ?? 0), 0);
     stressDelta = Math.round(stressDelta * (1 + rb) - aura.stressReduction);
@@ -480,6 +512,13 @@ export function runMonth(input: SaveState, rng: Rng = Math.random): MonthResult 
   }
   updateWish(s, weeks, rng, events);
   const contestResult = monthEvents(s, rng, events);
+  if (contestResult?.win)
+    addPhoto(s, {
+      emoji: contestResult.id === 'SPORTS' ? '🏃' : contestResult.id === 'ARTFEST' ? '🎭' : '📝',
+      title: `${contestResult.title} ${contestResult.id === 'ARTFEST' ? '입상' : contestResult.id === 'EXAM' ? '1등' : '우승'}`,
+      caption: `${s.age}세, 자랑스러운 순간!`,
+      pose: 'cheer',
+    });
 
   // STEP 5. 재화 정산 (부모 월급)
   const allowance = monthlyAllowance(s.age);
@@ -501,6 +540,7 @@ export function runMonth(input: SaveState, rng: Rng = Math.random): MonthResult 
     s.month = 1;
     s.age += 1;
     s.history = [...(s.history ?? []), { age: s.age, stats: { ...s.stats }, fame: s.status.fame }];
+    addPhoto(s, { emoji: '🎂', title: `${s.age}번째 생일`, caption: `케이크 촛불 ${s.age}개를 한 번에 껐다!`, pose: 'cheer' });
     const newSize = roomSizeForAge(s.age);
     if (newSize > s.roomSize) {
       s.roomSize = newSize;

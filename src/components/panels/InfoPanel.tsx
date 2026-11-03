@@ -7,6 +7,9 @@ import { APT_META, Bar, STAT_META } from '../ui';
 import { Icon } from '../Icon';
 import { STYLE_META, type ParentStyle } from '../../data/parentingData';
 import { dominantStyle } from '../../engine/parenting';
+import { CLUES_TO_REVEAL, TEMPERAMENT_MAP } from '../../data/temperamentData';
+import { PhotoAlbum } from '../PhotoAlbum';
+import { useState } from 'react';
 
 const STAGE_LABEL = { CHILD: '유년기', TEEN: '청소년기', YOUTH: '청년 준비기' };
 
@@ -40,6 +43,9 @@ function Radar({ values }: { values: number[] }) {
 
 export function InfoPanel() {
   const game = useGameStore((s) => s.game)!;
+  const [allPhotos, setAllPhotos] = useState(false);
+  const temper = game.temperament ? TEMPERAMENT_MAP[game.temperament] : null;
+  const photos = game.photos ?? [];
   const { stats, status, aptitudes } = game;
   return (
     <div className="text-xs">
@@ -66,6 +72,35 @@ export function InfoPanel() {
         <span className="flex items-center gap-1"><Icon name="FAME" size={14} /> 명성 {status.fame}/500</span>
         <span>😈 비행 {status.delinquency}/100</span>
       </div>
+      {temper && (
+        <>
+          <p className="mb-1 font-bold">아이의 기질</p>
+          <div className="mb-3 rounded border-2 border-ink bg-white p-2">
+            {game.temperRevealed ? (
+              <>
+                <p className="text-sm font-bold">
+                  {temper.emoji} {temper.label} 아이 <span className="text-[10px] font-normal opacity-70">— {temper.desc}</span>
+                </p>
+                <p className="mt-1 text-[10px] text-wood">💡 {temper.tip}</p>
+              </>
+            ) : (
+              <p className="font-bold">
+                ❓ 아직 어떤 아이인지 잘 모르겠어요{' '}
+                <span className="text-[10px] font-normal opacity-70">
+                  (관찰 단서 {game.clues?.length ?? 0}/{CLUES_TO_REVEAL})
+                </span>
+              </p>
+            )}
+            {(game.clues?.length ?? 0) > 0 && (
+              <ul className="mt-1 list-none text-[10px] opacity-80">
+                {[...new Set(game.clues)].map((c) => (
+                  <li key={c}>🔍 {c}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
       <p className="mb-1 font-bold">양육 일기</p>
       {(() => {
         const dom = dominantStyle(game);
@@ -94,6 +129,17 @@ export function InfoPanel() {
           </div>
         );
       })()}
+      <p className="mb-1 flex items-center justify-between font-bold">
+        <span>📷 가족 사진첩 ({photos.length}장)</span>
+        {photos.length > 6 && (
+          <button className="text-[10px] underline" onClick={() => setAllPhotos((v) => !v)}>
+            {allPhotos ? '최근 6장만' : '전체 보기'}
+          </button>
+        )}
+      </p>
+      <div className="mb-3 rounded border-2 border-ink bg-[#e9dcc0]">
+        <PhotoAlbum photos={[...photos].reverse()} gender={game.gender} limit={allPhotos ? undefined : 6} />
+      </div>
       <p className="mb-1 font-bold">6대 분야 적성</p>
       <div className="grid grid-cols-1 gap-1">
         {APT_KEYS.map((k) => (
