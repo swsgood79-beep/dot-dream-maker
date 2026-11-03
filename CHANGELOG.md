@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.5.1 — 손그림 가구 스프라이트 (F1 공부·과학 12종)
+
+### 추가
+- `assets-src/furniture-f1.png`: Gemini로 만든 공부·과학 가구 시트
+- `assets-src/furniture-sheets.json`: 시트별 설정 (칸 → 가구 ID, 원본 정면 방향 L/R, 크기 배율, 도트 크기)
+  - 중복으로 그려진 칸(지구본·망원경 2개)과 빈칸은 자동으로 건너뜀
+- `scripts/build-furniture.py` → `src/assets/furniture.png` + `src/render/furnitureAtlas.json`
+  - 흰 배경 제거, 도트 크기(약 4px) 복원, 1칸 가구 크기 상한, Gemini 워터마크(반투명 반짝이) 제거
+- `src/render/furnitureSprites.ts`: 스프라이트가 있는 가구는 코드 모델 대신 손그림으로 그림
+  - 회전(정면 왼쪽/오른쪽)에 맞춰 자동 좌우 반전, 바닥 그림자
+- 상점·창고·콤보 가이드 아이콘도 손그림 가구로 표시
+- `npm run sprites`: 캐릭터·가구 아틀라스 한 번에 다시 만들기
+
+### 적용된 가구
+원목 책상, 백과사전 책장, LED 스탠드, 지구본, 해부학 모형, 현미경 테이블, 의학서적 책장,
+천체 망원경, 행성 모형, 무중력 캡슐 침대, 화이트보드, 경제 신문 거치대
+
 ## v0.5.0 — 연간 대회 연출 · 성인식 · 효과음 (기획서 9장 Step 3)
 
 ### 연간 대회

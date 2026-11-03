@@ -1,7 +1,7 @@
 {
   "name": "dot-dream-maker",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.5.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "build:single": "tsc -b && vite build --mode single",
-    "build:artifact": "npm run build:single && node scripts/make-artifact.mjs"
+    "build:artifact": "npm run build:single && node scripts/make-artifact.mjs",
+    "sprites": "python3 scripts/build-sprites.py && python3 scripts/build-furniture.py"
   },
   "dependencies": {
     "galmuri": "^2.40.3",

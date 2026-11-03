@@ -4,7 +4,11 @@ import type { GrowthStage, PlacedFurniture } from '../types/game';
 import { drawPixels, FURNITURE_BODY, FURNITURE_PIXELS, shade } from './sprites';
 const WOOD_D = '#8a5a35';
 import { CAT_FRAME, drawCharacter, drawFrame, PARENT_FRAME, RES, walkFrame } from './spriteCharacter';
-import { drawFurnitureModel, modelHeight } from './furnitureModels';
+import { drawFurnitureModel, modelHeight as codeModelHeight } from './furnitureModels';
+import { drawFurnitureSprite, furnitureSpriteHeight } from './furnitureSprites';
+
+/** 가구 높이: 손그림 스프라이트가 있으면 그 높이, 없으면 코드 모델 높이 */
+const modelHeight = (id: string) => furnitureSpriteHeight(id) ?? codeModelHeight(id);
 import type { Actor } from './characterSim';
 import type { Gender } from '../types/game';
 
@@ -118,6 +122,7 @@ function drawFurniture(
   p: Pick<PlacedFurniture, 'furnitureId' | 'gridX' | 'gridY' | 'rotation'>,
   opts: { selected?: boolean; alpha?: number; tint?: string; time?: number } = {},
 ) {
+  if (drawFurnitureSprite(ctx, (x, y) => project(n, x, y), p, opts.alpha ?? 1)) return;
   ctx.save();
   ctx.globalAlpha = opts.alpha ?? 1;
   const drawn = drawFurnitureModel(ctx, (x, y) => project(n, x, y), p, opts.time ?? 0);

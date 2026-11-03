@@ -1,0 +1,86 @@
+{
+ "anatomy_model": {
+  "x": 0,
+  "y": 0,
+  "w": 30,
+  "h": 82,
+  "face": "L"
+ },
+ "encyclopedia_shelf": {
+  "x": 31,
+  "y": 0,
+  "w": 51,
+  "h": 84,
+  "face": "R"
+ },
+ "globe": {
+  "x": 83,
+  "y": 0,
+  "w": 28,
+  "h": 38,
+  "face": "L"
+ },
+ "led_lamp": {
+  "x": 112,
+  "y": 0,
+  "w": 27,
+  "h": 74,
+  "face": "L"
+ },
+ "medical_shelf": {
+  "x": 140,
+  "y": 0,
+  "w": 54,
+  "h": 88,
+  "face": "R"
+ },
+ "microscope_table": {
+  "x": 195,
+  "y": 0,
+  "w": 67,
+  "h": 60,
+  "face": "L"
+ },
+ "newspaper_stand": {
+  "x": 263,
+  "y": 0,
+  "w": 58,
+  "h": 78,
+  "face": "L"
+ },
+ "oak_desk": {
+  "x": 322,
+  "y": 0,
+  "w": 66,
+  "h": 55,
+  "face": "R"
+ },
+ "planet_model": {
+  "x": 389,
+  "y": 0,
+  "w": 49,
+  "h": 40,
+  "face": "L"
+ },
+ "telescope": {
+  "x": 439,
+  "y": 0,
+  "w": 50,
+  "h": 60,
+  "face": "L"
+ },
+ "whiteboard": {
+  "x": 490,
+  "y": 0,
+  "w": 66,
+  "h": 80,
+  "face": "L"
+ },
+ "zero_g_bed": {
+  "x": 557,
+  "y": 0,
+  "w": 67,
+  "h": 52,
+  "face": "L"
+ }
+}

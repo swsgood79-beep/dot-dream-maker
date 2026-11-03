@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { furnitureSpriteUrl, hasFurnitureSprite, onFurnitureSheetReady } from '../render/furnitureSprites';
 import type { AptitudeKey, StatKey } from '../types/game';
 import { pixelIconUrl } from '../render/sprites';
 import { sfx } from '../audio/sfx';
@@ -78,16 +79,24 @@ export function Sheet({ title, onClose, children }: { title: string; onClose: ()
   );
 }
 
-/** 코드 픽셀 스프라이트로 그린 가구 아이콘 */
+/** 가구 아이콘: 손그림 스프라이트가 있으면 그 그림, 없으면 코드 도트 아이콘 */
 export function PixelIcon({ id, size = 28, className = '' }: { id: string; size?: number; className?: string }) {
+  const [url, setUrl] = useState(() => furnitureSpriteUrl(id));
+  useEffect(() => (hasFurnitureSprite(id) ? onFurnitureSheetReady(() => setUrl(furnitureSpriteUrl(id))) : undefined), [id]);
+  const src = hasFurnitureSprite(id) ? url : pixelIconUrl(id);
   return (
-    <img
-      src={pixelIconUrl(id)}
-      width={size}
-      height={size}
-      alt=""
-      className={`inline-block shrink-0 ${className}`}
-      style={{ imageRendering: 'pixelated', width: size, height: size }}
-    />
+    <span className={`inline-flex shrink-0 items-end justify-center ${className}`} style={{ width: size, height: size }}>
+      {src && (
+        <img
+          src={src}
+          alt=""
+          style={
+            hasFurnitureSprite(id)
+              ? { imageRendering: 'pixelated', maxWidth: size, maxHeight: size, width: 'auto', height: 'auto' }
+              : { imageRendering: 'pixelated', width: size, height: size }
+          }
+        />
+      )}
+    </span>
   );
 }
