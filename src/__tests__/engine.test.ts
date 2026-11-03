@@ -327,3 +327,81 @@ describe('job costumes', () => {
     for (let i = 1; i <= 50; i++) expect(Object.keys(atlas)).toContain(`JOB_END_${String(i).padStart(2, '0')}_DAUGHTER`);
   });
 });
+
+import { PARENTING_EVENTS, WISHES, WISH_MAP, fillName } from '../data/parentingData';
+import { applyEffect, eligibleEvents, resolveParentingEvent, updateWish } from '../engine/parenting';
+import { FURNITURE_MAP as FMAP } from '../data/furnitureData';
+import { ACTION_MAP as AMAP } from '../data/scheduleData';
+import { createNewGame as newGame_, runMonth as runMonth_ } from '../engine/simulation';
+
+describe('parenting events & wishes', () => {
+  it('event data is consistent', () => {
+    const ids = new Set<string>();
+    for (const e of PARENTING_EVENTS) {
+      expect(ids.has(e.id)).toBe(false);
+      ids.add(e.id);
+      expect(e.choices.length).toBe(3);
+      expect(e.minAge).toBeLessThanOrEqual(e.maxAge);
+      for (const c of e.choices) if (c.wish) expect(WISH_MAP[c.wish]).toBeTruthy();
+    }
+    for (const w of WISHES) {
+      if (w.kind === 'action') expect(AMAP[w.target!]).toBeTruthy();
+      if (w.kind === 'furniture') expect(FMAP[w.target!]).toBeTruthy();
+    }
+  });
+
+  it('fills Korean particles by batchim', () => {
+    expect(fillName('{name이} 왔다', '민준')).toBe('민준이 왔다');
+    expect(fillName('{name이} 왔다', '하나')).toBe('하나가 왔다');
+    expect(fillName('{name은} {name을}', '지우')).toBe('지우는 지우를');
+  });
+
+  it('resolving an event applies effects and records parenting style', () => {
+    const s = newGame_('하나', 'DAUGHTER', 'INT');
+    s.pendingEvent = 'C_FRIEND_FIGHT';
+    const out = resolveParentingEvent(s, 0)!;
+    expect(out.delta.affection).toBe(5);
+    expect(s.parenting!.WARM).toBe(1);
+    expect(s.pendingEvent).toBeNull();
+    expect(eligibleEvents(s).some((e) => e.id === 'C_FRIEND_FIGHT')).toBe(false);
+  });
+
+  it('wish succeeds when the wished action is scheduled', () => {
+    const s = newGame_('하나', 'DAUGHTER', 'INT');
+    s.wish = { id: 'W_TAEKWONDO', left: 3, progress: 0 };
+    s.monthlySchedule = ['EDU_07', 'EDU_07', 'REST_01', 'REST_01'];
+    const before = s.status.affection;
+    const r = runMonth_(s, () => 0.99);
+    expect(r.state.wish ?? null).toBeNull();
+    expect(r.state.wishesGranted).toBe(1);
+    expect(r.state.status.affection).toBeGreaterThan(before);
+  });
+
+  it('wish fails after 3 months if ignored', () => {
+    const s = newGame_('하나', 'DAUGHTER', 'INT');
+    s.wish = { id: 'W_TAEKWONDO', left: 3, progress: 0 };
+    const ev: string[] = [];
+    for (let i = 0; i < 3; i++) updateWish(s, [], () => 0.99, ev);
+    expect(s.wish).toBeNull();
+    expect(s.wishesFailed).toBe(1);
+  });
+
+  it('a full 12-year game produces events and wishes', () => {
+    let s = newGame_('하나', 'SON', 'INT');
+    let seed = 7;
+    const rng = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    let events = 0;
+    for (let m = 0; m < 144; m++) {
+      if (s.pendingEvent) {
+        resolveParentingEvent(s, m % 3);
+        events++;
+      }
+      const r = runMonth_(s, rng);
+      s = r.state;
+      if (r.ending) break;
+    }
+    expect(events).toBeGreaterThan(15);
+    expect((s.wishesGranted ?? 0) + (s.wishesFailed ?? 0)).toBeGreaterThan(5);
+    void applyEffect;
+  });
+});

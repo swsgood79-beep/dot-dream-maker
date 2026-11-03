@@ -3,6 +3,7 @@ import { ACTION_TYPE_LABEL, SCHEDULE_ACTIONS } from '../../data/scheduleData';
 import { useGameStore } from '../../store/useGameStore';
 import type { ScheduleAction } from '../../types/game';
 import { PixelButton, StatChip } from '../ui';
+import { WISH_MAP } from '../../data/parentingData';
 
 function actionSummary(a: ScheduleAction) {
   return (
@@ -22,6 +23,7 @@ export function SchedulePanel({ onRun }: { onRun: () => void }) {
   const game = useGameStore((s) => s.game)!;
   const setSlot = useGameStore((s) => s.setScheduleSlot);
   const [slot, setSlot_] = useState(0);
+  const wishTarget = game.wish && WISH_MAP[game.wish.id]?.kind === 'action' ? WISH_MAP[game.wish.id].target : null;
   const types: ScheduleAction['type'][] = ['EDUCATION', 'PART_TIME', 'REST', 'OUTING'];
 
   const monthCost = game.monthlySchedule.reduce((sum, id) => {
@@ -75,7 +77,11 @@ export function SchedulePanel({ onRun }: { onRun: () => void }) {
                 >
                   <span className="text-lg">{a.emoji}</span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-bold">{a.name}{locked && ` 🔒${a.minAge}세`}</span>
+                    <span className="block font-bold">
+                      {a.name}
+                      {locked && ` 🔒${a.minAge}세`}
+                      {wishTarget === a.id && <span className="ml-1 rounded border border-ink bg-[#fff1c2] px-1 text-[9px]">💭 아이가 원해요</span>}
+                    </span>
                     <span className="block text-[10px] opacity-70">{actionSummary(a)}</span>
                   </span>
                   <span className="shrink-0 text-right text-[10px]">

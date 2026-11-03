@@ -127,3 +127,40 @@ export function StatChip({ k, v, size = 14 }: { k: string; v: number; size?: num
     </span>
   );
 }
+
+const EFFECT_LABEL: Record<string, string> = {
+  stress: '스트레스',
+  affection: '친밀도',
+  delinquency: '비행',
+  fame: '명성',
+  gold: '골드',
+  idea: '영감',
+};
+const EFFECT_ICON: Record<string, string | null> = { stress: 'STRESS', fame: 'FAME', gold: 'GOLD', idea: 'IDEA', affection: null, delinquency: null };
+const EFFECT_EMOJI: Record<string, string> = { affection: '❤️', delinquency: '😈' };
+/** 수치가 오르면 나쁜 항목 */
+const BAD_UP = new Set(['stress', 'delinquency']);
+
+/** 선택지·부탁 결과 변화량 칩 */
+export function EffectChips({ fx }: { fx: Partial<Record<string, number>> }) {
+  const entries = Object.entries(fx).filter(([, v]) => v);
+  if (!entries.length) return <span className="text-[10px] opacity-60">변화 없음</span>;
+  return (
+    <span className="flex flex-wrap justify-center gap-1">
+      {entries.map(([k, v]) => {
+        const good = BAD_UP.has(k) ? v! < 0 : v! > 0;
+        const isStat = k in STAT_META;
+        return (
+          <span
+            key={k}
+            className={`inline-flex items-center gap-0.5 rounded border-2 border-ink px-1 py-0.5 text-[11px] font-bold ${good ? 'bg-[#d9f7e8]' : 'bg-[#ffe0dc]'}`}
+          >
+            {isStat || EFFECT_ICON[k] ? <Icon name={isStat ? k : EFFECT_ICON[k]!} size={14} /> : <span>{EFFECT_EMOJI[k]}</span>}
+            {isStat ? STAT_META[k as StatKey].label : EFFECT_LABEL[k]} {v! > 0 ? '+' : ''}
+            {v}
+          </span>
+        );
+      })}
+    </span>
+  );
+}

@@ -10,6 +10,8 @@ import type { CharacterStats, StatKey } from '../types/game';
 import { Sprite } from './Sprite';
 import { Bar, PixelButton, STAT_META, TIER_COLOR } from './ui';
 import { Icon } from './Icon';
+import { STYLE_META } from '../data/parentingData';
+import { dominantStyle } from '../engine/parenting';
 
 type Step = 'intro' | 'album' | 'drum' | 'reveal';
 
@@ -190,6 +192,15 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
               <p className="mt-2 min-h-10 text-sm">
                 <Typewriter text={`${game.childName}은(는) ${ending.epilogueText}`} />
               </p>
+              {(() => {
+                const dom = dominantStyle(game);
+                if (!dom) return null;
+                return (
+                  <p className="mt-2 border-t-2 border-dashed border-ink/30 pt-1 text-[11px] opacity-80">
+                    {STYLE_META[dom].emoji} {STYLE_META[dom].label} 부모님 곁에서 자랐어요 · 들어준 부탁 {game.wishesGranted ?? 0}번
+                  </p>
+                );
+              })()}
             </div>
           </div>
           <div className="grid w-full grid-cols-3 gap-1 text-[10px] text-ink">

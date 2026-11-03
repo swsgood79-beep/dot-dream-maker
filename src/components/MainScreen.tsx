@@ -6,6 +6,8 @@ import { useGameStore } from '../store/useGameStore';
 import { MonthResultModal } from './MonthResultModal';
 import { Icon } from './Icon';
 import { ContestModal } from './ContestModal';
+import { EventModal } from './EventModal';
+import { WISH_MAP } from '../data/parentingData';
 import { sfx } from '../audio/sfx';
 import type { MonthResult } from '../engine/simulation';
 import { IsometricRoomCanvas } from './IsometricRoomCanvas';
@@ -44,6 +46,9 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const [contestSeen, setContestSeen] = useState<MonthResult | null>(null);
   const muted = useGameStore((s) => s.muted);
   const toggleMute = useGameStore((s) => s.toggleMute);
+  // 선택 후 아이 반응을 보여 주는 동안 모달을 유지하기 위해 표시 중인 상황 ID를 따로 보관
+  const [eventShown, setEventShown] = useState<string | null>(null);
+  const openEvent = !lastResult && !playing ? (eventShown ?? game.pendingEvent ?? null) : null;
   const showContest = !!(lastResult && !playing && lastResult.contest && contestSeen !== lastResult);
 
   const stress = game.status.stress;
@@ -109,6 +114,25 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
             </span>
           ))}
         </button>
+        {game.wish && WISH_MAP[game.wish.id] && (() => {
+          const w = WISH_MAP[game.wish.id];
+          const goal = w.kind === 'action' ? (w.count ?? 1) : 1;
+          return (
+            <button
+              onClick={() => setTab(w.kind === 'talk' ? 'talk' : w.kind === 'furniture' ? 'room' : 'schedule')}
+              className="mt-1 flex w-full items-center gap-1.5 rounded border-2 border-ink bg-[#fff6e5] px-2 py-0.5 text-left text-[10px]"
+              title="아이의 부탁"
+            >
+              <span className="text-sm">{w.emoji}</span>
+              <span className="min-w-0 flex-1 truncate">
+                <b>“{w.text}”</b> <span className="opacity-70">· {w.hint}</span>
+              </span>
+              <span className="shrink-0 font-bold tabular-nums text-accent">
+                {game.wish.progress}/{goal} · {game.wish.left}달
+              </span>
+            </button>
+          );
+        })()}
       </header>
 
       {/* 중앙 룸 (64%) */}
@@ -191,6 +215,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
         <ContestModal contest={lastResult.contest} gender={game.gender} age={lastResult.contest.age} onClose={() => setContestSeen(lastResult)} />
       )}
       {lastResult && !playing && !showContest && <MonthResultModal result={lastResult} onClose={dismissResult} />}
+      {openEvent && <EventModal key={openEvent} id={openEvent} onPick={() => setEventShown(openEvent)} onClose={() => setEventShown(null)} />}
     </div>
   );
 }

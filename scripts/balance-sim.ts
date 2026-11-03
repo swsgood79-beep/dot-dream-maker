@@ -9,6 +9,7 @@ import { SCHEDULE_ACTIONS } from '../src/data/scheduleData';
 import { ENDINGS, ENDING_MAP, meetsEnding } from '../src/data/endingData';
 import { FURNITURE } from '../src/data/furnitureData';
 import { canPlace, footprint } from '../src/engine/room';
+import { resolveParentingEvent } from '../src/engine/parenting';
 import {
   APT_KEYS,
   STAT_KEYS,
@@ -202,6 +203,7 @@ function targetedRun(def: EndingDefinition, seed: number) {
     const reserve = def.minGold && s.age >= 16 ? def.minGold : 400;
     for (const cid of p.combos) for (const fid of COMBO_MAP[cid].requiredFurnitureIds) buy(s, fid, reserve);
     if (def.minFurnitureCollectionRate && s.age >= 15) for (const fid of Object.keys(FURNITURE_MAP)) if (!s.collectedFurniture.includes(fid)) buyCollect(s, fid, reserve);
+    if (s.pendingEvent) resolveParentingEvent(s, Math.floor(rng() * 3));
     // 매달 대화 (무료)
     s.status.affection = Math.min(100, s.status.affection + 3);
     s.status.stress = Math.max(0, s.status.stress - 3);
@@ -238,6 +240,7 @@ function casualRun(seed: number) {
   const fav = SCHEDULE_ACTIONS.filter((a) => a.type === 'EDUCATION').sort(() => rng() - 0.5).slice(0, 2).map((a) => a.id);
   const favCombo = COMBOS[Math.floor(rng() * COMBOS.length)].id;
   while (!ending) {
+    if (s.pendingEvent) resolveParentingEvent(s, Math.floor(rng() * 3));
     if (rng() < 0.15) for (const fid of COMBO_MAP[favCombo].requiredFurnitureIds) buy(s, fid, 300);
     if (rng() < 0.5) {
       s.status.affection = Math.min(100, s.status.affection + 3);

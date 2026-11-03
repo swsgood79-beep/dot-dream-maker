@@ -6,6 +6,7 @@ import { ACTION_MAP } from '../data/scheduleData';
 import { ENDING_MAP } from '../data/endingData';
 import type { EndingDefinition, Gender, StatKey } from '../types/game';
 import { canPlace, findFreeSpot } from '../engine/room';
+import { resolveParentingEvent, type EventOutcome } from '../engine/parenting';
 import { createNewGame, refreshCombos, runMonth, type MonthResult, type SaveState } from '../engine/simulation';
 
 export type Toast = { id: number; text: string };
@@ -36,7 +37,9 @@ interface GameStore {
   moveFurniture: (instanceId: string, x: number, y: number) => boolean;
   rotateFurniture: (instanceId: string) => void;
   storeFurniture: (instanceId: string) => void;
-  talk: () => void;
+  talk: (kind?: 'talk' | 'praise' | 'scold') => void;
+  /** 육아 상황에 대한 부모의 선택 → 아이 반응 */
+  resolveEvent: (choiceIndex: number) => EventOutcome | null;
   giveAllowance: () => void;
   finishEnding: () => void;
   quitToTitle: () => void;
@@ -184,17 +187,44 @@ export const useGameStore = create<GameStore>()(
             g.placedFurniture.splice(idx, 1);
           }),
 
-        talk: () =>
+        talk: (kind = 'talk') =>
           void mutate((g) => {
             if (g.talkedThisMonth) {
-              get().pushToast('이번 달은 이미 대화했어요');
+              get().pushToast('이번 달은 이미 이야기를 나눴어요');
               return false;
             }
             g.talkedThisMonth = true;
-            g.status.affection = Math.min(100, g.status.affection + 3);
-            g.status.stress = Math.max(0, g.status.stress - 3);
-            get().pushToast('💬 즐거운 대화! 친밀도 +3, 스트레스 -3');
+            g.talkKind = kind;
+            const st = g.status;
+            g.parenting = { WARM: 0, STRICT: 0, FREE: 0, ...g.parenting };
+            if (kind === 'talk') {
+              st.affection = Math.min(100, st.affection + 3);
+              st.stress = Math.max(0, st.stress - 3);
+              get().pushToast('💬 즐거운 대화! 친밀도 +3, 스트레스 -3');
+            } else if (kind === 'praise') {
+              st.affection = Math.min(100, st.affection + 4);
+              st.stress = Math.max(0, st.stress - 2);
+              g.stats.CHA = Math.min(999, g.stats.CHA + 3);
+              g.parenting.WARM += 1;
+              get().pushToast('👏 칭찬해 줬어요! 친밀도 +4, 매력 +3');
+            } else {
+              st.delinquency = Math.max(0, st.delinquency - 6);
+              st.affection = Math.max(0, st.affection - 3);
+              st.stress = Math.min(100, st.stress + 2);
+              g.stats.MOR = Math.min(999, g.stats.MOR + 4);
+              g.parenting.STRICT += 1;
+              get().pushToast('☝️ 차분히 타일렀어요. 비행 -6, 도덕 +4, 친밀도 -3');
+            }
           }),
+
+        resolveEvent: (choiceIndex) => {
+          let out: EventOutcome | null = null;
+          mutate((g) => {
+            out = resolveParentingEvent(g, choiceIndex);
+            if (!out) return false;
+          });
+          return out;
+        },
 
         giveAllowance: () =>
           void mutate((g) => {

@@ -13,6 +13,8 @@ import type {
   StatKey,
 } from '../types/game';
 import { computeActiveCombos, computeAura, roomSizeForAge } from './room';
+import { rollParentingEvent, updateWish } from './parenting';
+import type { ParentStyle } from '../data/parentingData';
 
 export const STAT_KEYS: StatKey[] = ['INT', 'STR', 'ART', 'CHA', 'MOR', 'TEC'];
 export const APT_KEYS: AptitudeKey[] = ['APT_MED', 'APT_LAW', 'APT_IT', 'APT_ENT', 'APT_BIZ', 'APT_ADV'];
@@ -37,6 +39,15 @@ export interface SaveState extends GameState {
   burstCount: number; // 스트레스 폭발 횟수
   instanceSeq: number;
   history?: GrowthSnapshot[]; // 매년 1월 스탯 기록 (성장 앨범)
+  // ── v0.8 육아 시스템 (옛 저장에는 없을 수 있음)
+  pendingEvent?: string | null; // 부모가 대응해야 할 육아 상황
+  seenEvents?: string[];
+  wish?: { id: string; left: number; progress: number } | null; // 진행 중인 아이의 부탁
+  lastWish?: string;
+  wishesGranted?: number;
+  wishesFailed?: number;
+  parenting?: Record<ParentStyle, number>; // 양육 스타일 선택 횟수
+  talkKind?: 'talk' | 'praise' | 'scold' | null; // 이번 달 대화 종류
 }
 
 export type Rng = () => number;
@@ -137,6 +148,13 @@ export function createNewGame(
     burstCount: 0,
     instanceSeq: 1,
     history: [{ age: 8, stats: { ...stats }, fame: 0 }],
+    pendingEvent: null,
+    seenEvents: [],
+    wish: null,
+    wishesGranted: 0,
+    wishesFailed: 0,
+    parenting: { WARM: 0, STRICT: 0, FREE: 0 },
+    talkKind: null,
   };
 }
 
@@ -460,6 +478,7 @@ export function runMonth(input: SaveState, rng: Rng = Math.random): MonthResult 
   if (s.status.stress < 50 && s.status.affection >= 50 && s.status.delinquency > 0) {
     s.status.delinquency = clamp(s.status.delinquency - 1, 0, 100);
   }
+  updateWish(s, weeks, rng, events);
   const contestResult = monthEvents(s, rng, events);
 
   // STEP 5. 재화 정산 (부모 월급)
@@ -469,6 +488,7 @@ export function runMonth(input: SaveState, rng: Rng = Math.random): MonthResult 
 
   // 턴 종료
   s.talkedThisMonth = false;
+  s.talkKind = null;
   if (s.month === 12 && s.age === 19) {
     if (s.burstCount === 0 && !s.flags.includes('NO_BURST')) s.flags.push('NO_BURST');
     const ending = evaluateEnding(s, s.collectedFurniture);
@@ -487,5 +507,6 @@ export function runMonth(input: SaveState, rng: Rng = Math.random): MonthResult 
       events.push(`🏠 ${s.age}세! 방이 ${newSize}x${newSize}로 넓어졌다`);
     } else events.push(`🎂 ${s.age}세가 되었다!`);
   }
+  rollParentingEvent(s, rng);
   return { state: s, weeks, events, contest: contestResult };
 }

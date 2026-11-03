@@ -5,6 +5,8 @@ import { APT_KEYS, STAT_KEYS } from '../../engine/simulation';
 import { growthStage } from '../../engine/room';
 import { APT_META, Bar, STAT_META } from '../ui';
 import { Icon } from '../Icon';
+import { STYLE_META, type ParentStyle } from '../../data/parentingData';
+import { dominantStyle } from '../../engine/parenting';
 
 const STAGE_LABEL = { CHILD: '유년기', TEEN: '청소년기', YOUTH: '청년 준비기' };
 
@@ -64,6 +66,34 @@ export function InfoPanel() {
         <span className="flex items-center gap-1"><Icon name="FAME" size={14} /> 명성 {status.fame}/500</span>
         <span>😈 비행 {status.delinquency}/100</span>
       </div>
+      <p className="mb-1 font-bold">양육 일기</p>
+      {(() => {
+        const dom = dominantStyle(game);
+        const p = game.parenting ?? { WARM: 0, STRICT: 0, FREE: 0 };
+        return (
+          <div className="mb-3 rounded border-2 border-ink bg-white p-2">
+            <p className="mb-1">
+              {dom ? (
+                <>
+                  {STYLE_META[dom].emoji} <b>{STYLE_META[dom].label} 부모</b> <span className="opacity-70">— {STYLE_META[dom].desc}</span>
+                </>
+              ) : (
+                <span className="opacity-70">아직 육아 선택을 하지 않았어요</span>
+              )}
+            </p>
+            <div className="flex gap-2 text-[10px]">
+              {(Object.keys(STYLE_META) as ParentStyle[]).map((k) => (
+                <span key={k}>
+                  {STYLE_META[k].emoji} {STYLE_META[k].label} {p[k]}
+                </span>
+              ))}
+            </div>
+            <p className="mt-1 text-[10px] opacity-70">
+              들어준 부탁 {game.wishesGranted ?? 0} · 못 들어준 부탁 {game.wishesFailed ?? 0} · 겪은 일 {game.seenEvents?.length ?? 0}가지
+            </p>
+          </div>
+        );
+      })()}
       <p className="mb-1 font-bold">6대 분야 적성</p>
       <div className="grid grid-cols-1 gap-1">
         {APT_KEYS.map((k) => (
