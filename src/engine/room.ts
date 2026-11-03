@@ -120,11 +120,27 @@ export function computeAura(placed: PlacedFurniture[], category?: FurnitureCateg
   return best;
 }
 
-export function roomSizeForAge(age: number): number {
-  if (age >= 17) return 10;
-  if (age >= 12) return 8;
-  return 6;
+export type HomeClass = 'RICH' | 'MIDDLE' | 'WORKING' | 'POOR';
+/** 집 형편에 따른 방 크기 차이 (중산층 6→8→10 기준) */
+const CLASS_ROOM: Record<HomeClass, [number, number, number]> = {
+  RICH: [7, 9, 11],
+  MIDDLE: [6, 8, 10],
+  WORKING: [6, 7, 9],
+  POOR: [5, 6, 8],
+};
+export function roomSizeForAge(age: number, cls: HomeClass = 'MIDDLE'): number {
+  const [c, t, y] = CLASS_ROOM[cls];
+  if (age >= 17) return y;
+  if (age >= 12) return t;
+  return c;
 }
+/** 집 형편별 처음 방에 있는 가구 (침대 말고) */
+export const STARTER_FURNITURE: Record<HomeClass, string[]> = {
+  RICH: ['oak_desk', 'encyclopedia_shelf', 'plant', 'toy_box'],
+  MIDDLE: ['oak_desk'],
+  WORKING: [],
+  POOR: [],
+};
 
 export function growthStage(age: number) {
   if (age >= 17) return 'YOUTH' as const;

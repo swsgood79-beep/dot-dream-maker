@@ -26,10 +26,10 @@ export type ParentJobId =
 /** 집안 형편 4단계 */
 export type ParentClass = 'RICH' | 'MIDDLE' | 'WORKING' | 'POOR';
 export const CLASS_META: Record<ParentClass, { label: string; emoji: string; desc: string; color: string }> = {
-  RICH: { label: '상류층', emoji: '💎', desc: '부족함 없는 집', color: '#ffe08a' },
-  MIDDLE: { label: '중산층', emoji: '🏠', desc: '평범하고 단란한 집', color: '#c9e8ff' },
-  WORKING: { label: '하류층', emoji: '🧺', desc: '빠듯하지만 정 많은 집', color: '#d9f2d0' },
-  POOR: { label: '빈곤층', emoji: '🕯️', desc: '가진 건 없어도 서로가 있는 집', color: '#eadff5' },
+  RICH: { label: '상류층', emoji: '💎', desc: '부족함 없는 집 · 대리석 바닥 큰 방, 책상·책장·화분·장난감 상자', color: '#ffe08a' },
+  MIDDLE: { label: '중산층', emoji: '🏠', desc: '평범하고 단란한 집 · 원목 마루 방, 책상 하나', color: '#c9e8ff' },
+  WORKING: { label: '하류층', emoji: '🧺', desc: '빠듯하지만 정 많은 집 · 장판 방, 침대만', color: '#d9f2d0' },
+  POOR: { label: '빈곤층', emoji: '🕯️', desc: '가진 건 없어도 서로가 있는 집 · 낡은 작은 방, 침대만', color: '#eadff5' },
 };
 export const CLASSES = Object.keys(CLASS_META) as ParentClass[];
 

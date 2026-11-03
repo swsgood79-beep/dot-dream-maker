@@ -11,8 +11,9 @@ import type {
   GameState,
   ScheduleActionType,
   StatKey,
+  PlacedFurniture,
 } from '../types/game';
-import { computeActiveCombos, computeAura, roomSizeForAge } from './room';
+import { computeActiveCombos, computeAura, findFreeSpot, roomSizeForAge, STARTER_FURNITURE } from './room';
 import { rollParentingEvent, updateWish } from './parenting';
 import { writeDiary, type DiaryEntry } from './diary';
 import { dominantAttitude, monthlyPsyche, type Acting, type Attitude } from './psyche';
@@ -21,6 +22,7 @@ import { TEMPERAMENT_MAP, type TemperamentId } from '../data/temperamentData';
 import { CUTSCENES, pickFriend } from '../data/cutsceneData';
 import {
   parentAllowanceMul,
+  parentClass,
   parentDelinquencyMul,
   parentStartBonus,
   parentStartGold,
@@ -191,6 +193,14 @@ export function createNewGame(
   stats[bonusStat] += 30;
   if (parent) for (const [k, v] of Object.entries(parentStartBonus(parent.points)) as [StatKey, number][]) stats[k] += v;
   const status: CharacterStatus = { stress: 0, affection: 50, fame: 0, delinquency: 0, selfEsteem: 50, autonomy: 50 };
+  // 집 형편: 방 크기와 처음 가구가 다르다
+  const cls = parentClass(parent);
+  const roomSize = roomSizeForAge(8, cls);
+  const placed: PlacedFurniture[] = [{ instanceId: 'f0', furnitureId: 'basic_bed', gridX: 0, gridY: 0, rotation: 0 }];
+  STARTER_FURNITURE[cls].forEach((fid, i) => {
+    const spot = findFreeSpot(placed, roomSize, fid);
+    if (spot) placed.push({ instanceId: `f${i + 1}`, furnitureId: fid, gridX: spot.x, gridY: spot.y, rotation: 0 });
+  });
   return {
     childName,
     gender,
@@ -201,20 +211,20 @@ export function createNewGame(
     stats,
     status,
     aptitudes: emptyAptitudes(),
-    roomSize: 6,
-    placedFurniture: [{ instanceId: 'f0', furnitureId: 'basic_bed', gridX: 0, gridY: 0, rotation: 0 }],
+    roomSize,
+    placedFurniture: placed,
     activeCombos: [],
     monthlySchedule: ['EDU_01', 'EDU_07', 'JOB_01', 'REST_01'],
     flags: [],
     actionCounts: {},
     unlockedEndings,
-    collectedFurniture: ['basic_bed'],
+    collectedFurniture: ['basic_bed', ...STARTER_FURNITURE[cls]],
     inventory: [],
     forcedRestWeeks: 0,
     runawayWeeks: 0,
     talkedThisMonth: false,
     burstCount: 0,
-    instanceSeq: 1,
+    instanceSeq: placed.length,
     history: [{ age: 8, stats: { ...stats }, fame: 0 }],
     pendingEvent: null,
     seenEvents: [],
@@ -626,7 +636,7 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
     s.age += 1;
     s.history = [...(s.history ?? []), { age: s.age, stats: { ...s.stats }, fame: s.status.fame }];
     addPhoto(s, { emoji: '🎍', title: `${s.age}세 새해`, caption: '올해도 건강하게, 즐겁게!', pose: 'cheer' });
-    const newSize = roomSizeForAge(s.age);
+    const newSize = roomSizeForAge(s.age, parentClass(s.parent));
     if (newSize > s.roomSize) {
       s.roomSize = newSize;
       events.push(`🏠 ${s.age}세! 방이 ${newSize}x${newSize}로 넓어졌다`);

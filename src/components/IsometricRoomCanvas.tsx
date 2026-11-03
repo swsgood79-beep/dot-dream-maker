@@ -1,3 +1,4 @@
+import { parentClass } from '../data/parentData';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FURNITURE_MAP } from '../data/furnitureData';
 import { canPlace, computeActiveCombos, footprint, growthStage } from '../engine/room';
@@ -325,6 +326,7 @@ export function IsometricRoomCanvas({
     n,
     placed: game.placedFurniture,
     stage: growthStage(game.age),
+    home: parentClass(game.parent),
     comboTint,
     selectedId: playback ? null : selected,
     placingCells,
