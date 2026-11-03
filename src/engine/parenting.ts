@@ -9,9 +9,10 @@ import {
   type Effect,
   type EffectKey,
   type ParentStyle,
+  type ParentingEvent,
 } from '../data/parentingData';
 import type { StatKey } from '../types/game';
-import { addPhoto, type Rng, type SaveState, type WeekResult } from './simulation';
+import { addPhoto, monthIndex, type Rng, type SaveState, type WeekResult } from './simulation';
 import { CLUES_TO_REVEAL, TEMPERAMENT_MAP, type TemperamentId } from '../data/temperamentData';
 
 const STATS: StatKey[] = ['INT', 'STR', 'ART', 'CHA', 'MOR', 'TEC'];
@@ -64,6 +65,16 @@ export function dominantStyle(s: Pick<SaveState, 'parenting'>): ParentStyle | nu
 }
 
 /* ───────── 육아 상황 ───────── */
+/** 연속 이야기 단계가 지금 나올 수 있는지 */
+function arcReady(s: SaveState, e: ParentingEvent) {
+  if (!e.arc) return true;
+  const st = s.arcs?.[e.arc.id];
+  if (e.arc.step === 1) return !st;
+  if (!st || st.done || st.step !== e.arc.step - 1) return false;
+  if (monthIndex(s) < st.next) return false;
+  return !e.arc.variant || st.result === e.arc.variant;
+}
+
 export function eligibleEvents(s: SaveState) {
   const seen = s.seenEvents ?? [];
   return PARENTING_EVENTS.filter(
@@ -72,15 +83,22 @@ export function eligibleEvents(s: SaveState) {
       s.age >= e.minAge &&
       s.age <= e.maxAge &&
       (!e.months || e.months.includes(s.month)) &&
-      (!e.cond || e.cond(s)),
+      (!e.cond || e.cond(s)) &&
+      arcReady(s, e),
   );
 }
 
 /** 월말에 호출: 다음 달 시작 전에 부모가 대응할 상황을 정한다 (이미 남아 있으면 그대로) */
 export function rollParentingEvent(s: SaveState, rng: Rng) {
   if (s.pendingEvent) return;
-  if (rng() >= EVENT_CHANCE) return;
   const pool = eligibleEvents(s);
+  // 이어지는 이야기의 다음 단계는 때가 되면 바로 나온다
+  const due = pool.find((e) => e.arc && e.arc.step > 1);
+  if (due) {
+    s.pendingEvent = due.id;
+    return;
+  }
+  if (rng() >= EVENT_CHANCE) return;
   if (!pool.length) return;
   // 그 달에만 있는 이벤트(명절·시험 등)는 더 잘 나오게
   const w = pool.map((e) => (e.weight ?? 1) * (e.months ? 2.5 : 1));
@@ -128,6 +146,20 @@ export function resolveParentingEvent(s: SaveState, choiceIndex: number): EventO
   const reply = fillName(c.reply, s.childName, s.friend);
   addPhoto(s, { emoji: ev.emoji, title: ev.title, caption: reply, pose: (delta.affection ?? 0) >= 0 ? 'cheer' : 'stand' });
   if (c.reopenWishes) s.wishClosed = false;
+  if (ev.arc) {
+    const prev = s.arcs?.[ev.arc.id];
+    s.arcs = {
+      ...s.arcs,
+      [ev.arc.id]: {
+        step: ev.arc.step,
+        styles: [...(prev?.styles ?? []), c.style],
+        next: monthIndex(s) + (ev.arc.gap ?? 2),
+        result: prev?.result,
+        done: !!ev.arc.final,
+      },
+    };
+  }
+  ev.onResolve?.(s, c.style);
   if (c.flag && !s.flags.includes(c.flag)) s.flags.push(c.flag);
   let wishText: string | undefined;
   if (c.wish && !s.wish && WISH_MAP[c.wish]) {

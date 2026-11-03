@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { sfx } from '../audio/sfx';
-import { EVENT_MAP, STYLE_META, fillName } from '../data/parentingData';
+import { EVENT_MAP, STYLE_META, eventText, fillName } from '../data/parentingData';
 import { growthStage } from '../engine/room';
 import type { EventOutcome } from '../engine/parenting';
 import { frameName } from '../render/spriteCharacter';
@@ -34,7 +34,7 @@ export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => 
 
         {!result ? (
           <>
-            <p className="mb-3 rounded border-2 border-ink bg-white p-2 text-xs leading-relaxed">{fillName(ev.text, game.childName, game.friend)}</p>
+            <p className="mb-3 rounded border-2 border-ink bg-white p-2 text-xs leading-relaxed">{fillName(eventText(ev, game), game.childName, game.friend)}</p>
             <p className="mb-1 text-[11px] font-bold text-wood">어떻게 할까요?</p>
             <div className="grid grid-cols-1 gap-1.5">
               {ev.choices.map((c, i) => (

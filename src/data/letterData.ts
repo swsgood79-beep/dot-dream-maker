@@ -34,6 +34,12 @@ export const MEMORY_LINES: Record<string, string> = {
   'Y_ART_SCHOOL:STRICT': '미대를 반대하셨던 거, 그때는 미웠는데 이제 조금은 이해해요.',
   'Y_SUNEUNG:WARM': '수능 전날 건네준 따뜻한 우유 맛, 잊지 못할 거예요.',
   'Y_BURNOUT:WARM': '다 그만두고 싶다던 날, 쉬어도 된다고 해 줘서 다시 일어설 수 있었어요.',
+  'ARC_REBEL:WARM': '방문 쾅 닫고 가방 싸던 그 시절, 끝까지 기다려 줘서 고마워요. 그때 저 진짜 못됐었죠?',
+  'ARC_REBEL:STRICT': '반항하던 시절엔 엄마 아빠가 미웠는데, 그때 잡아 주지 않았으면 어떻게 됐을지 몰라요.',
+  'ARC_REBEL:FREE': '혼자 생각할 시간을 줘서, 스스로 돌아올 수 있었어요.',
+  'ARC_LOVE:YES': '첫 연애 이야기 신나게 들어 주던 거, 친구 같아서 좋았어요.',
+  'ARC_LOVE:NO': '처음 차였던 날 곁에 있어 줘서... 그날 떡볶이 맛 잊지 못해요.',
+  'ARC_LOVE:WAIT': '수능 끝나고 그 편지, 결국 전했어요. 결과는... 비밀!',
   'Y_FIRST_PAY:WARM': '첫 월급 선물 받고 우시던 모습, 사실 저도 몰래 울었어요.',
 };
 
@@ -92,6 +98,12 @@ export function buildLetter(s: SaveState, ending: EndingDefinition): { greeting:
     else if (pr.points.WEALTH <= 1) body.push('넉넉하지 않은 살림에도 하고 싶은 걸 하게 해 주려고 애쓰신 거, 다 알아요.');
     else if (pr.points.WEALTH >= 4) body.push('부족한 것 없이 키워 주셔서 감사해요. 이제 제가 갚을 차례예요.');
   }
+
+  if (s.dreamJob) {
+    if (s.dreamJob === ending.id) body.push('열일곱 살 진로 상담 날 말했던 꿈, 기억하세요? 저 그 꿈 이뤘어요! 믿어 줘서 정말 고마워요.');
+    else if (s.arcs?.DREAM?.result === 'CLASH') body.push('그때 꿈을 반대하셨던 거... 이제는 이해해요. 꿈과는 다른 길이지만, 이 길에서도 열심히 할게요.');
+  }
+  if ((s.giftsLiked ?? 0) >= 5) body.push('생일마다 제가 갖고 싶던 걸 어떻게 그렇게 잘 아셨어요? 신기해요.');
 
   if (ending.id === 'END_50') body.push('아직 뭘 해야 할지 모르겠지만... 천천히, 제 길을 찾아볼게요. 조금만 더 기다려 주세요.');
   else body.push(`이제 저는 '${ending.title}'(으)로 첫걸음을 내디뎌요. 지켜봐 주세요.`);

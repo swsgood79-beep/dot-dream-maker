@@ -406,6 +406,21 @@ export function IsometricRoomCanvas({
           <div ref={catBubbleRef} className="pointer-events-none absolute top-0 left-0" style={{ visibility: catBubble ? 'visible' : 'hidden' }}>
             <div className="pop-in border-2 border-ink bg-[#fff6e5] px-1 text-xs leading-tight shadow-[2px_2px_0_rgba(0,0,0,.4)]">{catBubble}</div>
           </div>
+          {/* 12월: 빈 뒷벽 칸에 크리스마스트리 */}
+          {game.month === 12 &&
+            (() => {
+              const taken = new Set(game.placedFurniture.flatMap((p) => footprint(p).map((c) => `${c.x},${c.y}`)));
+              const spot = [...Array.from({ length: n }, (_, i) => ({ x: n - 1 - i, y: 0 })), ...Array.from({ length: n }, (_, i) => ({ x: 0, y: i }))].find(
+                (c) => !taken.has(`${c.x},${c.y}`) && !(c.x === 0 && c.y === n - 1),
+              );
+              if (!spot) return null;
+              const [tx, ty] = project(n, spot.x + 0.5, spot.y + 0.5);
+              return (
+                <span className="pointer-events-none absolute leading-none" style={{ left: tx * scale, top: ty * scale, fontSize: 34 * scale, transform: 'translate(-50%, -88%)' }}>
+                  🎄
+                </span>
+              );
+            })()}
           {/* 플로팅 스탯 팝업 */}
           {popups.map((p) => (
             <span

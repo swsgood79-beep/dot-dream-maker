@@ -229,6 +229,11 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
                   </>
                 )}
               </div>
+              {game.dreamJob === ending.id && (
+                <span className="stamp absolute bottom-2 left-2 rotate-[-6deg] rounded border-3 border-[#c0392b] bg-gold px-1.5 text-xs font-bold text-[#c0392b]">
+                  🌟 꿈을 이뤘어요!
+                </span>
+              )}
               <span
                 className={`stamp absolute top-3 right-3 rounded border-3 border-ink px-2 py-0.5 text-xl font-bold text-ink ${TIER_COLOR[ending.tier]}`}
               >

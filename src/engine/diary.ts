@@ -3,6 +3,7 @@ import { WISH_MAP, fillName, type Effect, type ParentStyle } from '../data/paren
 import { CLUES_TO_REVEAL, TEMPERAMENT_MAP } from '../data/temperamentData';
 import { growthStage } from './room';
 import { applyEffect } from './parenting';
+import { wantedGift } from '../data/birthdayData';
 import type { ContestResult, Rng, SaveState, WeekResult } from './simulation';
 
 /** 아이의 일기 한 편 */
@@ -41,6 +42,9 @@ export function writeDiary(s: SaveState, weeks: WeekResult[], contest: ContestRe
   }
   if (weeks.some((w) => w.outcome === 'GREAT')) lines.push('오늘은 뭐든 술술 됐다. 나 좀 천재인가?');
   if (contest) lines.push(contest.win ? `${contest.title}에서 이겼다!!! 꿈인가?` : `${contest.title}... 아쉬웠다. 다음엔 꼭.`);
+  if (s.birthMonth && s.birthMonth === (s.month % 12) + 1) {
+    lines.push(`다음 달이 내 생일이다! ${wantedGift(s).emoji} ${wantedGift(s).name} 받고 싶다... 말할까 말까.`);
+  }
   if (rng() < 0.25) lines.push(['고양이가 또 내 침대에서 잤다.', '저녁 반찬이 맛있었다.', '창밖에 비가 왔다. 왠지 좋았다.'][Math.floor(rng() * 3)]);
 
   // 비밀 (우선순위 높은 것 하나)

@@ -1,6 +1,7 @@
 import type { SaveState } from '../engine/simulation';
 import { growthStage } from '../engine/room';
 import { WISH_MAP } from './parentingData';
+import { wantedGift } from './birthdayData';
 
 const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
 
@@ -10,6 +11,10 @@ export function childTapLine(s: SaveState): { text: string; pose: 'cheer' | 'idl
   const { stress, affection, delinquency } = s.status;
   if (stress >= 70) return { text: pick(['건드리지 마아...', '피곤해... 😪', '좀 쉬고 싶어...']), pose: 'tired' };
   if (delinquency >= 50) return { text: pick(['...뭐.', '용돈이나 줘.', '신경 꺼.']), pose: 'idle' };
+  if (s.birthMonth && (s.birthMonth === (s.month % 12) + 1 || s.birthMonth === s.month) && Math.random() < 0.5) {
+    const g = wantedGift(s);
+    return { text: `생일 선물로... ${g.emoji} ${g.name} 받고 싶다~ (힐끔)`, pose: 'cheer' };
+  }
   if (s.wish && Math.random() < 0.35) return { text: `(혹시... ${WISH_MAP[s.wish.id]?.emoji ?? ''} 내 부탁 기억해?)`, pose: 'idle' };
   if (st === 'TEEN' && affection < 60) return { text: pick(['왜.', '노크 좀 해.', '...아 진짜.', '(이어폰 꽂는 중)']), pose: 'idle' };
   if (affection >= 85)

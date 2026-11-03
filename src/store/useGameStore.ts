@@ -12,6 +12,7 @@ import { resolveParentingEvent, type EventOutcome } from '../engine/parenting';
 import { resolveReport } from '../engine/school';
 import { readDiary as readDiaryEngine, respondCaught as respondCaughtEngine, skipDiary as skipDiaryEngine } from '../engine/diary';
 import { CUTSCENE_MAP } from '../data/cutsceneData';
+import { giftOptions, giveGift } from '../data/birthdayData';
 import type { Effect, ParentStyle } from '../data/parentingData';
 import { addPhoto, finishContest, perfFactor, type ContestResult, createNewGame, refreshCombos, runMonth, type MonthResult, type SaveState } from '../engine/simulation';
 
@@ -38,7 +39,8 @@ interface GameStore {
   toasts: Toast[];
 
   /** temperament: 'RANDOM'이면 랜덤으로 정하고 숨김, 직접 고르면 처음부터 공개 */
-  newGame: (name: string, gender: Gender, bonus: StatKey, temperament?: TemperamentId | 'RANDOM', parent?: ParentProfile) => void;
+  newGame: (name: string, gender: Gender, bonus: StatKey, temperament?: TemperamentId | 'RANDOM', parent?: ParentProfile, birthMonth?: number) => void;
+  giveGift: (giftId: string) => { liked: boolean; reply: string; delta: Effect } | null;
   setScheduleSlot: (slot: number, actionId: string) => void;
   runMonth: () => void;
   dismissResult: () => void;
@@ -129,12 +131,15 @@ export const useGameStore = create<GameStore>()(
         toasts: [],
         endPlayback: () => set({ playing: false }),
 
-        newGame: (name, gender, bonus, temperament = 'RANDOM', parent = DEFAULT_PARENT) => {
+        newGame: (name, gender, bonus, temperament = 'RANDOM', parent = DEFAULT_PARENT, birthMonth) => {
           const { unlockedEndings, carryIdea } = get();
           const random = temperament === 'RANDOM';
           const t = random ? TEMPERAMENTS[Math.floor(Math.random() * TEMPERAMENTS.length)].id : temperament;
+          const g = createNewGame(name, gender, bonus, [...unlockedEndings], carryIdea, t, !random, parent);
+          g.birthMonth = birthMonth ?? 1 + Math.floor(Math.random() * 12);
+          if (g.birthMonth === 1) g.pendingBirthday = true; // 1월생은 시작하자마자 생일
           set({
-            game: createNewGame(name, gender, bonus, [...unlockedEndings], carryIdea, t, !random, parent),
+            game: g,
             lastResult: null,
             ending: null,
             carryIdea: 0,
@@ -253,6 +258,17 @@ export const useGameStore = create<GameStore>()(
             if (!pc) return false;
             out = finishContest(g, pc.id, perf === null ? 0.85 + Math.random() * 0.3 : perfFactor(perf), [], pc.age);
             g.pendingContest = null;
+          });
+          return out;
+        },
+
+        giveGift: (giftId) => {
+          let out: { liked: boolean; reply: string; delta: Effect } | null = null;
+          mutate((g) => {
+            if (!g.pendingBirthday) return false;
+            const gift = giftOptions(g).find((x) => x.id === giftId);
+            if (!gift) return false;
+            out = giveGift(g, gift);
           });
           return out;
         },

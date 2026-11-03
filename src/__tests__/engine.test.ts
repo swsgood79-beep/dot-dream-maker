@@ -587,3 +587,75 @@ describe('diary', () => {
     expect(s.clues!.length).toBe(1);
   });
 });
+
+import { rollParentingEvent } from '../engine/parenting';
+import { giftOptions, giveGift, wantedGift } from '../data/birthdayData';
+import { dreamFor } from '../data/arcData';
+
+describe('story arcs & birthday', () => {
+  it('the rebel arc continues step by step and its text follows past choices', () => {
+    const s = newGame_('하나', 'SON', 'INT');
+    s.age = 13;
+    s.month = 3;
+    s.pendingEvent = 'A_REBEL_1';
+    resolveParentingEvent(s, 1); // 엄격
+    expect(s.arcs!.REBEL.step).toBe(1);
+    // 바로 다음 달엔 아직, 2달 뒤엔 반드시 다음 단계
+    s.month = 4;
+    rollParentingEvent(s, () => 0.99);
+    expect(s.pendingEvent).toBeFalsy();
+    s.month = 5;
+    rollParentingEvent(s, () => 0.99);
+    expect(s.pendingEvent).toBe('A_REBEL_2');
+    const ev = EVENT_MAP_.A_REBEL_2;
+    expect(eventText_(ev, s)).toContain('통금');
+  });
+
+  it('first love branches into one ending', () => {
+    const s = newGame_('하나', 'SON', 'CHA');
+    s.age = 15;
+    s.pendingEvent = 'A_LOVE_1';
+    resolveParentingEvent(s, 0);
+    s.month += 2;
+    s.pendingEvent = 'A_LOVE_2';
+    resolveParentingEvent(s, 1); // 엄격 → 기다림
+    s.month += 2;
+    const ids = eligibleEvents(s).map((e) => e.id);
+    expect(ids).toContain('A_LOVE_3W');
+    expect(ids).not.toContain('A_LOVE_3Y');
+  });
+
+  it('dream job matches the child stats', () => {
+    const s = newGame_('하나', 'SON', 'STR');
+    Object.assign(s.stats, { STR: 700, MOR: 700, INT: 300, ART: 100, CHA: 200, TEC: 100 });
+    expect(['END_37', 'END_39', 'END_36', 'END_35']).toContain(dreamFor(s));
+  });
+
+  it('the wanted birthday gift is always offered and liked', () => {
+    const s = newGame_('하나', 'SON', 'ART');
+    s.birthMonth = 5;
+    s.pendingBirthday = true;
+    const want = wantedGift(s);
+    expect(giftOptions(s).map((g) => g.id)).toContain(want.id);
+    expect(new Set(giftOptions(s).map((g) => g.id)).size).toBe(3);
+    const r = giveGift(s, want);
+    expect(r.liked).toBe(true);
+    expect(s.pendingBirthday).toBe(false);
+  });
+
+  it('birthday comes every year in the birth month', () => {
+    let s = newGame_('하나', 'SON', 'INT');
+    s.birthMonth = 6;
+    let parties = 0;
+    for (let m = 0; m < 144; m++) {
+      s = runMonth_(s, () => 0.5).state;
+      if (s.pendingBirthday) {
+        parties++;
+        s.pendingBirthday = false;
+      }
+    }
+    expect(parties).toBe(12);
+  });
+});
+
+import { EVENT_MAP as EVENT_MAP_, eventText as eventText_ } from '../data/parentingData';

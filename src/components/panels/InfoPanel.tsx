@@ -10,6 +10,7 @@ import { dominantStyle } from '../../engine/parenting';
 import { CLUES_TO_REVEAL, TEMPERAMENT_MAP } from '../../data/temperamentData';
 import { PhotoAlbum } from '../PhotoAlbum';
 import { DiaryPage } from '../DiaryModal';
+import { ENDING_MAP } from '../../data/endingData';
 import { ABILITIES, ABILITY_META, describeParent } from '../../data/parentData';
 import { useState } from 'react';
 
@@ -76,6 +77,15 @@ export function InfoPanel() {
         <span className="flex items-center gap-1"><Icon name="FAME" size={14} /> 명성 {status.fame}/500</span>
         <span>😈 비행 {status.delinquency}/100</span>
       </div>
+      {game.dreamJob && ENDING_MAP[game.dreamJob] && (
+        <div className="mb-3 rounded border-3 border-ink bg-[#fff1c2] p-2">
+          <p className="font-bold">
+            🌟 {game.childName}의 꿈: {ENDING_MAP[game.dreamJob].title}
+          </p>
+          <p className="mt-0.5 text-[10px] opacity-80">이루려면: {ENDING_MAP[game.dreamJob].conditionText}</p>
+          <p className="text-[10px] text-accent">아이의 꿈을 엔딩으로 이뤄 주면 특별한 편지를 받아요</p>
+        </div>
+      )}
       {temper && (
         <>
           <p className="mb-1 font-bold">아이의 기질</p>

@@ -10,6 +10,8 @@ import { EventModal } from './EventModal';
 import { CutsceneModal } from './CutsceneModal';
 import { ReportCardModal } from './ReportCardModal';
 import { DiaryModal } from './DiaryModal';
+import { BirthdayModal } from './BirthdayModal';
+import { SeasonFx } from './SeasonFx';
 import { WISH_MAP } from '../data/parentingData';
 import { sfx } from '../audio/sfx';
 import type { ContestId, MonthResult } from '../engine/simulation';
@@ -54,6 +56,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   // 선택 후 아이 반응을 보여 주는 동안 모달을 유지하기 위해 표시 중인 상황 ID를 따로 보관
   const [eventShown, setEventShown] = useState<string | null>(null);
   const [reportShown, setReportShown] = useState(false);
+  const [bdayShown, setBdayShown] = useState(false);
   const [diaryOpen, setDiaryOpen] = useState(false);
   // 대회 미니게임: 판정 후 결과 연출이 끝날 때까지 유지
   const [contestShown, setContestShown] = useState<{ id: ContestId; age: number } | null>(null);
@@ -64,8 +67,9 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   // 새 달 시작 순서: 월간 결과 → 성장 컷신 → 성적표 → 육아 상황
   const idle = !lastResult && !playing && !contestOpen;
   const openCut = idle && !eventShown && !reportShown ? (game.pendingCutscene ?? null) : null;
-  const openReport = idle && !openCut && !eventShown && (reportShown || !!game.pendingReport);
-  const openEvent = idle && !openCut && !openReport ? (eventShown ?? game.pendingEvent ?? null) : null;
+  const openReport = idle && !openCut && !eventShown && !bdayShown && (reportShown || !!game.pendingReport);
+  const openBday = idle && !openCut && !openReport && !eventShown && (bdayShown || !!game.pendingBirthday);
+  const openEvent = idle && !openCut && !openReport && !openBday ? (eventShown ?? game.pendingEvent ?? null) : null;
   const showContest = !!(lastResult && !playing && lastResult.contest && contestSeen !== lastResult);
 
   const stress = game.status.stress;
@@ -163,6 +167,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
           playback={playing ? lastResult : null}
           onPlaybackDone={endPlayback}
         />
+        <SeasonFx month={game.month} />
         {game.diaryNew && !playing && !placingId && (
           <button
             onClick={() => {
@@ -269,6 +274,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
       {diaryOpen && <DiaryModal onClose={() => setDiaryOpen(false)} />}
       {openCut && <CutsceneModal key={openCut} id={openCut} />}
       {openReport && <ReportCardModal onPick={() => setReportShown(true)} onClose={() => setReportShown(false)} />}
+      {openBday && <BirthdayModal onPick={() => setBdayShown(true)} onClose={() => setBdayShown(false)} />}
       {openEvent && <EventModal key={openEvent} id={openEvent} onPick={() => setEventShown(openEvent)} onClose={() => setEventShown(null)} />}
     </div>
   );

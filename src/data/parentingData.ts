@@ -1,5 +1,6 @@
 import type { StatKey } from '../types/game';
 import type { SaveState } from '../engine/simulation';
+import { ARC_EVENTS } from './arcData';
 
 /** 선택지·부탁 결과로 바뀌는 수치 (스탯은 성장 곡선 없이 그대로 더함) */
 export type EffectKey = StatKey | 'stress' | 'affection' | 'delinquency' | 'fame' | 'gold' | 'idea';
@@ -31,8 +32,8 @@ export interface ParentingEvent {
   id: string;
   emoji: string;
   title: string;
-  /** {name}, {name이}, {name은}, {name을}, {name과} 치환 */
-  text: string;
+  /** {name}, {name이}, {name은}, {name을}, {name과} 치환. 함수면 상태에 따라 문장이 달라짐 */
+  text: string | ((s: SaveState) => string);
   minAge: number;
   maxAge: number;
   months?: number[];
@@ -40,7 +41,13 @@ export interface ParentingEvent {
   /** 기본 1. 조건이 맞을 때 더 자주 나오게 하려면 키운다 */
   weight?: number;
   choices: EventChoice[];
+  /** 여러 달에 걸친 연속 이야기의 한 단계 */
+  arc?: { id: string; step: number; variant?: string; final?: boolean; gap?: number };
+  /** 선택 직후 추가 처리 (연속 이야기 분기 결과 정하기 등) */
+  onResolve?: (s: SaveState, style: ParentStyle) => void;
 }
+
+export const eventText = (e: ParentingEvent, s: SaveState) => (typeof e.text === 'function' ? e.text(s) : e.text);
 
 /** 예전 선택 기억: '이벤트ID:스타일' */
 const mem = (s: SaveState, ...tags: string[]) => tags.some((t) => (s.memories ?? []).includes(t));
@@ -635,6 +642,7 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
   },
 ];
 
+PARENTING_EVENTS.push(...ARC_EVENTS);
 export const EVENT_MAP: Record<string, ParentingEvent> = Object.fromEntries(PARENTING_EVENTS.map((e) => [e.id, e]));
 
 /* ───────── 아이의 부탁 ───────── */

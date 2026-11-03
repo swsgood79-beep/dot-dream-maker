@@ -28,6 +28,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
   const [gender, setGender] = useState<Gender>('DAUGHTER');
   const [bonus, setBonus] = useState<StatKey>('INT');
   const [temper, setTemper] = useState<TemperamentId | 'RANDOM'>('RANDOM');
+  const [birthMonth, setBirthMonth] = useState(() => 1 + Math.floor(Math.random() * 12));
   // 엔딩을 한 번이라도 본 뒤부터 기질을 직접 고를 수 있다
   const canPickTemper = unlockedEndings.length > 0;
 
@@ -68,7 +69,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
           <PixelButton color="bg-sky" onClick={() => setMode('book')}>
             👑 엔딩 도감 ({unlockedEndings.length}/{ENDINGS.length})
           </PixelButton>
-          <p className="mt-2 text-[10px] text-white/60">v0.14.0 · 살아있는 방과 일기장</p>
+          <p className="mt-2 text-[10px] text-white/60">v0.15.0 · 이어지는 이야기와 생일</p>
         </div>
       )}
 
@@ -108,6 +109,21 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
             placeholder="이름을 지어주세요"
             className="mb-4 w-full border-3 border-ink bg-white px-2 py-2 outline-none"
           />
+          <p className="mb-2 font-bold">생일</p>
+          <div className="mb-4 flex items-center gap-2">
+            <select
+              value={birthMonth}
+              onChange={(e) => setBirthMonth(Number(e.target.value))}
+              className="border-3 border-ink bg-white px-2 py-1.5"
+            >
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i} value={i + 1}>
+                  {i + 1}월
+                </option>
+              ))}
+            </select>
+            <span className="text-[11px] opacity-70">🎂 매년 이 달에 생일 파티를 열어요</span>
+          </div>
           <p className="mb-2 font-bold">부모의 소원 (초기 보너스)</p>
           <div className="mb-4 grid grid-cols-2 gap-2">
             {WISHES.map((w) => (
@@ -157,7 +173,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
               color="bg-mint"
               disabled={!name.trim()}
               onClick={() => {
-                newGame(name.trim(), gender, bonus, canPickTemper ? temper : 'RANDOM', parent);
+                newGame(name.trim(), gender, bonus, canPickTemper ? temper : 'RANDOM', parent, birthMonth);
                 onStart();
               }}
             >

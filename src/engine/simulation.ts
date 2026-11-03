@@ -79,7 +79,16 @@ export interface SaveState extends GameState {
   diaryRead?: DiaryEntry[]; // 몰래 읽은 일기
   diaryCaught?: number; // 읽다 들킨 횟수
   diaryRespected?: number; // 읽지 않고 둔 횟수
+  // ── v0.15 연속 이야기·생일
+  arcs?: Record<string, { step: number; styles: ParentStyle[]; next: number; result?: string; done?: boolean }>;
+  dreamJob?: string; // 아이가 말한 꿈의 직업 (엔딩 ID)
+  birthMonth?: number;
+  pendingBirthday?: boolean;
+  giftsLiked?: number; // 원하던 생일 선물을 맞힌 횟수
 }
+
+/** 게임 시작부터 센 달 수 (8세 1월 = 1) */
+export const monthIndex = (s: Pick<SaveState, 'age' | 'month'>) => (s.age - 8) * 12 + s.month;
 
 export interface Photo {
   age: number;
@@ -582,7 +591,7 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
     s.month = 1;
     s.age += 1;
     s.history = [...(s.history ?? []), { age: s.age, stats: { ...s.stats }, fame: s.status.fame }];
-    addPhoto(s, { emoji: '🎂', title: `${s.age}번째 생일`, caption: `케이크 촛불 ${s.age}개를 한 번에 껐다!`, pose: 'cheer' });
+    addPhoto(s, { emoji: '🎍', title: `${s.age}세 새해`, caption: '올해도 건강하게, 즐겁게!', pose: 'cheer' });
     const newSize = roomSizeForAge(s.age);
     if (newSize > s.roomSize) {
       s.roomSize = newSize;
@@ -594,5 +603,6 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
   const cut = CUTSCENES.find((c) => c.age === s.age && c.month === s.month && !(s.seenCutscenes ?? []).includes(c.id));
   if (cut) s.pendingCutscene = cut.id;
   if ((s.month === 7 || s.month === 2) && !(s.age === 8 && s.month === 2)) s.pendingReport = true;
+  if (s.birthMonth === s.month) s.pendingBirthday = true;
   return { state: s, weeks, events, contest: contestResult };
 }
