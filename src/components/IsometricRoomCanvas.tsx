@@ -101,14 +101,6 @@ export function IsometricRoomCanvas({
   const [scale, setScale] = useState(2);
   const simRef = useRef(new CharacterSim());
   const catRef = useRef(new CatSim());
-  // 부모님 NPC: 방 안을 느긋하게 돌아다님
-  const npcRef = useRef<CharacterSim>(null);
-  if (!npcRef.current) {
-    npcRef.current = new CharacterSim();
-    npcRef.current.actor.gx = 4.5;
-    npcRef.current.actor.gy = 3.5;
-    npcRef.current.actor.facing = 'L';
-  }
   const [popups, setPopups] = useState<Popup[]>([]);
   const [banner, setBanner] = useState<string | null>(null);
   const [bubble, setBubble] = useState<string | null>(null);
@@ -266,7 +258,6 @@ export function IsometricRoomCanvas({
     selectedId: playback ? null : selected,
     placingCells,
     actor: { actor: simRef.current.actor, gender: game.gender },
-    npc: npcRef.current.actor,
     tired: game.status.stress >= 80,
     // 반려묘 쿠션이 있으면 고양이는 쿠션 그림 속에서 잠 (쿠션 그림에 고양이가 그려져 있음)
     cat: game.placedFurniture.some((p) => p.furnitureId === 'cat_cushion') ? null : catRef.current.actor,
@@ -292,16 +283,14 @@ export function IsometricRoomCanvas({
       last = t;
       const v = viewRef.current;
       if (v) {
-        // 서로 겹치지 않기: 아이 → 부모님 → 고양이 순으로 우선 (뒤가 앞에게 양보)
+        // 서로 겹치지 않기: 아이가 우선, 고양이가 양보
         const child = simRef.current;
-        const npc = npcRef.current!;
         const cat = catRef.current;
         const catOn = !!v.cat;
         const union = (...sets: Set<string>[]) => new Set(sets.flatMap((x) => [...x]));
         const here = (gx: number, gy: number) => new Set([`${Math.floor(gx)},${Math.floor(gy)}`]);
-        child.update(dt, { n: v.n, placed: v.placed, avoid: union(here(npc.actor.gx, npc.actor.gy), catOn ? here(cat.actor.gx, cat.actor.gy) : new Set()) });
-        npc.update(dt * 0.6, { n: v.n, placed: v.placed, avoid: union(child.occupied(), catOn ? here(cat.actor.gx, cat.actor.gy) : new Set()) });
-        if (catOn) cat.update(dt, v.n, v.placed, union(child.occupied(), npc.occupied()));
+        child.update(dt, { n: v.n, placed: v.placed, avoid: catOn ? here(cat.actor.gx, cat.actor.gy) : new Set() });
+        if (catOn) cat.update(dt, v.n, v.placed, union(child.occupied()));
         renderRoom(ctx, { ...v, time: t, actorHalo: haloRef.current });
         // 말풍선이 캐릭터 머리 위를 따라다니도록 DOM 위치 갱신
         const b = bubbleRef.current;

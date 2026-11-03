@@ -5,7 +5,7 @@ import { drawCharacterProcedural, proceduralHeight, type CharacterDrawOpts } fro
 
 /**
  * 스프라이트 시트(assets-src/character-sheet.png → src/assets/characters.png) 기반 캐릭터 렌더링.
- * 프레임: {단계}_{성별}_{stand|read|cheer}, CAT_sleep, PARENT_stand
+ * 프레임: {단계}_{성별}_{stand|read|cheer|walkN|back_*|행동}, CAT_*
  * 시트 1도트 = 캔버스 백버퍼 1px (RES=2) → 논리 좌표에서는 1/RES 크기로 그린다.
  */
 export const RES = 2;
@@ -179,4 +179,3 @@ export function walkFrame(base: string, t: number): string | null {
   return `${base}_walk${Math.floor(t / WALK_FRAME_MS) % n}`; // 4장·8장 모두 같은 프레임 간격
 }
 
-export const PARENT_FRAME = 'PARENT_stand';

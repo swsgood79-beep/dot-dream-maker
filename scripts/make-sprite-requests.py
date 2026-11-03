@@ -183,6 +183,9 @@ for g, gk, gen_en in GEN:
                   + '\n'.join(f"Row {r+1}, left to right: " + '; '.join(f"({c+1}) {chunk[r*3+c][2]}" for c in range(3) if r*3+c < len(chunk)) + '.' for r in range(rows)) + '\n' + STYLE)
         sheets.append((6, f'J{s+1}-{g}', f'job-{g.lower()}-{s+1}.png', rows, 3, f'직업 의상 {gk} {s*9+1}~{s*9+len(chunk)}번', items, prompt, False))
 
+# 부모님 캐릭터는 사용하지 않기로 함 → N1 시트 제외, 반려묘 프롬프트의 엄마 설명 제거
+sheets = [x for x in sheets if x[1] != 'N1']
+
 # ── 워크북
 wb = Workbook()
 
@@ -210,7 +213,7 @@ rows = [
  ('• 이미지 크기는 2752×1536(16:9) 정도면 충분', None),
  ('', None),
  ('우선순위', 'h'),
- ('1순위 가구(4장) → 2순위 행동 포즈(2장) → 3순위 뒷모습 걷기(2장) → 4순위 부모님·반려묘(2장) → 5순위 UI 아이콘(1장) → 6순위 직업 의상(선택, 12장)', None),
+ ('1순위 가구(4장) → 2순위 행동 포즈(2장) → 3순위 뒷모습 걷기(2장) → 4순위 반려묘(1장) → 5순위 UI 아이콘(1장) → 6순위 직업 의상(선택, 12장)', None),
  ('[필수/선택] 칸이 "선택"인 그림은 없어도 게임이 동작합니다 (예: 아빠, 잠자기 포즈, 직업 의상).', None),
  ('', None),
  ('색 표시: 노란 칸 = 직접 입력하는 칸 (완료 여부)', None),
@@ -291,7 +294,7 @@ ws4 = wb.create_sheet('이미 있음')
 ws4.column_dimensions['A'].width = 34; ws4.column_dimensions['B'].width = 70
 for j,h in enumerate(['원본 파일','내용'],1):
     c = ws4.cell(row=1, column=j, value=h); c.font = HDR_FONT; c.fill = HDR_FILL; c.border = BOX
-have = [('assets-src/character-sheet.png','아이 3단계 × 아들·딸 서기/독서/만세, 부모님(엄마) 서기, 반려묘 수면 — Gemini 첨부용 기준 이미지'),
+have = [('assets-src/character-sheet.png','아이 3단계 × 아들·딸 서기/독서/만세, 반려묘 수면 — Gemini 첨부용 기준 이미지'),
         ('assets-src/son-walk-sheet.png','아들 3단계 × 서기, 걷기 3장, 독서, 만세'),
         ('assets-src/daughter-walk-sheet.png','딸 3단계 × 서기, 걷기 3장, 독서, 만세')]
 for i,(a,b) in enumerate(have,2):

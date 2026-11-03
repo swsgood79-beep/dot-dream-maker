@@ -4,7 +4,7 @@ import { CATEGORY_LABEL, ENDINGS } from '../data/endingData';
 import { CATEGORY_COLOR, ENDING_SCENE } from '../data/endingScenes';
 import { growthStage } from '../engine/room';
 import { STAT_KEYS, type GrowthSnapshot } from '../engine/simulation';
-import { frameName, PARENT_FRAME } from '../render/spriteCharacter';
+import { frameName } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
 import type { CharacterStats, StatKey } from '../types/game';
 import { Sprite } from './Sprite';
@@ -76,7 +76,6 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
           </p>
           <div className="flex items-end gap-3">
             <Sprite name={frameName('YOUTH', game.gender, 'stand')} scale={1.6} />
-            <Sprite name={PARENT_FRAME} scale={1.4} />
           </div>
           <PixelButton color="bg-gold" onClick={() => setStep('album')}>
             📷 성장 앨범 펼치기

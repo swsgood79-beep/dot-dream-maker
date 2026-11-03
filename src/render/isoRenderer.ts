@@ -3,7 +3,7 @@ import { footprint, type Cell } from '../engine/room';
 import type { GrowthStage, PlacedFurniture } from '../types/game';
 import { drawPixels, FURNITURE_BODY, FURNITURE_PIXELS, shade } from './sprites';
 const WOOD_D = '#8a5a35';
-import { drawCharacter, drawFrame, PARENT_FRAME, RES, walkFrame } from './spriteCharacter';
+import { drawCharacter, drawFrame, RES } from './spriteCharacter';
 import { drawFurnitureModel, modelHeight as codeModelHeight } from './furnitureModels';
 import { drawFurnitureSprite, furnitureSpriteHeight } from './furnitureSprites';
 
@@ -44,7 +44,6 @@ export interface RoomView {
   time: number; // ms (오라 펄스 애니메이션)
   actor?: { actor: Actor; gender: Gender } | null;
   actorHalo?: string | null; // 행동 중 발밑 하이라이트 색
-  npc?: Actor | null; // 부모님
   tired?: boolean; // 스트레스 80 이상
   cat?: CatActor | null; // 반려묘 (반려묘 쿠션이 있으면 쿠션 그림 속에서 잠)
 }
@@ -416,24 +415,6 @@ export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
       draw: () => {
         const [sx, sy] = project(n, at.gx, at.gy);
         drawCharacter(ctx, sx, sy - at.lift, { stage: v.stage, gender, facing: actor.facing, pose: actor.pose, time: v.time, alpha: actor.alpha, back: actor.back, tired: v.tired });
-      },
-    });
-  }
-  if (v.npc) {
-    const npc = v.npc;
-    list.push({
-      key: Math.floor(npc.gx) + Math.floor(npc.gy) + 2.08,
-      draw: () => {
-        const [sx, sy] = project(n, npc.gx, npc.gy);
-        ctx.save();
-        ctx.globalAlpha = 0.22;
-        ctx.fillStyle = '#000';
-        ctx.beginPath();
-        ctx.ellipse(sx, sy - 1, 8, 3, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-        const frame = npc.pose === 'walk' ? walkFrame('PARENT', v.time) ?? PARENT_FRAME : PARENT_FRAME;
-        drawFrame(ctx, frame, sx, sy, npc.facing === 'L');
       },
     });
   }

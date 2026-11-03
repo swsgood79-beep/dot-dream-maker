@@ -465,6 +465,10 @@ for st in STAGES:
                 sprites[n] = spr.astype(np.uint8)
             print(f'  뒷모습 색감 보정: {st}_{g}_{group} R×{gain[0]:.2f} G×{gain[1]:.2f} B×{gain[2]:.2f}')
 
+# 부모님 캐릭터는 게임에서 사용하지 않음 (v0.5.17) → 아틀라스에서 제외
+for n in [n for n in sprites if n.startswith('PARENT')]:
+    del sprites[n]
+
 # 걷기 그림 방향 통일: Gemini가 같은 걷기 동작 안에서도 일부 장을 반대 방향으로 그리는 경우가 있음
 # (예: 딸 유년기 뒷모습 아랫줄 4장, 딸 청년 뒷모습 3번째 장) → 걷는 도중 고개가 휙 돌아가 보임.
 # 첫 장을 기준으로, 각 장의 머리 부분이 '그대로'보다 '좌우 반전'이 더 닮았으면 반전한다.
