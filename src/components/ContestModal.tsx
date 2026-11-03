@@ -1,4 +1,11 @@
 import { FirstTip } from './FirstTip';
+import { sceneBg } from './ActivitySceneView';
+
+/** S7 대회 배경 (없으면 기존 그라데이션) */
+const contestBg = (id: string) => {
+  const u = sceneBg(`CONTEST_${id}`);
+  return u ? `center 70% / cover no-repeat url(${u})` : undefined;
+};
 import { useEffect, useRef, useState } from 'react';
 import { sfx } from '../audio/sfx';
 import type { ContestResult } from '../engine/simulation';
@@ -46,7 +53,7 @@ export function ContestModal({ id, gender, age, onClose }: { id: ContestId; gend
         </div>
         {phase === 'choose' && (
           <>
-            <div className="relative flex h-36 items-end justify-center" style={{ background: theme.bg }}>
+            <div className="relative flex h-36 items-end justify-center" style={{ background: contestBg(id) ?? theme.bg }}>
               <span className="absolute top-2 left-2 rounded border-2 border-ink bg-[#fff6e5] px-1 text-[10px] font-bold">{theme.stage}</span>
               <Sprite name={frameName(growthStage(age), gender, 'stand')} scale={1.4} />
             </div>
@@ -157,7 +164,7 @@ export function ContestReveal({ contest, gender, age, onClose }: { contest: Cont
         </div>
 
         {/* 무대 */}
-        <div className="relative flex h-40 items-end justify-center" style={{ background: theme.bg }}>
+        <div className="relative flex h-40 items-end justify-center" style={{ background: contestBg(contest.id) ?? theme.bg }}>
           <span className="absolute top-2 left-2 rounded border-2 border-ink bg-[#fff6e5] px-1 text-[10px] font-bold">{theme.stage}</span>
           {phase === 'result' && contest.win && (
             <div className="pointer-events-none absolute inset-0">
