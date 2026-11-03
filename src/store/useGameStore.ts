@@ -11,7 +11,7 @@ import { resolveParentingEvent, type EventOutcome } from '../engine/parenting';
 import { resolveReport } from '../engine/school';
 import { CUTSCENE_MAP } from '../data/cutsceneData';
 import type { Effect, ParentStyle } from '../data/parentingData';
-import { addPhoto, createNewGame, refreshCombos, runMonth, type MonthResult, type SaveState } from '../engine/simulation';
+import { addPhoto, finishContest, perfFactor, type ContestResult, createNewGame, refreshCombos, runMonth, type MonthResult, type SaveState } from '../engine/simulation';
 
 export type Toast = { id: number; text: string };
 
@@ -46,6 +46,8 @@ interface GameStore {
   /** 육아 상황에 대한 부모의 선택 → 아이 반응 */
   resolveEvent: (choiceIndex: number) => EventOutcome | null;
   finishCutscene: () => void;
+  /** 대회 판정: perf(0~1)=미니게임 성적, null=응원만 하기(무작위) */
+  playContest: (perf: number | null) => ContestResult | null;
   reactReport: (style: ParentStyle) => { reply: string; delta: Effect } | null;
   giveAllowance: () => void;
   finishEnding: () => void;
@@ -135,7 +137,7 @@ export const useGameStore = create<GameStore>()(
         runMonth: () => {
           const g = get().game;
           if (!g) return;
-          const result = runMonth(g);
+          const result = runMonth(g, Math.random, { interactiveContest: true });
           const unlocked = Array.from(new Set([...get().unlockedEndings, ...result.state.unlockedEndings]));
           set({ game: result.state, lastResult: result, unlockedEndings: unlocked, playing: true });
           if (result.ending) set({ ending: result.ending });
@@ -230,6 +232,17 @@ export const useGameStore = create<GameStore>()(
               get().pushToast('☝️ 차분히 타일렀어요. 비행 -6, 도덕 +4, 친밀도 -3');
             }
           }),
+
+        playContest: (perf) => {
+          let out: ContestResult | null = null;
+          mutate((g) => {
+            const pc = g.pendingContest;
+            if (!pc) return false;
+            out = finishContest(g, pc.id, perf === null ? 0.85 + Math.random() * 0.3 : perfFactor(perf), [], pc.age);
+            g.pendingContest = null;
+          });
+          return out;
+        },
 
         finishCutscene: () =>
           void mutate((g) => {

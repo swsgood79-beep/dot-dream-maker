@@ -7,6 +7,86 @@ import type { Gender } from '../types/game';
 import { Sprite } from './Sprite';
 import { PixelButton, STAT_META } from './ui';
 import { Icon } from './Icon';
+import { CONTESTS, contestThreshold, type ContestId } from '../engine/simulation';
+import { useGameStore } from '../store/useGameStore';
+import { QuizGame, RhythmGame, SprintGame } from './Minigames';
+
+const GAME_HELP: Record<ContestId, string> = {
+  SPORTS: '달리기 타이밍 게임 — 초록 칸에서 화면을 눌러요 (3번)',
+  ARTFEST: '리듬 게임 — 음표가 노란 선에 닿을 때 눌러요 (12개)',
+  EXAM: '암산 퀴즈 — 시간 안에 정답을 골라요 (5문제)',
+};
+
+/** 대회 미니게임: 직접 도전하거나 응원만 하거나 → 결과 연출 */
+export function ContestModal({ id, gender, age, onClose }: { id: ContestId; gender: Gender; age: number; onClose: () => void }) {
+  const game = useGameStore((s) => s.game)!;
+  const play = useGameStore((s) => s.playContest);
+  const [phase, setPhase] = useState<'choose' | 'play' | 'score'>('choose');
+  const [perf, setPerf] = useState(0);
+  const [result, setResult] = useState<ContestResult | null>(null);
+  const def = CONTESTS[id];
+  const theme = THEME[id];
+  const ease = Math.max(0.5, Math.min(1.5, game.stats[def.stat] / contestThreshold(age)));
+
+  if (result) return <ContestReveal contest={result} gender={gender} age={age} onClose={onClose} />;
+
+  const finish = (p: number | null) => {
+    const r = play(p);
+    if (r) setResult(r);
+  };
+
+  return (
+    <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/65 p-3">
+      <div className="wood-frame pop-in w-full overflow-hidden rounded-md">
+        <div className="flex items-center justify-center gap-2 bg-accent py-1.5 text-sm font-bold text-white [text-shadow:1px_1px_0_#1b1f3b]">
+          <span className="text-lg">{theme.icon}</span>
+          {def.title}
+          <span className="text-[10px] opacity-90">· {age}세</span>
+        </div>
+        {phase === 'choose' && (
+          <>
+            <div className="relative flex h-36 items-end justify-center" style={{ background: theme.bg }}>
+              <span className="absolute top-2 left-2 rounded border-2 border-ink bg-[#fff6e5] px-1 text-[10px] font-bold">{theme.stage}</span>
+              <Sprite name={frameName(growthStage(age), gender, 'stand')} scale={1.4} />
+            </div>
+            <div className="bg-[#fff6e5] p-3 text-xs">
+              <p className="mb-1 text-center font-bold">
+                {game.childName}의 {STAT_META[def.stat].label} {game.stats[def.stat]} · 우승 기준 {contestThreshold(age)}
+              </p>
+              <p className="mb-2 text-center text-[10px] opacity-70">{GAME_HELP[id]}</p>
+              <div className="grid grid-cols-2 gap-2">
+                <PixelButton color="bg-gold" onClick={() => setPhase('play')}>
+                  🎮 직접 도전
+                </PixelButton>
+                <PixelButton color="bg-white" onClick={() => finish(null)}>
+                  🙌 응원만 하기
+                </PixelButton>
+              </div>
+              <p className="mt-2 text-center text-[10px] opacity-60">직접 도전하면 실력에 따라 점수가 최대 +20%까지 올라가요</p>
+            </div>
+          </>
+        )}
+        {phase === 'play' && (
+          <div className="bg-[#fff6e5] text-ink">
+            {id === 'SPORTS' && <SprintGame ease={ease} onDone={(p) => (setPerf(p), setPhase('score'))} />}
+            {id === 'ARTFEST' && <RhythmGame ease={ease} onDone={(p) => (setPerf(p), setPhase('score'))} />}
+            {id === 'EXAM' && <QuizGame ease={ease} age={age} onDone={(p) => (setPerf(p), setPhase('score'))} />}
+          </div>
+        )}
+        {phase === 'score' && (
+          <div className="flex flex-col items-center gap-2 bg-[#fff6e5] p-4 text-ink">
+            <p className="text-sm">미니게임 성적</p>
+            <p className="text-4xl font-bold text-accent">{Math.round(perf * 100)}%</p>
+            <p className="text-xs">{perf >= 0.85 ? '완벽한 컨디션!' : perf >= 0.6 ? '좋은 흐름이에요!' : perf >= 0.3 ? '조금 긴장했나 봐요' : '아쉬운 실수가 있었어요...'}</p>
+            <PixelButton className="w-full" color="bg-gold" onClick={() => finish(perf)}>
+              결과 발표 ▶
+            </PixelButton>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const THEME: Record<ContestResult['id'], { icon: string; bg: string; stage: string; crowd: string }> = {
   SPORTS: { icon: '🏃', bg: 'linear-gradient(#8fd3ff, #c8f0ff 55%, #6fbf5a 55%, #4f9a45)', stage: '운동장', crowd: '📣' },
@@ -18,7 +98,7 @@ const RANK_LABEL = ['참가에 의의!', '우승!', '아깝게 2위', '3위 입�
 const RANK_ICON = ['SPARKLE', 'TROPHY', 'MEDAL', 'MEDAL'];
 
 /** 연간 대회 판정 연출: 인트로 → 점수 게이지 → 결과 도장 */
-export function ContestModal({ contest, gender, age, onClose }: { contest: ContestResult; gender: Gender; age: number; onClose: () => void }) {
+export function ContestReveal({ contest, gender, age, onClose }: { contest: ContestResult; gender: Gender; age: number; onClose: () => void }) {
   const [phase, setPhase] = useState<'intro' | 'gauge' | 'result'>('intro');
   const [shown, setShown] = useState(0);
   const raf = useRef(0);

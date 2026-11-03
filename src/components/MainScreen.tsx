@@ -1,17 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { COMBO_MAP } from '../data/furnitureData';
 import { growthStage } from '../engine/room';
 import { STAT_KEYS } from '../engine/simulation';
 import { useGameStore } from '../store/useGameStore';
 import { MonthResultModal } from './MonthResultModal';
 import { Icon } from './Icon';
-import { ContestModal } from './ContestModal';
+import { ContestModal, ContestReveal } from './ContestModal';
 import { EventModal } from './EventModal';
 import { CutsceneModal } from './CutsceneModal';
 import { ReportCardModal } from './ReportCardModal';
 import { WISH_MAP } from '../data/parentingData';
 import { sfx } from '../audio/sfx';
-import type { MonthResult } from '../engine/simulation';
+import type { ContestId, MonthResult } from '../engine/simulation';
 import { IsometricRoomCanvas } from './IsometricRoomCanvas';
 import { Sheet, STAT_META } from './ui';
 import { SchedulePanel } from './panels/SchedulePanel';
@@ -51,8 +51,14 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   // 선택 후 아이 반응을 보여 주는 동안 모달을 유지하기 위해 표시 중인 상황 ID를 따로 보관
   const [eventShown, setEventShown] = useState<string | null>(null);
   const [reportShown, setReportShown] = useState(false);
+  // 대회 미니게임: 판정 후 결과 연출이 끝날 때까지 유지
+  const [contestShown, setContestShown] = useState<{ id: ContestId; age: number } | null>(null);
+  const contestOpen = playing ? null : (contestShown ?? game.pendingContest ?? null);
+  useEffect(() => {
+    if (!playing && game.pendingContest && !contestShown) setContestShown(game.pendingContest);
+  }, [playing, game.pendingContest, contestShown]);
   // 새 달 시작 순서: 월간 결과 → 성장 컷신 → 성적표 → 육아 상황
-  const idle = !lastResult && !playing;
+  const idle = !lastResult && !playing && !contestOpen;
   const openCut = idle && !eventShown && !reportShown ? (game.pendingCutscene ?? null) : null;
   const openReport = idle && !openCut && !eventShown && (reportShown || !!game.pendingReport);
   const openEvent = idle && !openCut && !openReport ? (eventShown ?? game.pendingEvent ?? null) : null;
@@ -219,9 +225,18 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
       )}
 
       {showContest && lastResult?.contest && (
-        <ContestModal contest={lastResult.contest} gender={game.gender} age={lastResult.contest.age} onClose={() => setContestSeen(lastResult)} />
+        <ContestReveal contest={lastResult.contest} gender={game.gender} age={lastResult.contest.age} onClose={() => setContestSeen(lastResult)} />
       )}
-      {lastResult && !playing && !showContest && <MonthResultModal result={lastResult} onClose={dismissResult} />}
+      {contestOpen && (
+        <ContestModal
+          key={`${contestOpen.age}-${contestOpen.id}`}
+          id={contestOpen.id}
+          gender={game.gender}
+          age={contestOpen.age}
+          onClose={() => setContestShown(null)}
+        />
+      )}
+      {lastResult && !playing && !showContest && !contestOpen && <MonthResultModal result={lastResult} onClose={dismissResult} />}
       {openCut && <CutsceneModal key={openCut} id={openCut} />}
       {openReport && <ReportCardModal onPick={() => setReportShown(true)} onClose={() => setReportShown(false)} />}
       {openEvent && <EventModal key={openEvent} id={openEvent} onPick={() => setEventShown(openEvent)} onClose={() => setEventShown(null)} />}

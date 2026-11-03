@@ -490,3 +490,32 @@ describe('school life & cutscenes', () => {
     expect(reports).toBeGreaterThanOrEqual(22);
   });
 });
+
+import { finishContest, perfFactor } from '../engine/simulation';
+
+describe('contest minigames', () => {
+  it('interactive month defers the contest until the minigame ends', () => {
+    const s = newGame_('하나', 'SON', 'STR');
+    s.month = 5;
+    const r = runMonth_(s, () => 0.5, { interactiveContest: true });
+    expect(r.contest).toBeUndefined();
+    expect(r.state.pendingContest).toEqual({ id: 'SPORTS', age: 8 });
+  });
+
+  it('better minigame play gives a higher score', () => {
+    const a = newGame_('하나', 'SON', 'STR');
+    const b = newGame_('하나', 'SON', 'STR');
+    const lo = finishContest(a, 'SPORTS', perfFactor(0));
+    const hi = finishContest(b, 'SPORTS', perfFactor(1));
+    expect(hi.score).toBeGreaterThan(lo.score);
+    expect(perfFactor(1)).toBeCloseTo(1.2);
+  });
+
+  it('the last month resolves the exam before the ending', () => {
+    const s = newGame_('하나', 'SON', 'INT');
+    s.age = 19; s.month = 12;
+    const r = runMonth_(s, () => 0.5, { interactiveContest: true });
+    expect(r.ending).toBeTruthy();
+    expect(r.contest?.id).toBe('EXAM');
+  });
+});

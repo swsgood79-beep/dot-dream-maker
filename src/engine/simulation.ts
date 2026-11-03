@@ -62,6 +62,7 @@ export interface SaveState extends GameState {
   pendingCutscene?: string | null;
   seenCutscenes?: string[];
   pendingReport?: boolean; // 이번 달 성적표 확인 대기
+  pendingContest?: { id: ContestId; age: number } | null; // v0.11 미니게임 대기 중인 대회 (열린 해의 나이)
 }
 
 export interface Photo {
@@ -99,7 +100,7 @@ export interface WeekResult {
 
 /** 연간 대회 결과 (연출용) */
 export interface ContestResult {
-  id: 'SPORTS' | 'ARTFEST' | 'EXAM';
+  id: ContestId;
   title: string;
   stat: StatKey;
   score: number;
@@ -412,62 +413,77 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
   };
 }
 
-/** 연간 대회 판정: 해당 스탯 × (0.85~1.15) vs 연령별 기준치 */
-function contest(s: SaveState, stat: StatKey, rng: Rng) {
-  const threshold = 40 + (s.age - 8) * 60;
-  const score = Math.round(s.stats[stat] * (0.85 + rng() * 0.3));
+/** 연간 대회 3종 */
+export const CONTESTS = {
+  SPORTS: { title: '5월 체육대회', stat: 'STR' as StatKey, month: 5, emoji: '🏃' },
+  ARTFEST: { title: '10월 예술제', stat: 'ART' as StatKey, month: 10, emoji: '🎭' },
+  EXAM: { title: '12월 기말시험', stat: 'INT' as StatKey, month: 12, emoji: '📝' },
+} as const;
+export type ContestId = keyof typeof CONTESTS;
+
+export const contestThreshold = (age: number) => 40 + (age - 8) * 60;
+
+/** 미니게임 성적(0~1) → 점수 배율. 자동 진행은 기존처럼 0.85~1.15 무작위 */
+export const perfFactor = (perf: number) => 0.85 + Math.max(0, Math.min(1, perf)) * 0.35;
+
+/**
+ * 대회 판정: 해당 스탯 × factor vs 연령별 기준치 → 보상 적용.
+ * factor는 미니게임 성적(perfFactor) 또는 무작위(0.85~1.15)
+ */
+export function finishContest(s: SaveState, id: ContestId, factor: number, events: string[] = [], age = s.age): ContestResult {
+  const def = CONTESTS[id];
+  const threshold = contestThreshold(age);
+  const score = Math.round(s.stats[def.stat] * factor);
   const win = score >= threshold;
   const rank = win ? 1 : score >= threshold * 0.85 ? 2 : score >= threshold * 0.7 ? 3 : 0;
-  return { win, score, threshold, rank };
+  const rewards: string[] = [];
+  if (win) {
+    s.actionCounts[`WIN_${id}`] = (s.actionCounts[`WIN_${id}`] ?? 0) + 1;
+    if (id === 'SPORTS') {
+      s.status.fame = clamp(s.status.fame + 15, 0, 500);
+      s.gold += 200;
+      rewards.push('명성 +15', '200G');
+    } else if (id === 'ARTFEST') {
+      s.status.fame = clamp(s.status.fame + 15, 0, 500);
+      s.ideaPoints += 5;
+      rewards.push('명성 +15', '💡+5');
+    } else {
+      s.status.fame = clamp(s.status.fame + 10, 0, 500);
+      s.gold += 300;
+      rewards.push('명성 +10', '300G');
+    }
+    events.push(`${def.emoji} ${def.title} ${id === 'ARTFEST' ? '입상' : id === 'EXAM' ? '1등' : '우승'}! (점수 ${score}/${threshold}) ${rewards.join(', ')}`);
+    addPhoto(s, {
+      emoji: def.emoji,
+      title: `${def.title} ${id === 'ARTFEST' ? '입상' : id === 'EXAM' ? '1등' : '우승'}`,
+      caption: `${age}세, 자랑스러운 순간!`,
+      pose: 'cheer',
+    });
+  } else events.push(`${def.emoji} ${def.title} 결과... 아쉽게 놓쳤다 (점수 ${score}/${threshold})`);
+  return { age, id, title: def.title, stat: def.stat, score, threshold, win, rank, rewards };
 }
 
-function monthEvents(s: SaveState, rng: Rng, events: string[]): ContestResult | undefined {
+function monthEvents(s: SaveState, rng: Rng, events: string[], interactive: boolean): ContestResult | undefined {
+  const cid = (Object.keys(CONTESTS) as ContestId[]).find((k) => CONTESTS[k].month === s.month);
+  if (cid) {
+    // 직접 플레이: 대회를 미뤄 두고 미니게임 뒤에 판정 (마지막 달은 엔딩 판정 전에 바로 처리)
+    if (interactive && !(s.age === 19 && s.month === 12)) {
+      s.pendingContest = { id: cid, age: s.age };
+      events.push(`${CONTESTS[cid].emoji} ${CONTESTS[cid].title}이 열린다! 응원하러 가자`);
+      return;
+    }
+    return finishContest(s, cid, 0.85 + rng() * 0.3, events);
+  }
   switch (s.month) {
     case 3:
       s.ideaPoints += 5;
       events.push(s.age === 8 ? '🌸 초등학교 입학! 새로운 시작 (💡+5)' : '🌸 새 학기 진급! (💡+5)');
       return;
-    case 5: {
-      const r = contest(s, 'STR', rng);
-      const rewards: string[] = [];
-      if (r.win) {
-        s.actionCounts.WIN_SPORTS = (s.actionCounts.WIN_SPORTS ?? 0) + 1;
-        s.status.fame = clamp(s.status.fame + 15, 0, 500);
-        s.gold += 200;
-        rewards.push('명성 +15', '200G');
-        events.push(`🏃 5월 체육대회 우승! (점수 ${r.score}/${r.threshold}) 명성 +15, 200G`);
-      } else events.push(`🏃 5월 체육대회 참가... 아쉽게 탈락 (점수 ${r.score}/${r.threshold})`);
-      return { age: s.age, id: 'SPORTS', title: '5월 체육대회', stat: 'STR', ...r, rewards };
-    }
     case 8:
       s.status.stress = clamp(s.status.stress - 20, 0, 100);
       s.status.affection = clamp(s.status.affection + 5, 0, 100);
       events.push('🏖️ 8월 여름 바캉스! 스트레스 -20, 친밀도 +5');
       return;
-    case 10: {
-      const r = contest(s, 'ART', rng);
-      const rewards: string[] = [];
-      if (r.win) {
-        s.actionCounts.WIN_ARTFEST = (s.actionCounts.WIN_ARTFEST ?? 0) + 1;
-        s.status.fame = clamp(s.status.fame + 15, 0, 500);
-        s.ideaPoints += 5;
-        rewards.push('명성 +15', '💡+5');
-        events.push(`🎭 10월 예술제 입상! (점수 ${r.score}/${r.threshold}) 명성 +15, 💡+5`);
-      } else events.push(`🎭 10월 예술제 참가... 입상 실패 (점수 ${r.score}/${r.threshold})`);
-      return { age: s.age, id: 'ARTFEST', title: '10월 예술제', stat: 'ART', ...r, rewards };
-    }
-    case 12: {
-      const r = contest(s, 'INT', rng);
-      const rewards: string[] = [];
-      if (r.win) {
-        s.actionCounts.WIN_EXAM = (s.actionCounts.WIN_EXAM ?? 0) + 1;
-        s.status.fame = clamp(s.status.fame + 10, 0, 500);
-        s.gold += 300;
-        rewards.push('명성 +10', '300G');
-        events.push(`📝 12월 기말시험 1등! (점수 ${r.score}/${r.threshold}) 명성 +10, 300G`);
-      } else events.push(`📝 12월 기말시험 결과... 평범했다 (점수 ${r.score}/${r.threshold})`);
-      return { age: s.age, id: 'EXAM', title: '12월 기말시험', stat: 'INT', ...r, rewards };
-    }
   }
   return;
 }
@@ -487,7 +503,7 @@ export function refreshCombos(s: SaveState): string[] {
 }
 
 /** STEP 3~5: 4주 스케줄 실행 → 월말 이벤트/상태 체크 → 재화 정산 → 다음 달 */
-export function runMonth(input: SaveState, rng: Rng = Math.random): MonthResult {
+export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { interactiveContest?: boolean } = {}): MonthResult {
   const s = cloneState(input);
   const events: string[] = [];
   refreshCombos(s);
@@ -521,14 +537,7 @@ export function runMonth(input: SaveState, rng: Rng = Math.random): MonthResult 
     s.status.delinquency = clamp(s.status.delinquency - 1, 0, 100);
   }
   updateWish(s, weeks, rng, events);
-  const contestResult = monthEvents(s, rng, events);
-  if (contestResult?.win)
-    addPhoto(s, {
-      emoji: contestResult.id === 'SPORTS' ? '🏃' : contestResult.id === 'ARTFEST' ? '🎭' : '📝',
-      title: `${contestResult.title} ${contestResult.id === 'ARTFEST' ? '입상' : contestResult.id === 'EXAM' ? '1등' : '우승'}`,
-      caption: `${s.age}세, 자랑스러운 순간!`,
-      pose: 'cheer',
-    });
+  const contestResult = monthEvents(s, rng, events, !!opts.interactiveContest);
 
   // STEP 5. 재화 정산 (부모 월급)
   const allowance = monthlyAllowance(s.age);
