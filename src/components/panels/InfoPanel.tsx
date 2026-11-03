@@ -4,6 +4,7 @@ import { frameName } from '../../render/spriteCharacter';
 import { APT_KEYS, STAT_KEYS } from '../../engine/simulation';
 import { growthStage } from '../../engine/room';
 import { APT_META, Bar, STAT_META } from '../ui';
+import { Icon } from '../Icon';
 
 const STAGE_LABEL = { CHILD: '유년기', TEEN: '청소년기', YOUTH: '청년 준비기' };
 
@@ -27,7 +28,7 @@ function Radar({ values }: { values: number[] }) {
         const [x, y] = pt(i, 1.2);
         return (
           <text key={k} x={x} y={y} fontSize={10} textAnchor="middle" dominantBaseline="middle" fill="#1b1f3b">
-            {STAT_META[k].icon}{k}
+            {STAT_META[k].label}
           </text>
         );
       })}
@@ -50,7 +51,7 @@ export function InfoPanel() {
       <div className="mb-3 grid grid-cols-1 gap-1">
         {STAT_KEYS.map((k) => (
           <div key={k} className="flex items-center gap-2">
-            <span className="w-16 shrink-0">{STAT_META[k].icon} {STAT_META[k].label}</span>
+            <span className="flex w-16 shrink-0 items-center gap-1"><Icon name={k} size={16} />{STAT_META[k].label}</span>
             <Bar value={stats[k]} max={999} color={STAT_META[k].color} />
             <span className="w-8 shrink-0 text-right">{stats[k]}</span>
           </div>
@@ -58,16 +59,16 @@ export function InfoPanel() {
       </div>
       <p className="mb-1 font-bold">상태</p>
       <div className="mb-3 grid grid-cols-2 gap-x-3 gap-y-1">
-        <span>😵 스트레스 {status.stress}/100</span>
+        <span className="flex items-center gap-1"><Icon name="STRESS" size={14} /> 스트레스 {status.stress}/100</span>
         <span>❤️ 친밀도 {status.affection}/100</span>
-        <span>⭐ 명성 {status.fame}/500</span>
+        <span className="flex items-center gap-1"><Icon name="FAME" size={14} /> 명성 {status.fame}/500</span>
         <span>😈 비행 {status.delinquency}/100</span>
       </div>
       <p className="mb-1 font-bold">6대 분야 적성</p>
       <div className="grid grid-cols-1 gap-1">
         {APT_KEYS.map((k) => (
           <div key={k} className="flex items-center gap-2">
-            <span className="w-16 shrink-0">{APT_META[k].icon} {APT_META[k].label}</span>
+            <span className="flex w-16 shrink-0 items-center gap-1"><Icon name={k} size={16} />{APT_META[k].label}</span>
             <span className="w-10 shrink-0">Lv.{aptitudes[k].level}</span>
             <Bar value={aptitudes[k].exp} max={100} color="#6ec3f4" height="h-2" />
           </div>

@@ -2,15 +2,20 @@ import { useState } from 'react';
 import { ACTION_TYPE_LABEL, SCHEDULE_ACTIONS } from '../../data/scheduleData';
 import { useGameStore } from '../../store/useGameStore';
 import type { ScheduleAction } from '../../types/game';
-import { PixelButton, STAT_META } from '../ui';
+import { PixelButton, StatChip } from '../ui';
 
 function actionSummary(a: ScheduleAction) {
-  const parts = Object.entries(a.weeklyStatGains).map(([k, v]) => `${STAT_META[k as keyof typeof STAT_META].icon}${v! > 0 ? '+' : ''}${v}`);
-  if (a.aptitudeGain) parts.push(`${a.aptitudeGain.key.replace('APT_', '')}+${a.aptitudeGain.exp}`);
-  if (a.statusGains?.affection) parts.push(`❤️+${a.statusGains.affection}`);
-  if (a.statusGains?.fame) parts.push(`⭐+${a.statusGains.fame}`);
-  if (a.statusGains?.delinquency) parts.push(`😈+${a.statusGains.delinquency}`);
-  return parts.join(' ');
+  return (
+    <span className="flex flex-wrap items-center gap-x-1.5">
+      {Object.entries(a.weeklyStatGains).map(([k, v]) => (
+        <StatChip key={k} k={k} v={v!} size={13} />
+      ))}
+      {a.aptitudeGain && <StatChip k={a.aptitudeGain.key} v={a.aptitudeGain.exp} size={13} />}
+      {a.statusGains?.affection ? <span>❤️+{a.statusGains.affection}</span> : null}
+      {a.statusGains?.fame ? <StatChip k="FAME" v={a.statusGains.fame} size={13} /> : null}
+      {a.statusGains?.delinquency ? <span>😈+{a.statusGains.delinquency}</span> : null}
+    </span>
+  );
 }
 
 export function SchedulePanel({ onRun }: { onRun: () => void }) {

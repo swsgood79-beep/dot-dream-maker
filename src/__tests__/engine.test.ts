@@ -303,3 +303,18 @@ describe('characters do not overlap', () => {
     expect(overlap / N).toBeLessThan(0.03);
   });
 });
+
+import { ko } from '../components/ui';
+import iconAtlas from '../render/iconAtlas.json';
+describe('korean labels & icons', () => {
+  it('translates stat keys in popups', () => {
+    expect(ko('+12 INT')).toBe('+12 지력');
+    expect(ko('APT_LAW Lv.3!')).toBe('법률 Lv.3!');
+    expect(ko('Combo x1.3!')).toBe('콤보 x1.3!');
+    expect(ko('-1 STR')).toBe('-1 체력');
+  });
+  it('has an icon for every stat and aptitude', () => {
+    for (const k of ['INT', 'STR', 'ART', 'CHA', 'MOR', 'TEC', 'APT_MED', 'APT_LAW', 'APT_IT', 'APT_ENT', 'APT_BIZ', 'APT_ADV'])
+      expect(Object.keys(iconAtlas.icons)).toContain(k);
+  });
+});

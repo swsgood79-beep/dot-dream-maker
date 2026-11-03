@@ -3,6 +3,7 @@ import { furnitureSpriteUrl, hasFurnitureSprite, onFurnitureSheetReady } from '.
 import type { AptitudeKey, StatKey } from '../types/game';
 import { pixelIconUrl } from '../render/sprites';
 import { sfx } from '../audio/sfx';
+import { Icon } from './Icon';
 
 export const STAT_META: Record<StatKey, { label: string; icon: string; color: string }> = {
   INT: { label: '지력', icon: '🧠', color: '#6ec3f4' },
@@ -21,6 +22,18 @@ export const APT_META: Record<AptitudeKey, { label: string; icon: string }> = {
   APT_BIZ: { label: '경영', icon: '📈' },
   APT_ADV: { label: '모험', icon: '🗡️' },
 };
+
+/** 화면 표시용 한글 이름 (엔진 내부 키 INT/APT_LAW 등 → 지력/법률) */
+const KO_TOKEN: Record<string, string> = {
+  APT_MED: '의학', APT_LAW: '법률', APT_IT: 'IT', APT_ENT: '예술', APT_BIZ: '경영', APT_ADV: '모험',
+  INT: '지력', STR: '체력', ART: '감성', CHA: '매력', MOR: '도덕', TEC: '기술',
+  Combo: '콤보',
+};
+
+/** 팝업·결과 문구의 영어 키를 한글로: "+12 INT" → "+12 지력", "APT_LAW Lv.3!" → "법률 Lv.3!", "Combo x1.3!" → "콤보 x1.3!" */
+export function ko(text: string): string {
+  return text.replace(/APT_[A-Z]+|\b(?:INT|STR|ART|CHA|MOR|TEC)\b|Combo/g, (m) => KO_TOKEN[m] ?? m);
+}
 
 export const TIER_COLOR: Record<string, string> = {
   SS: 'bg-gradient-to-r from-pink-400 via-yellow-300 to-sky-400',
@@ -65,12 +78,15 @@ export function Bar({ value, max, color, height = 'h-3' }: { value: number; max:
   );
 }
 
-export function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+export function Sheet({ title, icon, onClose, children }: { title: string; icon?: string; onClose: () => void; children: ReactNode }) {
   return (
     <div className="absolute inset-0 z-30 flex flex-col justify-end bg-black/50" onClick={onClose}>
       <div className="pixel-box pop-in flex max-h-[78%] flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b-3 border-ink bg-wood px-3 py-2 text-white">
-          <span className="font-bold">{title}</span>
+          <span className="flex items-center gap-1.5 text-base font-bold">
+            {icon && <Icon name={icon} size={22} />}
+            {title}
+          </span>
           <button onClick={onClose} className="text-lg leading-none">✕</button>
         </div>
         <div className="overflow-y-auto p-3">{children}</div>
@@ -97,6 +113,17 @@ export function PixelIcon({ id, size = 28, className = '' }: { id: string; size?
           }
         />
       )}
+    </span>
+  );
+}
+
+/** 스탯/적성 아이콘 + 값 칩 (예: [뇌]+6) */
+export function StatChip({ k, v, size = 14 }: { k: string; v: number; size?: number }) {
+  return (
+    <span className="inline-flex items-center gap-0.5 whitespace-nowrap">
+      <Icon name={k} size={size} title={ko(k)} />
+      {v > 0 ? '+' : ''}
+      {v}
     </span>
   );
 }

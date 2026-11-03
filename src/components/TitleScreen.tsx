@@ -4,6 +4,7 @@ import { useGameStore } from '../store/useGameStore';
 import type { Gender, StatKey } from '../types/game';
 import { ENDINGS } from '../data/endingData';
 import { PixelButton, STAT_META } from './ui';
+import { Icon } from './Icon';
 import { EncyclopediaPanel } from './panels/EncyclopediaPanel';
 
 const WISHES: { stat: StatKey; text: string }[] = [
@@ -59,7 +60,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
           <PixelButton color="bg-sky" onClick={() => setMode('book')}>
             👑 엔딩 도감 ({unlockedEndings.length}/{ENDINGS.length})
           </PixelButton>
-          <p className="mt-2 text-[10px] text-white/60">v0.5.17 · 부모님 캐릭터 제거</p>
+          <p className="mt-2 text-[10px] text-white/60">v0.6.0 · 도트 아이콘·주아체·한글 스탯</p>
         </div>
       )}
 
@@ -93,9 +94,9 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
                 onClick={() => setBonus(w.stat)}
                 className={`pixel-btn px-1 py-2 text-xs ${bonus === w.stat ? 'bg-gold' : 'bg-white'}`}
               >
-                {STAT_META[w.stat].icon} {w.text}
+                <Icon name={w.stat} size={18} /> {w.text}
                 <br />
-                <span className="text-[10px] opacity-70">{w.stat} +30</span>
+                <span className="text-[10px] opacity-70">{STAT_META[w.stat].label} +30</span>
               </button>
             ))}
           </div>

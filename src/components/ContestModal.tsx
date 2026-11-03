@@ -6,6 +6,7 @@ import { frameName } from '../render/spriteCharacter';
 import type { Gender } from '../types/game';
 import { Sprite } from './Sprite';
 import { PixelButton, STAT_META } from './ui';
+import { Icon } from './Icon';
 
 const THEME: Record<ContestResult['id'], { icon: string; bg: string; stage: string; crowd: string }> = {
   SPORTS: { icon: '🏃', bg: 'linear-gradient(#8fd3ff, #c8f0ff 55%, #6fbf5a 55%, #4f9a45)', stage: '운동장', crowd: '📣' },
@@ -13,7 +14,8 @@ const THEME: Record<ContestResult['id'], { icon: string; bg: string; stage: stri
   EXAM: { icon: '📝', bg: 'linear-gradient(#e8f0e0, #e8f0e0 62%, #b98048 62%, #8a5a35)', stage: '교실', crowd: '✏️' },
 };
 
-const RANK_LABEL = ['🎗️ 참가에 의의!', '🏆 우승!', '🥈 아깝게 2위', '🥉 3위 입상'];
+const RANK_LABEL = ['참가에 의의!', '우승!', '아깝게 2위', '3위 입상'];
+const RANK_ICON = ['SPARKLE', 'TROPHY', 'MEDAL', 'MEDAL'];
 
 /** 연간 대회 판정 연출: 인트로 → 점수 게이지 → 결과 도장 */
 export function ContestModal({ contest, gender, age, onClose }: { contest: ContestResult; gender: Gender; age: number; onClose: () => void }) {
@@ -101,7 +103,10 @@ export function ContestModal({ contest, gender, age, onClose }: { contest: Conte
                 contest.win ? 'border-[#c0392b] bg-gold text-[#c0392b]' : 'border-ink bg-white text-ink'
               }`}
             >
-              {RANK_LABEL[contest.rank]}
+              <span className="inline-flex items-center gap-1">
+                <Icon name={RANK_ICON[contest.rank]} size={24} />
+                {RANK_LABEL[contest.rank]}
+              </span>
             </div>
           )}
         </div>
@@ -110,7 +115,7 @@ export function ContestModal({ contest, gender, age, onClose }: { contest: Conte
         <div className="bg-[#fff6e5] p-3 text-xs">
           <div className="mb-1 flex items-center justify-between font-bold">
             <span>
-              {STAT_META[contest.stat].icon} {STAT_META[contest.stat].label} 점수
+              <Icon name={contest.stat} size={18} /> {STAT_META[contest.stat].label} 점수
             </span>
             <span className={`text-lg tabular-nums ${passed ? 'text-[#c0392b]' : 'text-ink'}`}>{phase === 'intro' ? '???' : shown}</span>
           </div>

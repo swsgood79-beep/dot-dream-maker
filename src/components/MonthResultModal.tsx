@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { COMBO_MAP } from '../data/furnitureData';
 import type { MonthResult } from '../engine/simulation';
-import { PixelButton } from './ui';
+import { PixelButton, ko } from './ui';
 
 const OUTCOME_LABEL = {
   GREAT: { text: '대성공!', cls: 'bg-gold' },
@@ -38,7 +38,7 @@ export function MonthResultModal({ result, onClose }: { result: MonthResult; onC
               </div>
               <div className="mt-1 flex flex-wrap gap-1">
                 {w.popups.map((p, i) => (
-                  <span key={i} className="float-in border border-ink bg-panel px-1 font-bold text-wood">{p}</span>
+                  <span key={i} className="float-in border border-ink bg-panel px-1 font-bold text-wood">{ko(p)}</span>
                 ))}
                 {w.goldDelta !== 0 && <span className="px-1">{w.goldDelta > 0 ? '+' : ''}{w.goldDelta}G</span>}
                 <span className="px-1">😵{w.stressDelta > 0 ? '+' : ''}{w.stressDelta}</span>
@@ -47,7 +47,7 @@ export function MonthResultModal({ result, onClose }: { result: MonthResult; onC
                 <p className="mt-1 text-[10px] text-emerald-700">✨ {w.usedCombos.map((id) => COMBO_MAP[id].name).join(', ')}</p>
               )}
               {w.notes.map((n, i) => (
-                <p key={i} className="text-[10px] text-accent">{n}</p>
+                <p key={i} className="text-[10px] text-accent">{ko(n)}</p>
               ))}
             </div>
           ))}
@@ -55,7 +55,7 @@ export function MonthResultModal({ result, onClose }: { result: MonthResult; onC
         {done && (
           <div className="pop-in mt-2 border-2 border-ink bg-panel-dark p-2">
             {result.events.map((e, i) => (
-              <p key={i}>{e}</p>
+              <p key={i}>{ko(e)}</p>
             ))}
           </div>
         )}

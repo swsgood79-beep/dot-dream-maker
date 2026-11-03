@@ -12,7 +12,7 @@ import { sfx } from '../audio/sfx';
 import type { MonthResult, WeekResult } from '../engine/simulation';
 import type { Pose } from '../render/character';
 import { useGameStore } from '../store/useGameStore';
-import { PixelButton } from './ui';
+import { PixelButton, ko } from './ui';
 
 /**
  * 카이로소프트풍 2D 아이소메트릭 도트 방 (HTML5 Canvas)
@@ -373,7 +373,7 @@ export function IsometricRoomCanvas({
               className="popup-float pointer-events-none absolute text-[16px] font-bold whitespace-nowrap"
               style={{ left: p.x * scale, top: p.y * scale - p.stack * 19, animationDelay: `${p.delay}ms`, color: popupColor(p) }}
             >
-              {p.text}
+              {ko(p.text)}
             </span>
           ))}
         </div>

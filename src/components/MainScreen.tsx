@@ -4,6 +4,7 @@ import { growthStage } from '../engine/room';
 import { STAT_KEYS } from '../engine/simulation';
 import { useGameStore } from '../store/useGameStore';
 import { MonthResultModal } from './MonthResultModal';
+import { Icon } from './Icon';
 import { ContestModal } from './ContestModal';
 import { sfx } from '../audio/sfx';
 import type { MonthResult } from '../engine/simulation';
@@ -17,19 +18,19 @@ import { InfoPanel } from './panels/InfoPanel';
 
 type Tab = 'schedule' | 'room' | 'talk' | 'book' | 'info';
 const TABS: { id: Tab; icon: string; label: string; color: string }[] = [
-  { id: 'schedule', icon: '📅', label: '스케줄', color: '#ff6fae' },
-  { id: 'room', icon: '🛋️', label: '방꾸미기', color: '#ffc23c' },
-  { id: 'talk', icon: '👟', label: '외출', color: '#5cc85c' },
-  { id: 'book', icon: '👑', label: '엔딩도감', color: '#ef5a4a' },
-  { id: 'info', icon: '📊', label: '내아이', color: '#3fb0ef' },
+  { id: 'schedule', icon: 'NAV_SCHEDULE', label: '스케줄', color: '#ff6fae' },
+  { id: 'room', icon: 'NAV_ROOM', label: '방꾸미기', color: '#ffc23c' },
+  { id: 'talk', icon: 'NAV_OUTING', label: '외출', color: '#5cc85c' },
+  { id: 'book', icon: 'NAV_BOOK', label: '엔딩도감', color: '#ef5a4a' },
+  { id: 'info', icon: 'NAV_INFO', label: '내아이', color: '#3fb0ef' },
 ];
 
 /** 계절 아이콘 */
 function season(month: number) {
-  if (month >= 3 && month <= 5) return '🌸';
-  if (month >= 6 && month <= 8) return '☀️';
-  if (month >= 9 && month <= 11) return '🍁';
-  return '❄️';
+  if (month >= 3 && month <= 5) return 'SPRING';
+  if (month >= 6 && month <= 8) return 'SUMMER';
+  if (month >= 9 && month <= 11) return 'AUTUMN';
+  return 'WINTER';
 }
 const STAGE_ICON = { CHILD: '🐣', TEEN: '🐥', YOUTH: '🐓' };
 
@@ -59,7 +60,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
             title="스케줄"
           >
             <span className="w-full rounded-t-sm bg-accent py-0.5 text-center text-[10px] font-bold text-white">{game.month}월</span>
-            <span className="py-1 text-2xl">📅</span>
+            <Icon name="NAV_SCHEDULE" size={30} className="my-0.5" />
           </button>
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <div className="flex gap-1">
@@ -67,31 +68,31 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
                 <span className="truncate font-bold">
                   {game.age}세 <span className="text-gold">{game.month}월</span> · {game.childName}
                 </span>
-                <span className="rounded-sm border border-ink bg-sky/80 px-0.5 text-sm leading-tight" title={STAGE_ICON[growthStage(game.age)]}>
-                  {season(game.month)}
-                </span>
+                <Icon name={season(game.month)} size={20} title={STAGE_ICON[growthStage(game.age)]} />
               </div>
               <div className="hud-slot flex items-center gap-1 rounded px-2 py-1 font-bold">
-                <span className="flex h-4 w-4 items-center justify-center rounded-full border border-ink bg-gold text-[9px] text-ink">G</span>
+                <Icon name="GOLD" size={18} />
                 <span className="text-gold tabular-nums">{game.gold.toLocaleString()}</span>
               </div>
             </div>
             <div className="flex gap-1">
               <div className="hud-slot flex min-w-0 flex-1 items-center gap-1.5 rounded px-2 py-1">
-                <span className="shrink-0 text-[11px]">😵 Stress</span>
+                <Icon name="STRESS" size={16} />
+                <span className="shrink-0 text-[11px]">스트레스</span>
                 <div className="h-2.5 min-w-0 flex-1 border-2 border-ink bg-[#1b1f3b]">
                   <div className="h-full" style={{ width: `${stress}%`, background: stressColor }} />
                 </div>
                 <span className="shrink-0 tabular-nums">{stress}</span>
               </div>
               <div className="hud-slot flex items-center gap-1 rounded px-1.5 py-1 font-bold" title="영감 포인트">
-                💡<span className="tabular-nums">{game.ideaPoints}</span>
+                <Icon name="IDEA" size={16} />
+                <span className="tabular-nums">{game.ideaPoints}</span>
               </div>
               <button onClick={toggleMute} className="hud-slot rounded px-1" title={muted ? '소리 켜기' : '소리 끄기'}>
-                {muted ? '🔇' : '🔊'}
+                <Icon name={muted ? 'SOUND_OFF' : 'SOUND_ON'} size={18} />
               </button>
-              <button onClick={onTitle} className="hud-slot rounded px-1.5" title="타이틀로">
-                ⌂
+              <button onClick={onTitle} className="hud-slot rounded px-1" title="타이틀로">
+                <Icon name="HOME" size={18} />
               </button>
             </div>
           </div>
@@ -103,7 +104,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
               className="flex items-center justify-center gap-0.5 rounded border-2 border-ink py-0.5 font-bold shadow-[inset_0_2px_0_rgba(255,255,255,.5)]"
               style={{ background: STAT_META[k].color }}
             >
-              <span className="text-sm leading-none">{STAT_META[k].icon}</span>
+              <Icon name={k} size={15} title={STAT_META[k].label} />
               <span className="tabular-nums">{game.stats[k]}</span>
             </span>
           ))}
@@ -121,7 +122,9 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
         {game.activeCombos.length > 0 && !playing && (
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {game.activeCombos.map((id) => (
-              <span key={id} className="rounded border-2 border-ink bg-[#fff6e5]/90 px-1 text-[10px] font-bold shadow-[2px_2px_0_rgba(0,0,0,.3)]">✨ {COMBO_MAP[id].name}</span>
+              <span key={id} className="rounded border-2 border-ink bg-[#fff6e5]/90 px-1 text-[10px] font-bold shadow-[2px_2px_0_rgba(0,0,0,.3)]">
+                <Icon name="SPARKLE" size={12} /> {COMBO_MAP[id].name}
+              </span>
             ))}
           </div>
         )}
@@ -142,13 +145,14 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
               setTab(t.id);
             }}
             className="dock-btn flex flex-col items-center py-1.5 text-[10px] font-bold" style={{ background: t.color }}>
-            <span className="text-2xl leading-tight drop-shadow-[1px_1px_0_#1b1f3b]">{t.icon}</span>[{t.label}]
+            <Icon name={t.icon} size={30} className="drop-shadow-[1px_1px_0_#1b1f3b]" />
+            {t.label}
           </button>
         ))}
       </nav>
 
       {tab === 'schedule' && (
-        <Sheet title={`📅 ${game.month}월 스케줄 편성`} onClose={() => setTab(null)}>
+        <Sheet icon="NAV_SCHEDULE" title={`${game.month}월 스케줄 편성`} onClose={() => setTab(null)}>
           <SchedulePanel
             onRun={() => {
               setTab(null);
@@ -158,7 +162,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
         </Sheet>
       )}
       {tab === 'room' && (
-        <Sheet title="🛋️ 방 꾸미기" onClose={() => setTab(null)}>
+        <Sheet icon="NAV_ROOM" title="방 꾸미기" onClose={() => setTab(null)}>
           <ShopPanel
             onPlaceMode={(id) => {
               setPlacingId(id);
@@ -168,17 +172,17 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
         </Sheet>
       )}
       {tab === 'talk' && (
-        <Sheet title="👟 외출 / 대화" onClose={() => setTab(null)}>
+        <Sheet icon="NAV_OUTING" title="외출 / 대화" onClose={() => setTab(null)}>
           <TalkPanel />
         </Sheet>
       )}
       {tab === 'book' && (
-        <Sheet title="👑 엔딩 도감" onClose={() => setTab(null)}>
+        <Sheet icon="NAV_BOOK" title="엔딩 도감" onClose={() => setTab(null)}>
           <EncyclopediaPanel />
         </Sheet>
       )}
       {tab === 'info' && (
-        <Sheet title="📊 내 아이 정보" onClose={() => setTab(null)}>
+        <Sheet icon="NAV_INFO" title="내 아이 정보" onClose={() => setTab(null)}>
           <InfoPanel />
         </Sheet>
       )}

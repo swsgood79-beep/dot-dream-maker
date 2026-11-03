@@ -9,6 +9,7 @@ import { useGameStore } from '../store/useGameStore';
 import type { CharacterStats, StatKey } from '../types/game';
 import { Sprite } from './Sprite';
 import { Bar, PixelButton, STAT_META, TIER_COLOR } from './ui';
+import { Icon } from './Icon';
 
 type Step = 'intro' | 'album' | 'drum' | 'reveal';
 
@@ -98,13 +99,13 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
                 </div>
                 <p className="mt-2 text-sm font-bold">{label}</p>
                 <p className="mb-2 text-[10px] opacity-70">
-                  가장 빛난 재능: {STAT_META[best].icon} {STAT_META[best].label} {snap.stats[best]} · 명성 {snap.fame}
+                  가장 빛난 재능: <Icon name={best} size={14} /> {STAT_META[best].label} {snap.stats[best]} · <Icon name="FAME" size={14} /> 명성 {snap.fame}
                 </p>
                 <div className="grid grid-cols-1 gap-0.5 text-[10px]">
                   {STAT_KEYS.map((k) => (
                     <div key={k} className="flex items-center gap-1">
                       <span className="w-12 shrink-0 text-left">
-                        {STAT_META[k].icon} {STAT_META[k].label}
+                        <Icon name={k} size={13} /> {STAT_META[k].label}
                       </span>
                       <Bar value={snap.stats[k]} max={999} color={STAT_META[k].color} height="h-2" />
                       <span className="w-7 shrink-0 text-right tabular-nums">{snap.stats[k]}</span>
@@ -186,7 +187,7 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
           <div className="grid w-full grid-cols-3 gap-1 text-[10px] text-ink">
             {STAT_KEYS.map((k) => (
               <span key={k} className="rounded border-2 border-ink bg-white px-1 py-0.5">
-                {STAT_META[k].icon} {k} {game.stats[k]}
+                <Icon name={k} size={14} /> {STAT_META[k].label} {game.stats[k]}
               </span>
             ))}
           </div>

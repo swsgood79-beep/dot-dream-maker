@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './fonts/jua.css';
 
 /* 도트 한글 폰트: Galmuri11 (SIL OFL) — 필요한 두 파일만 로드 */
 @font-face {
@@ -15,7 +16,9 @@
 }
 
 @theme {
-  --font-pixel: 'Galmuri11', monospace;
+  /* 메뉴·본문: 둥글고 읽기 쉬운 주아체, 없으면 도트 폰트 */
+  --font-pixel: 'Jua', 'Galmuri11', sans-serif;
+  --font-dot: 'Galmuri11', monospace;
   --color-ink: #1b1f3b;
   --color-panel: #fff6e5;
   --color-panel-dark: #f1d9a7;
@@ -37,7 +40,7 @@ body {
   background: #12142b;
   color: var(--color-ink);
   font-family: var(--font-pixel);
-  -webkit-font-smoothing: none;
+  -webkit-font-smoothing: antialiased;
   image-rendering: pixelated;
   overscroll-behavior: none;
 }
