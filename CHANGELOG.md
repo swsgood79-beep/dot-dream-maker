@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.21.1 — 이벤트 장면 일러스트 (딸 81장면)
+
+### 추가
+- 딸 이벤트 장면 21장(`assets-src/events-daughter/event-e01~e21.png`) → `{이벤트ID}_DAUGHTER.jpg` 81장면
+- 이제 아들·딸 모두 이벤트 창·성장 컷신·사진첩·일기 회상에 장면 그림이 나옴
+- 검토용 목록 이미지: `docs/review/event-scenes-daughter-1~3.jpg`
+
 ## v0.21.0 — 이벤트 장면 일러스트 (아들 81장면)
 
 ### 추가
