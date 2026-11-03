@@ -525,11 +525,14 @@ import { PARENT_JOBS, PARENT_TOTAL, ABILITIES, randomParent, PARENT_JOB_MAP } fr
 describe('parent profile', () => {
   it('every job preset uses exactly the total points', () => {
     for (const j of PARENT_JOBS) expect(ABILITIES.reduce((a, k) => a + j.points[k], 0)).toBe(PARENT_TOTAL);
+    // 랜덤은 16개 직업 중 하나를 그대로 뽑는다
     for (let i = 0; i < 30; i++) {
       const r = randomParent();
-      expect(ABILITIES.reduce((a, k) => a + r.points[k], 0)).toBe(PARENT_TOTAL);
-      expect(Math.max(...ABILITIES.map((k) => r.points[k]))).toBeLessThanOrEqual(5);
+      expect(r.job).not.toBe('CUSTOM');
+      expect(r.points).toEqual(PARENT_JOB_MAP[r.job as keyof typeof PARENT_JOB_MAP].points);
     }
+    expect(PARENT_JOBS.length).toBe(16);
+    for (const c of ['RICH', 'MIDDLE', 'WORKING', 'POOR']) expect(PARENT_JOBS.filter((j) => j.cls === c).length).toBeGreaterThanOrEqual(3);
   });
 
   it('wealthy parents give more gold, scholars a smarter start', () => {

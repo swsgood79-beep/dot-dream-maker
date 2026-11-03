@@ -2,6 +2,7 @@ import type { StatKey } from '../types/game';
 import type { SaveState } from '../engine/simulation';
 import { ARC_EVENTS } from './arcData';
 import { ENDINGS } from './endingData';
+import { parentClass } from './parentData';
 
 const ENDING_TITLE: Record<string, string> = Object.fromEntries(ENDINGS.map((e) => [e.id, e.title.replace(/ \(.*\)$/, '')]));
 const ENDING_CATEGORY: Record<string, string> = Object.fromEntries(ENDINGS.map((e) => [e.id, e.category]));
@@ -491,6 +492,48 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
       { label: '앞치마를 입혀 같이 가게를 본다', style: 'WARM', fx: { CHA: 8, MOR: 4, affection: 5 }, reply: '단골 할머니가 사탕 주셨어!' },
       { label: '거스름돈 계산부터 정확히 하게 한다', style: 'STRICT', fx: { INT: 8, TEC: 4, stress: 4 }, reply: '3천 원 내셨으니까... 1,200원! 맞지?' },
       { label: '하고 싶은 만큼만 하라고 한다', style: 'FREE', fx: { CHA: 6, gold: 50, stress: -3 }, reply: '용돈 벌었다! 오늘 장사 잘됐어!' },
+    ],
+  },
+
+  // ───────── 집안 형편 (계층별)
+  {
+    id: 'K_RICH', emoji: '💎', title: '과외 선생님만 다섯 명', minAge: 10, maxAge: 15, weight: 2,
+    cond: (s) => parentClass(s.parent) === 'RICH',
+    text: '수학, 영어, 피아노, 골프, 중국어... {name이} 지친 얼굴로 말해요. "나도 친구들이랑 놀이터 가고 싶어."',
+    choices: [
+      { label: '과외를 몇 개 줄이고 놀 시간을 준다', style: 'WARM', fx: { stress: -15, affection: 8, CHA: 4 }, reply: '진짜?! 오늘 처음으로 떡볶이 사 먹어 봤어!' },
+      { label: '지금 고생해야 나중에 편하다고 한다', style: 'STRICT', fx: { INT: 12, TEC: 6, stress: 12, affection: -5 }, reply: '...나중은 언제 오는데?' },
+      { label: '무엇을 계속할지 직접 고르게 한다', style: 'FREE', fx: { stress: -8, MOR: 5, ART: 5 }, reply: '피아노만 남길래. 그건 진짜 좋아하거든.' },
+    ],
+  },
+  {
+    id: 'K_MIDDLE', emoji: '🍖', title: '주말 가족 외식', minAge: 8, maxAge: 16, weight: 1.5,
+    cond: (s) => parentClass(s.parent) === 'MIDDLE',
+    text: '이번 주말은 한 달에 한 번 가족 외식 날! "오늘은 내가 메뉴 고를래!"',
+    choices: [
+      { label: '아이가 고른 곳으로 간다', style: 'WARM', fx: { affection: 6, stress: -6, gold: -100 }, reply: '돈가스 최고! 다음 달에도 여기 오자!' },
+      { label: '골고루 먹을 수 있는 한식집으로', style: 'STRICT', fx: { STR: 4, MOR: 3, gold: -80 }, reply: '...나물도 먹었어. 칭찬해 줘.' },
+      { label: '집에서 같이 요리해 먹자고 한다', style: 'FREE', fx: { TEC: 6, affection: 4 }, reply: '내가 만든 김밥이 제일 맛있다!' },
+    ],
+  },
+  {
+    id: 'K_WORKING', emoji: '🔑', title: '혼자 기다리는 저녁', minAge: 8, maxAge: 13, weight: 2,
+    cond: (s) => parentClass(s.parent) === 'WORKING',
+    text: '일이 늦게 끝나 밤 9시에 들어왔어요. {name이} 식탁에 라면 두 개를 끓여 놓고 기다리고 있었어요.',
+    choices: [
+      { label: '꼭 안아 주고 같이 라면을 먹는다', style: 'WARM', fx: { affection: 10, stress: -6 }, reply: '불었지? 그래도 같이 먹으니까 맛있다.' },
+      { label: '불 쓰면 위험하다고 주의를 준다', style: 'STRICT', fx: { MOR: 6, TEC: 3, affection: -3 }, reply: '...조심했단 말이야. 다음엔 전자레인지 쓸게.' },
+      { label: '"다 컸네!" 하고 칭찬해 준다', style: 'FREE', fx: { TEC: 5, CHA: 3, affection: 5 }, reply: '헤헤. 내일은 계란도 넣어 볼게!' },
+    ],
+  },
+  {
+    id: 'K_POOR', emoji: '🚌', title: '수학여행비', minAge: 12, maxAge: 17, weight: 2.5,
+    cond: (s) => parentClass(s.parent) === 'POOR',
+    text: '가정통신문에 수학여행비 30만 원. {name이} 종이를 슬쩍 구겨 가방에 넣는 걸 봤어요. "...나 안 가도 돼."',
+    choices: [
+      { label: '무리해서라도 보내 준다', style: 'WARM', fx: { gold: -300, affection: 10, CHA: 5, stress: -8 }, reply: '(공항에서 문자) 고마워. 진짜 진짜 고마워. 사진 많이 찍어 올게.' },
+      { label: '형편을 솔직하게 이야기하고 함께 방법을 찾는다', style: 'STRICT', fx: { MOR: 10, INT: 4, affection: 3 }, reply: '학교에 지원 제도가 있대! 선생님이 도와주신대.' },
+      { label: '아이가 알바로 보태겠다는 걸 허락한다', style: 'FREE', fx: { gold: -100, TEC: 5, MOR: 6, stress: 4 }, reply: '전단지 돌려서 반은 내가 냈어! 나 좀 멋있지?' },
     ],
   },
 

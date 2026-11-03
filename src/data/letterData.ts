@@ -3,7 +3,7 @@ import type { SaveState } from '../engine/simulation';
 import { dominantStyle } from '../engine/parenting';
 import { TEMPERAMENT_MAP } from './temperamentData';
 import { fillName } from './parentingData';
-import { PARENT_JOB_MAP } from './parentData';
+import { PARENT_JOB_MAP, parentClass } from './parentData';
 
 /** 예전 선택(이벤트ID:스타일)이 편지 속 한 문장이 된다 */
 export const MEMORY_LINES: Record<string, string> = {
@@ -95,8 +95,12 @@ export function buildLetter(s: SaveState, ending: EndingDefinition): { greeting:
   if (pr) {
     const job = pr.job !== 'CUSTOM' ? PARENT_JOB_MAP[pr.job] : null;
     if (job && job.likeParent.includes(ending.id)) body.push(`어릴 때부터 ${job.label}인 엄마 아빠를 보고 자라서일까요? 저도 비슷한 길을 걷게 됐어요.`);
-    else if (pr.points.WEALTH <= 1) body.push('넉넉하지 않은 살림에도 하고 싶은 걸 하게 해 주려고 애쓰신 거, 다 알아요.');
-    else if (pr.points.WEALTH >= 4) body.push('부족한 것 없이 키워 주셔서 감사해요. 이제 제가 갚을 차례예요.');
+    else {
+      const c = parentClass(pr);
+      if (c === 'POOR') body.push('가진 게 없어도 우리 집이 제일 따뜻했어요. 이제 제가 엄마 아빠를 지킬게요.');
+      else if (c === 'WORKING') body.push('넉넉하지 않은 살림에도 하고 싶은 걸 하게 해 주려고 애쓰신 거, 다 알아요.');
+      else if (c === 'RICH') body.push('부족한 것 없이 키워 주셔서 감사해요. 그래도 제일 좋았던 건 같이 보낸 시간이었어요.');
+    }
   }
 
   if (s.dreamJob) {

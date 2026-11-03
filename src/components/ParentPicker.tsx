@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { sfx } from '../audio/sfx';
 import {
   ABILITIES,
   ABILITY_META,
+  CLASSES,
+  CLASS_META,
   PARENT_JOBS,
   PARENT_JOB_MAP,
   PARENT_MAX,
@@ -14,6 +17,7 @@ import {
 
 /** "우리 집은 어떤 집?" — 직업 프리셋 · 직접 조정 · 🎲 랜덤 */
 export function ParentPicker({ value, onChange }: { value: ParentProfile; onChange: (p: ParentProfile) => void }) {
+  const [rolled, setRolled] = useState<string | null>(null);
   const used = ABILITIES.reduce((a, k) => a + value.points[k], 0);
   const left = PARENT_TOTAL - used;
   const set = (k: (typeof ABILITIES)[number], d: number) => {
@@ -29,38 +33,50 @@ export function ParentPicker({ value, onChange }: { value: ParentProfile; onChan
 
   return (
     <div>
-      <div className="mb-2 grid grid-cols-4 gap-1">
-        {PARENT_JOBS.map((j) => (
-          <button
-            key={j.id}
-            onClick={() => {
-              sfx('click');
-              onChange({ job: j.id, points: { ...j.points } });
-            }}
-            className={`pixel-btn flex flex-col items-center px-0.5 py-1 text-[10px] leading-tight ${value.job === j.id ? 'bg-gold' : 'bg-white'}`}
-          >
-            <span className="text-lg">{j.emoji}</span>
-            {j.label}
-          </button>
-        ))}
-      </div>
+      {CLASSES.map((c) => (
+        <div key={c} className="mb-1.5 rounded border-2 border-ink/40 p-1" style={{ background: CLASS_META[c].color }}>
+          <p className="mb-1 px-0.5 text-[10px] font-bold">
+            {CLASS_META[c].emoji} {CLASS_META[c].label} <span className="font-normal opacity-60">— {CLASS_META[c].desc}</span>
+          </p>
+          <div className="grid grid-cols-4 gap-1">
+            {PARENT_JOBS.filter((j) => j.cls === c).map((j) => (
+              <button
+                key={j.id}
+                onClick={() => {
+                  sfx('click');
+                  onChange({ job: j.id, points: { ...j.points } });
+                }}
+                className={`pixel-btn flex flex-col items-center px-0.5 py-1 text-[9px] leading-tight ${value.job === j.id ? 'bg-gold' : 'bg-white'}`}
+              >
+                <span className="text-base">{j.emoji}</span>
+                {j.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
       <button
         onClick={() => {
           sfx('page');
-          onChange(randomParent());
+          const r = randomParent();
+          onChange(r);
+          setRolled(r.job as string);
         }}
         className="pixel-btn mb-2 w-full bg-sky py-1.5 text-xs"
       >
-        🎲 주사위로 정하기
+        🎲 주사위로 직업 뽑기
       </button>
       <p className="mb-1 text-center text-[11px]">
         {job ? (
-          <>
+          <span key={rolled ?? job.id} className={rolled === job.id ? 'pop-in inline-block' : ''}>
+            {rolled === job.id && '🎲 '}
             <b>
               {job.emoji} {job.label}
             </b>{' '}
-            <span className="opacity-70">— {job.desc}</span>
-          </>
+            <span className="opacity-70">
+              ({CLASS_META[job.cls].label}) — {job.desc}
+            </span>
+          </span>
         ) : (
           <b>🏠 우리만의 집 (직접 설정)</b>
         )}
