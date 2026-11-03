@@ -150,7 +150,16 @@ def cut(img, box, block=BLOCK):
     return out[ys.min() : ys.max() + 1, xs.min() : xs.max() + 1]
 
 
-def walk_frames(s, lift=None):
+def fit_cut(img, box, target_h):
+    """잘라낸 그림의 실제 키가 target_h 가 되도록 축소 비율을 두 번에 걸쳐 맞춘다
+    (검출 상자에는 여백이 섞여 있어 상자 높이로만 계산하면 작아짐)"""
+    blk = (box[3] - box[1]) / target_h
+    spr = cut(img, box, blk)
+    blk *= spr.shape[0] / target_h
+    return cut(img, box, blk), blk
+
+
+def walk_frames(s, lift=None, back=False):
     """s: HxWx4 서기 스프라이트 → 걷기 4프레임 (각 H+2 x W)"""
     h, w, _ = s.shape
     a = s[..., 3] > 0
@@ -199,15 +208,27 @@ def walk_frames(s, lift=None):
     # (왼다리 dx,dy), (오른다리 dx,dy), 몸 dy, (왼팔 dy, 오른팔 dy)
     lift = lift or max(2, h // 28)
     # 발 디딤(contact) 프레임: 한쪽 다리 들고 몸이 1px 내려앉음 / 교차(passing) 프레임: 기본 자세
-    cycle = [
-        ((-1, -lift), (1, 0), 1, (1, -1)),   # 왼발 앞으로
-        ((0, 0), (0, 0), 0, (0, 0)),         # 교차
-        ((-1, 0), (1, -lift), 1, (-1, 1)),   # 오른발 앞으로
-        ((0, 0), (0, 0), 0, (0, 0)),
-    ]
+    if back:
+        # 뒷모습(멀어지며 걷기): 내딛는 발은 위(먼 쪽)로, 남는 발은 아래(가까운 쪽)로 → 보폭이 생김.
+        # 발을 디딜 때 몸이 1px 내려앉고, 디딘 발 쪽으로 1px 기울어짐. 팔은 다리와 반대로.
+        # 항목: (왼다리 dx,dy), (오른다리 dx,dy), 몸 dy, (왼팔 dy, 오른팔 dy), 몸 dx
+        cycle = [
+            ((0, -lift), (0, 1), 1, (1, -1), 1),   # 왼발 내딛기 (오른발로 디딤)
+            ((0, -1), (0, 0), 0, (0, 0), 0),       # 교차
+            ((0, 1), (0, -lift), 1, (-1, 1), -1),  # 오른발 내딛기
+            ((0, 0), (0, -1), 0, (0, 0), 0),       # 교차
+        ]
+    else:
+        # 발 디딤(contact) 프레임: 한쪽 다리 들고 몸이 1px 내려앉음 / 교차(passing) 프레임: 기본 자세
+        cycle = [
+            ((-1, -lift), (1, 0), 1, (1, -1), 0),   # 왼발 앞으로
+            ((0, 0), (0, 0), 0, (0, 0), 0),         # 교차
+            ((-1, 0), (1, -lift), 1, (-1, 1), 0),   # 오른발 앞으로
+            ((0, 0), (0, 0), 0, (0, 0), 0),
+        ]
     frames = []
-    for (ldx, ldy), (rdx, rdy), bdy, (la, ra) in cycle:
-        out = np.zeros((h + 2, w, 4), np.uint8)
+    for (ldx, ldy), (rdx, rdy), bdy, (la, ra), bdx in cycle:
+        out = np.zeros((h + 3, w, 4), np.uint8)
         # 다리를 먼저, 몸통을 위에 (들린 다리가 치마/상의 아래로 들어가게)
         paste(out, left, ldx, ldy + 2)
         paste(out, right, rdx, rdy + 2)
@@ -216,11 +237,13 @@ def walk_frames(s, lift=None):
         if la or ra:
             body[shoulder:leg_top + 4, bx0:bx0 + arm_w] = 0
             body[shoulder:leg_top + 4, bx1 - arm_w + 1:bx1 + 1] = 0
-        paste(out, body, 0, bdy + 2)
+        paste(out, body, bdx, bdy + 2)
         if la or ra:
-            paste(out, la_l, 0, bdy + 2 + la)
-            paste(out, ra_l, 0, bdy + 2 + ra)
-        frames.append(out)
+            paste(out, la_l, bdx, bdy + 2 + la)
+            paste(out, ra_l, bdx, bdy + 2 + ra)
+        # 아래 빈 줄 제거 (발끝을 기준선에 맞춤)
+        ys = np.where(out[..., 3].any(axis=1))[0]
+        frames.append(out[: ys.max() + 1])
     return frames
 
 
@@ -295,9 +318,9 @@ for g, path in BACK_SHEETS.items():
         if f'{st}_{g}' in BACK_SYNTH:
             # 원본 걷기 그림이 이상한 줄: 똑바로 등을 보인 '뒤 서기'에서 걷기 4프레임을 직접 생성
             target_h = sprites[f'{st}_{g}_stand'].shape[0]
-            stand = cut(img_b, stand_box, (stand_box[3] - stand_box[1]) / target_h)
+            stand, _ = fit_cut(img_b, stand_box, target_h)
             sprites[f'{st}_{g}_back_stand'] = stand
-            for i, wf in enumerate(walk_frames(stand, lift=3)):
+            for i, wf in enumerate(walk_frames(stand, lift=3, back=True)):
                 sprites[f'{st}_{g}_back_walk{i}'] = wf
             print(f'  {g} {st} 뒷모습 걷기: 뒤 서기 그림에서 4프레임 생성')
             continue
@@ -309,8 +332,7 @@ for g, path in BACK_SHEETS.items():
         b_i = max(rest[1:], key=lambda i: abs(feats[i][1] - feats[a_i][1]) + 0.3 * feats[i][0])
         print(f'  {g} {st} 뒷모습 걷기: 보폭 {a_i + 2}번 → 교차 {pass_i + 2}번 → 보폭 {b_i + 2}번')
         target_h = sprites[f'{st}_{g}_stand'].shape[0]
-        blk = (stand_box[3] - stand_box[1]) / target_h  # 뒤 서기 키 = 앞 서기 키
-        sprites[f'{st}_{g}_back_stand'] = cut(img_b, stand_box, blk)
+        sprites[f'{st}_{g}_back_stand'], blk = fit_cut(img_b, stand_box, target_h)  # 뒤 서기 키 = 앞 서기 키
         for k, i in zip(('back_walk0', 'back_walk1', 'back_walk2', 'back_walk3'), (a_i, pass_i, b_i, pass_i)):
             sprites[f'{st}_{g}_{k}'] = cut(img_b, walks[i], blk)
 
@@ -336,8 +358,8 @@ for g, path in POSE_SHEETS.items():
     pboxes.sort(key=lambda b: (int(((b[1] + b[3]) / 2) // (Hp / 3)), b[0]))
     named = dict(zip(names_g, pboxes))
     for st in STAGES:
-        ref_h = np.median([named[f'{st}_{g}_{k}'][3] - named[f'{st}_{g}_{k}'][1] for k in ('draw', 'music', 'tired')])
-        blk = ref_h / sprites[f'{st}_{g}_stand'].shape[0]
+        target_h = sprites[f'{st}_{g}_stand'].shape[0]
+        blk = float(np.median([fit_cut(img_p, named[f'{st}_{g}_{k}'], target_h)[1] for k in ('draw', 'music', 'tired')]))
         for k in POSE_COLS:
             name = f'{st}_{g}_{k}'
             if name not in POSE_EXCLUDE:
