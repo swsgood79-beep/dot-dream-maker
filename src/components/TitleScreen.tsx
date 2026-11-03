@@ -95,7 +95,7 @@ export function TitleScreen({ onStart, onOpening }: { onStart: () => void; onOpe
       </div>
 
       {mode === 'menu' && (
-        <div className="relative flex w-full max-w-xs flex-col gap-2.5">
+        <div className="relative z-10 flex w-full max-w-xs flex-col gap-2.5">
           {game && (
             <PixelButton color="bg-mint" onClick={onStart}>
               ▶ 이어하기 <span className="text-xs font-normal">({game.childName}, {game.age}세 {game.month}월)</span>
@@ -115,13 +115,13 @@ export function TitleScreen({ onStart, onOpening }: { onStart: () => void; onOpe
               🏅 업적 ({achCount}/{ACHIEVEMENTS.length})
             </PixelButton>
           </div>
-          <p className="mt-1 text-[10px] font-bold text-ink/60">v0.17.0 · 인트로와 튜토리얼</p>
+          <p className="mt-1 text-[10px] font-bold text-ink/60">v0.17.1 · 인트로와 튜토리얼</p>
         </div>
       )}
       {settings && <SettingsModal onClose={() => setSettings(false)} onOpening={onOpening} />}
 
       {mode === 'family' && (
-        <div className="pixel-box max-h-[72%] w-full max-w-xs overflow-y-auto p-3 text-left text-sm">
+        <div className="pixel-box relative z-10 max-h-[72%] w-full max-w-xs overflow-y-auto p-3 text-left text-sm">
           <p className="mb-1 font-bold">🏠 우리 집은 어떤 집?</p>
           <p className="mb-2 text-[10px] opacity-70">부모의 직업을 고르거나 능력치를 직접 나눠 주세요. 주사위로 정할 수도 있어요.</p>
           <ParentPicker value={parent} onChange={setParent} />
@@ -135,7 +135,7 @@ export function TitleScreen({ onStart, onOpening }: { onStart: () => void; onOpe
       )}
 
       {mode === 'create' && (
-        <div className="pixel-box max-h-[72%] w-full max-w-xs overflow-y-auto p-4 text-left text-sm">
+        <div className="pixel-box relative z-10 max-h-[72%] w-full max-w-xs overflow-y-auto p-4 text-left text-sm">
           <p className="mb-2 font-bold">아이의 성별</p>
           <div className="mb-4 grid grid-cols-2 gap-2">
             {(['SON', 'DAUGHTER'] as Gender[]).map((g) => (
