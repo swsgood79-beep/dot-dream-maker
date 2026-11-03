@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { sceneFor, sceneLine } from '../data/activityScenes';
 import type { WeekResult } from '../engine/simulation';
 import { frameName, hasFrame } from '../render/spriteCharacter';
+import { readLight, type Light } from '../render/sceneLight';
 import type { Gender } from '../types/game';
 import { Sprite } from './Sprite';
 import { ko } from './ui';
@@ -21,11 +22,17 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
   const sc = sceneFor(week);
   const line = sceneLine(week);
   const [typed, setTyped] = useState(0);
+  const [light, setLight] = useState<Light | null>(null);
   useEffect(() => {
     if (typed >= line.length) return;
     const t = setTimeout(() => setTyped((n) => n + 1), 28);
     return () => clearTimeout(t);
   }, [typed, line]);
+  const bgId = week.outcome === 'RUNAWAY' ? 'RUNAWAY' : week.actionId;
+  useEffect(() => {
+    const u = sceneBg(bgId);
+    if (u) readLight(u, setLight);
+  }, [bgId]);
   if (!sc) return null;
   const great = week.outcome === 'GREAT';
   const fail = week.outcome === 'FAIL';
@@ -37,7 +44,11 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
   return (
     <div className="scene-in absolute inset-0 z-20 overflow-hidden" style={{ background: `linear-gradient(${sc.sky[0]}, ${sc.sky[1]})` }}>
       {bg ? (
-        <img src={bg} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <>
+          <img src={bg} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ filter: 'saturate(.92) brightness(.94)' }} />
+          {/* 아이 쪽으로 빛이 모이고 가장자리는 살짝 어둡게 → 아이가 장면 안에 서 있는 느낌 */}
+          <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(ellipse 60% 45% at 50% 66%, rgba(255,246,220,.22), transparent 70%), radial-gradient(ellipse at 50% 55%, transparent 55%, rgba(20,16,30,.38))' }} />
+        </>
       ) : (
         /* 바닥 */
         <div className="absolute inset-x-0 bottom-0 h-[30%] border-t-4 border-black/20" style={{ background: sc.floor }} />
@@ -63,8 +74,15 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
       ))}
       {/* 아이 + 효과 */}
       <div className="absolute bottom-[20%] left-1/2 -translate-x-1/2">
-        <div className={great ? 'scene-hop' : fail ? 'scene-wobble' : ''}>
-          <Sprite name={frameName(stage, gender, pose)} scale={2.1} />
+        {/* 바닥에 닿는 그림자 (바닥 색으로) */}
+        {bg && (
+          <div
+            className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+            style={{ bottom: -7, width: '78%', height: 16, borderRadius: '50%', background: `radial-gradient(closest-side, ${light?.shadow ?? 'rgba(0,0,0,.45)'}, transparent)` }}
+          />
+        )}
+        <div className={great ? 'scene-hop' : fail ? 'scene-wobble' : ''} style={bg && light ? { filter: `drop-shadow(0 0 3px ${light.glow})` } : undefined}>
+          <Sprite name={frameName(stage, gender, pose)} scale={2.1} light={bg ? light : null} />
         </div>
         {(fail ? ['💦', '😵'] : sc.fx).concat(great ? ['✨', '⭐'] : []).map((e, i) => (
           <span

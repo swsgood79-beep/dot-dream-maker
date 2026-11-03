@@ -503,7 +503,27 @@ def comp_rows(img_, rows=3):
     """그림 덩어리를 찾아 줄별로 왼쪽부터 정렬"""
     m = (765 - img_.sum(axis=2)) > 60
     out = {}
+    H = img_.shape[0]
+    boxes = []
     for b in components(m, f=2, min_cells=150):
+        x0, y0, x1, y1 = b
+        if y1 - y0 > H / rows * 1.5:
+            # 위아래 그림이 붙어 한 덩어리가 되면 줄 경계 근처 가장 빈 가로줄에서 자른다
+            prof = m[:, x0:x1].sum(axis=1)
+            cuts = [y0]
+            for k in range(1, rows):
+                c = int(H * k / rows)
+                if y0 < c < y1:
+                    lo, hi = max(y0, c - H // 12), min(y1, c + H // 12)
+                    cuts.append(lo + int(np.argmin(prof[lo:hi])))
+            cuts.append(y1)
+            for a, z in zip(cuts, cuts[1:]):
+                ys_ = np.where(prof[a:z] > 0)[0]
+                if len(ys_):
+                    boxes.append((x0, a + ys_[0], x1, a + ys_[-1] + 1))
+        else:
+            boxes.append(b)
+    for b in boxes:
         out.setdefault(int((b[1] + b[3]) / 2 / (img_.shape[0] / rows)), []).append(b)
     return {r: sorted(v) for r, v in out.items()}
 

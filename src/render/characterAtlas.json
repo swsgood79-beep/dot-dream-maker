@@ -1853,5 +1853,257 @@
   "w": 47,
   "h": 86,
   "ax": 21.8
+ },
+ "CHILD_DAUGHTER_bake": {
+  "x": 12315,
+  "y": 0,
+  "w": 53,
+  "h": 68,
+  "ax": 19.9
+ },
+ "CHILD_DAUGHTER_sweep": {
+  "x": 12369,
+  "y": 0,
+  "w": 45,
+  "h": 68,
+  "ax": 22.9
+ },
+ "CHILD_DAUGHTER_guitar": {
+  "x": 12415,
+  "y": 0,
+  "w": 53,
+  "h": 68,
+  "ax": 21.5
+ },
+ "CHILD_DAUGHTER_dance": {
+  "x": 12469,
+  "y": 0,
+  "w": 48,
+  "h": 68,
+  "ax": 21.9
+ },
+ "CHILD_DAUGHTER_kick": {
+  "x": 12518,
+  "y": 0,
+  "w": 57,
+  "h": 68,
+  "ax": 24.8
+ },
+ "CHILD_DAUGHTER_experiment": {
+  "x": 12576,
+  "y": 0,
+  "w": 47,
+  "h": 68,
+  "ax": 22.5
+ },
+ "CHILD_DAUGHTER_pet": {
+  "x": 12624,
+  "y": 0,
+  "w": 50,
+  "h": 68,
+  "ax": 21.0
+ },
+ "CHILD_DAUGHTER_shopping": {
+  "x": 12675,
+  "y": 0,
+  "w": 66,
+  "h": 68,
+  "ax": 30.9
+ },
+ "CHILD_DAUGHTER_camp": {
+  "x": 12742,
+  "y": 0,
+  "w": 64,
+  "h": 67,
+  "ax": 23.1
+ },
+ "CHILD_DAUGHTER_arcade": {
+  "x": 12807,
+  "y": 0,
+  "w": 53,
+  "h": 66,
+  "ax": 20.9
+ },
+ "CHILD_DAUGHTER_explore": {
+  "x": 12861,
+  "y": 0,
+  "w": 63,
+  "h": 67,
+  "ax": 22.5
+ },
+ "CHILD_DAUGHTER_raise": {
+  "x": 12925,
+  "y": 0,
+  "w": 47,
+  "h": 68,
+  "ax": 20.9
+ },
+ "TEEN_DAUGHTER_bake": {
+  "x": 12973,
+  "y": 0,
+  "w": 54,
+  "h": 76,
+  "ax": 20.1
+ },
+ "TEEN_DAUGHTER_sweep": {
+  "x": 13028,
+  "y": 0,
+  "w": 55,
+  "h": 80,
+  "ax": 29.6
+ },
+ "TEEN_DAUGHTER_guitar": {
+  "x": 13084,
+  "y": 0,
+  "w": 53,
+  "h": 76,
+  "ax": 20.4
+ },
+ "TEEN_DAUGHTER_dance": {
+  "x": 13138,
+  "y": 0,
+  "w": 45,
+  "h": 77,
+  "ax": 19.7
+ },
+ "TEEN_DAUGHTER_kick": {
+  "x": 13184,
+  "y": 0,
+  "w": 55,
+  "h": 75,
+  "ax": 22.5
+ },
+ "TEEN_DAUGHTER_experiment": {
+  "x": 13240,
+  "y": 0,
+  "w": 44,
+  "h": 76,
+  "ax": 20.0
+ },
+ "TEEN_DAUGHTER_pet": {
+  "x": 13285,
+  "y": 0,
+  "w": 43,
+  "h": 77,
+  "ax": 20.3
+ },
+ "TEEN_DAUGHTER_shopping": {
+  "x": 13329,
+  "y": 0,
+  "w": 69,
+  "h": 76,
+  "ax": 33.8
+ },
+ "TEEN_DAUGHTER_camp": {
+  "x": 13399,
+  "y": 0,
+  "w": 60,
+  "h": 75,
+  "ax": 21.8
+ },
+ "TEEN_DAUGHTER_arcade": {
+  "x": 13460,
+  "y": 0,
+  "w": 55,
+  "h": 75,
+  "ax": 22.4
+ },
+ "TEEN_DAUGHTER_explore": {
+  "x": 13516,
+  "y": 0,
+  "w": 58,
+  "h": 74,
+  "ax": 26.7
+ },
+ "TEEN_DAUGHTER_raise": {
+  "x": 13575,
+  "y": 0,
+  "w": 46,
+  "h": 74,
+  "ax": 20.7
+ },
+ "YOUTH_DAUGHTER_bake": {
+  "x": 13622,
+  "y": 0,
+  "w": 61,
+  "h": 82,
+  "ax": 22.7
+ },
+ "YOUTH_DAUGHTER_sweep": {
+  "x": 13684,
+  "y": 0,
+  "w": 59,
+  "h": 82,
+  "ax": 21.8
+ },
+ "YOUTH_DAUGHTER_guitar": {
+  "x": 13744,
+  "y": 0,
+  "w": 57,
+  "h": 83,
+  "ax": 23.0
+ },
+ "YOUTH_DAUGHTER_dance": {
+  "x": 13802,
+  "y": 0,
+  "w": 48,
+  "h": 81,
+  "ax": 23.9
+ },
+ "YOUTH_DAUGHTER_kick": {
+  "x": 13851,
+  "y": 0,
+  "w": 62,
+  "h": 80,
+  "ax": 25.1
+ },
+ "YOUTH_DAUGHTER_experiment": {
+  "x": 13914,
+  "y": 0,
+  "w": 46,
+  "h": 81,
+  "ax": 20.4
+ },
+ "YOUTH_DAUGHTER_pet": {
+  "x": 13961,
+  "y": 0,
+  "w": 47,
+  "h": 81,
+  "ax": 21.0
+ },
+ "YOUTH_DAUGHTER_shopping": {
+  "x": 14009,
+  "y": 0,
+  "w": 69,
+  "h": 81,
+  "ax": 34.9
+ },
+ "YOUTH_DAUGHTER_camp": {
+  "x": 14079,
+  "y": 0,
+  "w": 66,
+  "h": 81,
+  "ax": 22.3
+ },
+ "YOUTH_DAUGHTER_arcade": {
+  "x": 14146,
+  "y": 0,
+  "w": 56,
+  "h": 73,
+  "ax": 20.5
+ },
+ "YOUTH_DAUGHTER_explore": {
+  "x": 14203,
+  "y": 0,
+  "w": 65,
+  "h": 79,
+  "ax": 22.8
+ },
+ "YOUTH_DAUGHTER_raise": {
+  "x": 14269,
+  "y": 0,
+  "w": 42,
+  "h": 78,
+  "ax": 22.8
  }
 }
