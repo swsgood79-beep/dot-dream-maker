@@ -6,6 +6,7 @@ const WOOD_D = '#8a5a35';
 import { drawCharacter, drawFrame, RES } from './spriteCharacter';
 import { drawFurnitureModel, modelHeight as codeModelHeight } from './furnitureModels';
 import { drawFurnitureSprite, furnitureSpriteHeight } from './furnitureSprites';
+import { drawHomeFloor, drawHomeWalls, homeTone, SHELL } from './homeDecor';
 
 /** 가구 높이: 손그림 스프라이트가 있으면 그 높이, 없으면 코드 모델 높이 */
 const modelHeight = (id: string) => furnitureSpriteHeight(id) ?? codeModelHeight(id);
@@ -424,25 +425,26 @@ function drawWalls(ctx: CanvasRenderingContext2D, n: number, stage: GrowthStage,
 }
 
 /** 벽 윗단(두께), 바닥 단면 — 디오라마처럼 잘린 방 */
-function drawShell(ctx: CanvasRenderingContext2D, n: number) {
+function drawShell(ctx: CanvasRenderingContext2D, n: number, home: HomeClass) {
+  const c = SHELL[home];
   const P = (x: number, y: number, z = 0): Pt => {
     const [sx, sy] = project(n, x, y);
     return [sx, sy - z];
   };
-  const OUT = '#3b2414';
+  const OUT = c.out;
   const top = WALL + CAP;
   // 벽 윗면 (두께)
-  poly(ctx, [P(0, 0, WALL), P(0, n, WALL), P(-WT, n, top), P(-WT, -WT, top)], '#9a6a40', OUT);
-  poly(ctx, [P(0, 0, WALL), P(n, 0, WALL), P(n, -WT, top), P(-WT, -WT, top)], '#a8784a', OUT);
-  poly(ctx, [P(0, 0, WALL), P(0, n, WALL), P(0, n, WALL + 1), P(0, 0, WALL + 1)], '#c8925a');
+  poly(ctx, [P(0, 0, WALL), P(0, n, WALL), P(-WT, n, top), P(-WT, -WT, top)], c.topL, OUT);
+  poly(ctx, [P(0, 0, WALL), P(n, 0, WALL), P(n, -WT, top), P(-WT, -WT, top)], c.topR, OUT);
+  poly(ctx, [P(0, 0, WALL), P(0, n, WALL), P(0, n, WALL + 1), P(0, 0, WALL + 1)], c.edge);
   // 벽 끝 단면
-  poly(ctx, [P(0, n, 0), P(-WT, n, 0), P(-WT, n, top), P(0, n, WALL)], '#6b4226', OUT);
-  poly(ctx, [P(n, 0, 0), P(n, -WT, 0), P(n, -WT, top), P(n, 0, WALL)], '#5a3820', OUT);
+  poly(ctx, [P(0, n, 0), P(-WT, n, 0), P(-WT, n, top), P(0, n, WALL)], c.endL, OUT);
+  poly(ctx, [P(n, 0, 0), P(n, -WT, 0), P(n, -WT, top), P(n, 0, WALL)], c.endR, OUT);
   // 바닥 단면 (앞쪽 두 변)
-  poly(ctx, [P(-WT, n), P(n, n), P(n, n, -SLAB), P(-WT, n, -SLAB)], '#7a4c2c', OUT);
-  poly(ctx, [P(n, n), P(n, -WT), P(n, -WT, -SLAB), P(n, n, -SLAB)], '#5a3820', OUT);
-  poly(ctx, [P(-WT, n), P(n, n), P(n, n, -2), P(-WT, n, -2)], '#9a6a40');
-  poly(ctx, [P(n, n), P(n, -WT), P(n, -WT, -2), P(n, n, -2)], '#7a4c2c');
+  poly(ctx, [P(-WT, n), P(n, n), P(n, n, -SLAB), P(-WT, n, -SLAB)], c.slabL, OUT);
+  poly(ctx, [P(n, n), P(n, -WT), P(n, -WT, -SLAB), P(n, n, -SLAB)], c.slabR, OUT);
+  poly(ctx, [P(-WT, n), P(n, n), P(n, n, -2), P(-WT, n, -2)], c.lipL);
+  poly(ctx, [P(n, n), P(n, -WT), P(n, -WT, -2), P(n, n, -2)], c.lipR);
 }
 
 /** 나무 마루 (판자 이음새) */
@@ -557,9 +559,17 @@ export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
   ctx.clearRect(0, 0, w, h);
   ctx.imageSmoothingEnabled = false;
 
-  drawWalls(ctx, n, v.stage, v.home ?? 'MIDDLE');
-  drawShell(ctx, n);
-  drawFloor(ctx, n, v.home ?? 'MIDDLE');
+  const home = v.home ?? 'MIDDLE';
+  const P3 = (x: number, y: number, z = 0): Pt => {
+    const [sx, sy] = project(n, x, y);
+    return [sx, sy - z];
+  };
+  if (home === 'MIDDLE') drawWalls(ctx, n, v.stage, home);
+  else drawHomeWalls(ctx, n, P3, WALL, home);
+  drawShell(ctx, n, home);
+  if (home === 'MIDDLE') drawFloor(ctx, n, home);
+  else drawHomeFloor(ctx, n, P3, home);
+  homeTone(ctx, ctx.canvas.width, ctx.canvas.height, home);
 
   // 콤보 오라: 참여 가구 바닥이 은은하게 빛남
   const pulse = 0.18 + 0.14 * Math.sin(v.time / 300);

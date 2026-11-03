@@ -18,6 +18,8 @@ import { WISH_MAP } from '../data/parentingData';
 import { sfx } from '../audio/sfx';
 import type { ContestId, MonthResult } from '../engine/simulation';
 import { IsometricRoomCanvas } from './IsometricRoomCanvas';
+import { HOME_BACKDROP } from '../render/homeDecor';
+import { parentClass } from '../data/parentData';
 import { PixelButton, Sheet, STAT_META } from './ui';
 import { SchedulePanel } from './panels/SchedulePanel';
 import { ShopPanel } from './panels/ShopPanel';
@@ -83,7 +85,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const stressColor = stress >= 80 ? '#e5484d' : stress >= 50 ? '#ff9f43' : '#5bd6a8';
 
   return (
-    <div className="room-bg relative flex h-full flex-col" data-tut-root>
+    <div className="room-bg relative flex h-full flex-col" style={{ backgroundColor: HOME_BACKDROP[parentClass(game.parent)] }} data-tut-root>
       {/* 상단 HUD — 나무 프레임 */}
       <header className="wood-frame relative z-10 shrink-0 p-1.5 text-xs">
         <div className="flex gap-1.5">
