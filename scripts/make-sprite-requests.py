@@ -252,7 +252,7 @@ for i,(pri,sid,fname,nr,nc,title,items,prompt,_) in enumerate(sheets):
         c.fill = PatternFill('solid', fgColor=PRI_FILL[pri])
     ws2.cell(row=r, column=7, value=f"=COUNTIFS('전체 스프라이트'!$A:$A,B{r},'전체 스프라이트'!$I:$I,\"필수\")")
     ws2.cell(row=r, column=8, value=f"=COUNTIFS('전체 스프라이트'!$A:$A,B{r},'전체 스프라이트'!$I:$I,\"선택\")")
-    done = ws2.cell(row=r, column=9, value='O' if sid in ('F1', 'F2', 'F3', 'F4', 'B-SON', 'B-DAUGHTER', 'P-SON', 'P-DAUGHTER', 'N2', 'U1', 'J1-SON', 'J2-SON', 'J3-SON', 'J4-SON', 'J5-SON', 'J6-SON', 'J1-DAUGHTER', 'J2-DAUGHTER', 'J3-DAUGHTER', 'J4-DAUGHTER', 'J5-DAUGHTER') else None)
+    done = ws2.cell(row=r, column=9, value='O' if sid in ('F1', 'F2', 'F3', 'F4', 'B-SON', 'B-DAUGHTER', 'P-SON', 'P-DAUGHTER', 'N2', 'U1', 'J1-SON', 'J2-SON', 'J3-SON', 'J4-SON', 'J5-SON', 'J6-SON', 'J1-DAUGHTER', 'J2-DAUGHTER', 'J3-DAUGHTER', 'J4-DAUGHTER', 'J5-DAUGHTER', 'J6-DAUGHTER') else None)
     done.fill = INPUT_FILL
     dv.add(done)
     ws2.row_dimensions[r].height = 150
