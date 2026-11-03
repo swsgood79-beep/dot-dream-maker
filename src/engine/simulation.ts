@@ -97,9 +97,9 @@ export function emptyAptitudes(): AptitudeLevels {
 }
 
 export function monthlyAllowance(age: number): number {
-  if (age >= 17) return 600;
-  if (age >= 12) return 450;
-  return 300;
+  if (age >= 17) return 450;
+  if (age >= 12) return 350;
+  return 250;
 }
 
 export function createNewGame(

@@ -60,7 +60,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
           <PixelButton color="bg-sky" onClick={() => setMode('book')}>
             👑 엔딩 도감 ({unlockedEndings.length}/{ENDINGS.length})
           </PixelButton>
-          <p className="mt-2 text-[10px] text-white/60">v0.6.4 · 직업 의상 100종 완성</p>
+          <p className="mt-2 text-[10px] text-white/60">v0.7.0 · 밸런스 조정</p>
         </div>
       )}
 

@@ -1,7 +1,7 @@
 {
   "name": "dot-dream-maker",
   "private": true,
-  "version": "0.6.4",
+  "version": "0.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +11,7 @@
     "test": "vitest run",
     "build:single": "tsc -b && vite build --mode single",
     "build:artifact": "npm run build:single && node scripts/make-artifact.mjs",
+    "balance": "vite-node scripts/balance-sim.ts 20",
     "sprites": "python3 scripts/build-sprites.py && python3 scripts/build-furniture.py"
   },
   "dependencies": {
