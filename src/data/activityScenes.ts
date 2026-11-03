@@ -13,6 +13,8 @@ export interface ActivityScene {
   /** 아이 주변에 떠오르는 효과 */
   fx: string[];
   pose: string;
+  /** 활동 포즈 그림 (있으면 pose 대신) */
+  act?: string;
   lines: { GREAT: string; SUCCESS: string; FAIL: string };
   dark?: boolean;
 }
@@ -22,20 +24,20 @@ const S = (s: ActivityScene) => s;
 export const SCENES: Record<string, ActivityScene> = {
   // ── 학원
   EDU_01: S({
-    place: '종합 보습학원', sky: ['#e9f2e4', '#d8e6cf'], floor: '#b98048',
+    act: 'raise', place: '종합 보습학원', sky: ['#e9f2e4', '#d8e6cf'], floor: '#b98048',
     props: [['🪑', 12, 6, 26], ['🪑', 82, 6, 26], ['🕰️', 86, 70, 22]],
     board: { text: '2x + 3 = 11\nx = ?', bg: '#2f5d3a', color: '#fff' },
     fx: ['✏️', '📝', '💯'], pose: 'desk',
     lines: { GREAT: '선생님이 "오늘 최고!" 도장을 쾅 찍어 주셨다!', SUCCESS: '칠판 가득한 문제를 하나씩 풀었다.', FAIL: '꾸벅꾸벅... 수업 시간에 졸고 말았다.' },
   }),
   EDU_02: S({
-    place: '영재 과학·의학 학원', sky: ['#eaf6ff', '#d4ecfa'], floor: '#9fb7c9',
+    act: 'experiment', place: '영재 과학·의학 학원', sky: ['#eaf6ff', '#d4ecfa'], floor: '#9fb7c9',
     props: [['🔬', 14, 8, 30], ['🧪', 80, 8, 26], ['🧬', 84, 62, 24], ['⚗️', 22, 60, 22]],
     fx: ['🫧', '🧪', '✨'], pose: 'desk',
     lines: { GREAT: '실험 대성공! 현미경 속 세포가 반짝였다.', SUCCESS: '실험 보고서를 꼼꼼히 정리했다.', FAIL: '비커를 쏟아 버렸다... 으악.' },
   }),
   EDU_03: S({
-    place: '로스쿨 준비 논술반', sky: ['#f5efe2', '#e8dcc4'], floor: '#8a5a35',
+    act: 'raise', place: '로스쿨 준비 논술반', sky: ['#f5efe2', '#e8dcc4'], floor: '#8a5a35',
     props: [['⚖️', 14, 60, 30], ['📜', 82, 8, 26], ['📚', 14, 6, 26]],
     board: { text: '주장 → 근거 → 결론', bg: '#fffaf0', color: '#1b1f3b' },
     fx: ['✍️', '💬', '📜'], pose: 'desk',
@@ -49,7 +51,7 @@ export const SCENES: Record<string, ActivityScene> = {
     lines: { GREAT: '처음 만든 게임이 한 번에 실행됐다!', SUCCESS: '버그를 세 개나 잡았다.', FAIL: '에러 메시지가 끝도 없이 쏟아졌다...' },
   }),
   EDU_05: S({
-    place: '실용음악·댄스 아카데미', sky: ['#3a2a5c', '#6b3fa0'], floor: '#4a2e70', dark: true,
+    act: 'dance', place: '실용음악·댄스 아카데미', sky: ['#3a2a5c', '#6b3fa0'], floor: '#4a2e70', dark: true,
     props: [['🎹', 14, 8, 32], ['🎤', 84, 10, 26], ['💡', 50, 78, 26]],
     fx: ['🎵', '🎶', '✨', '💃'], pose: 'music',
     lines: { GREAT: '선생님이 "데뷔해도 되겠다!"며 박수를 쳤다!', SUCCESS: '새 안무를 끝까지 외웠다.', FAIL: '박자를 계속 놓쳤다... 다리가 꼬였다.' },
@@ -61,13 +63,13 @@ export const SCENES: Record<string, ActivityScene> = {
     lines: { GREAT: '그린 그림이 화실 벽에 걸렸다!', SUCCESS: '스케치북 한 권을 거의 다 채웠다.', FAIL: '물감이 번져서 그림을 망쳐 버렸다.' },
   }),
   EDU_07: S({
-    place: '유소년 체육·무술 도장', sky: ['#fff6e0', '#f0e2c0'], floor: '#4f9a45',
+    act: 'kick', place: '유소년 체육·무술 도장', sky: ['#fff6e0', '#f0e2c0'], floor: '#4f9a45',
     props: [['🥋', 14, 62, 30], ['🏅', 84, 64, 24], ['🥊', 84, 8, 26]],
     fx: ['💥', '💪', '💦'], pose: 'exercise',
     lines: { GREAT: '얍! 송판 세 장을 한 번에 격파했다!', SUCCESS: '땀을 뻘뻘 흘리며 품새를 연습했다.', FAIL: '헉헉... 준비 운동만 하고 지쳐 버렸다.' },
   }),
   EDU_08: S({
-    place: '어린이 경제·리더십 스쿨', sky: ['#eef3ff', '#dfe7fb'], floor: '#7a8bb5',
+    act: 'raise', place: '어린이 경제·리더십 스쿨', sky: ['#eef3ff', '#dfe7fb'], floor: '#7a8bb5',
     props: [['📊', 14, 62, 30], ['💼', 84, 8, 26], ['🪙', 84, 64, 22]],
     board: { text: '사업 계획서\n1. 아이디어 💡', bg: '#fffaf0', color: '#1b1f3b' },
     fx: ['💡', '📈', '🤝'], pose: 'desk',
@@ -75,13 +77,13 @@ export const SCENES: Record<string, ActivityScene> = {
   }),
   // ── 아르바이트
   JOB_01: S({
-    place: '우리 집 대청소', sky: ['#fff8ee', '#f3e6d0'], floor: '#c79a62',
+    act: 'sweep', place: '우리 집 대청소', sky: ['#fff8ee', '#f3e6d0'], floor: '#c79a62',
     props: [['🧺', 14, 6, 28], ['🧽', 84, 6, 22], ['🪣', 84, 60, 22]],
     fx: ['✨', '🫧', '🧹'], pose: 'work',
     lines: { GREAT: '집이 반짝반짝! 용돈을 두 배로 받았다!', SUCCESS: '설거지랑 빨래 개기를 도왔다.', FAIL: '접시를 하나 깨 버렸다... 쨍그랑.' },
   }),
   JOB_02: S({
-    place: '동네 베이커리', sky: ['#fff1dc', '#ffe1b8'], floor: '#b07a4a',
+    act: 'bake', place: '동네 베이커리', sky: ['#fff1dc', '#ffe1b8'], floor: '#b07a4a',
     props: [['🥐', 14, 62, 26], ['🍞', 84, 62, 26], ['🧁', 14, 8, 24], ['🎂', 84, 8, 28]],
     fx: ['♨️', '🥖', '✨'], pose: 'work',
     lines: { GREAT: '내가 만든 빵이 오전에 다 팔렸다!', SUCCESS: '밀가루 범벅이 되며 반죽을 도왔다.', FAIL: '빵을 태워 버렸다... 사장님 미안해요.' },
@@ -93,7 +95,7 @@ export const SCENES: Record<string, ActivityScene> = {
     lines: { GREAT: '책 정리를 하다 인생 책을 만났다!', SUCCESS: '반납된 책을 제자리에 꽂았다.', FAIL: '책장을 무너뜨려 정리를 처음부터 다시 했다.' },
   }),
   JOB_04: S({
-    place: '동물병원', sky: ['#eafaf3', '#d3f2e4'], floor: '#9cc9b3',
+    act: 'pet', place: '동물병원', sky: ['#eafaf3', '#d3f2e4'], floor: '#9cc9b3',
     props: [['🐶', 14, 8, 28], ['🐱', 84, 8, 26], ['💊', 84, 64, 20], ['🩹', 14, 64, 20]],
     fx: ['❤️', '🐾', '✨'], pose: 'work',
     lines: { GREAT: '아픈 강아지가 꼬리를 흔들며 나았다!', SUCCESS: '케이지를 청소하고 밥을 챙겨 줬다.', FAIL: '고양이에게 할퀴어 버렸다... 아야.' },
@@ -106,7 +108,7 @@ export const SCENES: Record<string, ActivityScene> = {
     lines: { GREAT: '치명적인 버그를 찾아 보너스를 받았다!', SUCCESS: '게임을 백 번 넘게 테스트했다.', FAIL: '게임만 하다 보고서를 못 썼다...' },
   }),
   JOB_06: S({
-    place: '저녁 거리 버스킹', sky: ['#1b1f3b', '#5a3a7a'], floor: '#555a77', dark: true,
+    act: 'guitar', place: '저녁 거리 버스킹', sky: ['#1b1f3b', '#5a3a7a'], floor: '#555a77', dark: true,
     props: [['🌃', 14, 62, 30], ['🎸', 84, 8, 28], ['🎩', 84, 4, 18], ['🪙', 78, 4, 14]],
     fx: ['🎵', '🪙', '👏'], pose: 'music',
     lines: { GREAT: '사람들이 몰려들어 앙코르를 외쳤다!', SUCCESS: '지나가던 사람들이 동전을 넣어 줬다.', FAIL: '목이 쉬어서 노래가 나오지 않았다...' },
@@ -131,13 +133,13 @@ export const SCENES: Record<string, ActivityScene> = {
     lines: { GREAT: '푹 쉬었더니 몸이 가볍다!', SUCCESS: '하루 종일 뒹굴뒹굴했다.', FAIL: '쉬어도 쉬어도 피곤하다...' },
   }),
   REST_02: S({
-    place: '가족 캠핑', sky: ['#141838', '#2e3a6a'], floor: '#2f6b4a', dark: true,
+    act: 'camp', place: '가족 캠핑', sky: ['#141838', '#2e3a6a'], floor: '#2f6b4a', dark: true,
     props: [['⛺', 14, 6, 36], ['🔥', 80, 6, 28], ['🌲', 90, 40, 30], ['🌙', 84, 78, 24]],
     fx: ['✨', '🌟', '🍢'], pose: 'cheer',
     lines: { GREAT: '별똥별을 보며 다 같이 소원을 빌었다!', SUCCESS: '모닥불에 마시멜로를 구워 먹었다.', FAIL: '비가 와서 텐트 안에만 있었다...' },
   }),
   OUT_SHOP: S({
-    place: '백화점', sky: ['#fff0f6', '#ffd9ea'], floor: '#e8c9d8',
+    act: 'shopping', place: '백화점', sky: ['#fff0f6', '#ffd9ea'], floor: '#e8c9d8',
     props: [['👗', 14, 8, 28], ['👟', 84, 8, 24], ['🛍️', 84, 62, 26], ['🪞', 14, 60, 24]],
     fx: ['🛍️', '✨', '💖'], pose: 'cheer',
     lines: { GREAT: '딱 마음에 드는 옷을 세일가에 샀다!', SUCCESS: '이것저것 구경하며 즐거운 시간을 보냈다.', FAIL: '사람이 너무 많아서 지쳐 버렸다.' },
@@ -155,14 +157,14 @@ export const SCENES: Record<string, ActivityScene> = {
     lines: { GREAT: '천체 투영관에서 별자리를 전부 맞혔다!', SUCCESS: '공룡 화석 앞에서 한참을 서 있었다.', FAIL: '견학 내내 길을 잃고 헤맸다...' },
   }),
   OUT_ARCADE: S({
-    place: '오락실', sky: ['#1a0f2e', '#3a1f5c'], floor: '#2a1a40', dark: true,
+    act: 'arcade', place: '오락실', sky: ['#1a0f2e', '#3a1f5c'], floor: '#2a1a40', dark: true,
     props: [['🕹️', 14, 8, 30], ['👾', 84, 8, 28], ['🎰', 84, 62, 22]],
     board: { text: 'HIGH SCORE\n999,999', bg: '#000', color: '#ff5bd6' },
     fx: ['⭐', '👾', '💥'], pose: 'cheer',
     lines: { GREAT: '오락실 최고 기록을 갈아 치웠다!', SUCCESS: '용돈으로 신나게 게임을 했다.', FAIL: '동전만 다 쓰고 1판도 못 깼다...' },
   }),
   OUT_RUINS: S({
-    place: '고대 유적', sky: ['#ffe2b8', '#f2c48a'], floor: '#b98a4a',
+    act: 'explore', place: '고대 유적', sky: ['#ffe2b8', '#f2c48a'], floor: '#b98a4a',
     props: [['🗿', 12, 6, 38], ['🏛️', 84, 6, 34], ['🌵', 30, 4, 22], ['☀️', 84, 78, 24]],
     fx: ['💎', '🗺️', '✨'], pose: 'exercise',
     lines: { GREAT: '벽화 뒤에서 숨겨진 통로를 찾았다!', SUCCESS: '흙먼지를 뒤집어쓰며 유적을 탐험했다.', FAIL: '뙤약볕에 지쳐 금방 돌아왔다.' },

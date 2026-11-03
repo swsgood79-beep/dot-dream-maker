@@ -14,6 +14,7 @@ assets-src/character-sheet.png (흰 배경 캐릭터 시트) →
    팔을 반대로 흔들고, 발 디딤 순간 몸이 1px 내려앉는 4프레임 사이클 → {이름}_walk0~3
 """
 import json
+import os
 from collections import deque
 import numpy as np
 from PIL import Image
@@ -527,6 +528,27 @@ for g, sheets_ in JOB_SHEETS.items():
         blk = float(np.median([b[3] - b[1] for b in boxes_j.values()])) / target_h
         for num, b in boxes_j.items():
             sprites[f'JOB_END_{num}_{g}'] = defringe(cut(img_j, b, blk))
+
+# 활동 포즈 (v0.21): 나이대·성별마다 3×4 = 12동작 → {STAGE}_{G}_{동작}
+# 스케줄 바깥 활동 장면에서 그 장소에 맞는 동작으로 쓴다 (빵 쟁반, 빗자루, 기타, 발차기 …)
+ACT_KEYS = ['bake', 'sweep', 'guitar', 'dance', 'kick', 'experiment', 'pet', 'shopping', 'camp', 'arcade', 'explore', 'raise']
+for g in ('SON', 'DAUGHTER'):
+    for st in ('CHILD', 'TEEN', 'YOUTH'):
+        path = f'assets-src/act-{st.lower()}-{g.lower()}.png'
+        if not os.path.exists(path):
+            continue
+        img_a = np.asarray(Image.open(path).convert('RGB')).astype(np.int32)
+        rows_a = comp_rows(img_a)
+        if [len(rows_a.get(r, [])) for r in range(3)] != [4, 4, 4]:
+            print(f'  활동 포즈 칸 수가 맞지 않음: {path}', {r: len(v) for r, v in rows_a.items()})
+            continue
+        boxes_a = {ACT_KEYS[r * 4 + k]: tight_box(img_a, rows_a[r][k]) for r in range(3) for k in range(4)}
+        # 서 있는 동작들 키의 중앙값 = 그 나이 서기 키
+        tall = sorted(b[3] - b[1] for b in boxes_a.values())
+        blk = float(np.median(tall[3:])) / sprites[f'{st}_{g}_stand'].shape[0]
+        for key, b in boxes_a.items():
+            sprites[f'{st}_{g}_{key}'] = defringe(cut(img_a, b, blk))
+        print(f'  활동 포즈: {path} → 12동작')
 
 # 부모님 캐릭터는 게임에서 사용하지 않음 (v0.5.17) → 아틀라스에서 제외
 for n in [n for n in sprites if n.startswith('PARENT')]:

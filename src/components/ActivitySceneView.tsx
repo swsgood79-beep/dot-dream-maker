@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { sceneFor, sceneLine } from '../data/activityScenes';
 import type { WeekResult } from '../engine/simulation';
-import { frameName } from '../render/spriteCharacter';
+import { frameName, hasFrame } from '../render/spriteCharacter';
 import type { Gender } from '../types/game';
 import { Sprite } from './Sprite';
 import { ko } from './ui';
@@ -29,7 +29,9 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
   if (!sc) return null;
   const great = week.outcome === 'GREAT';
   const fail = week.outcome === 'FAIL';
-  const pose = great ? 'cheer' : fail ? 'tired' : sc.pose;
+  // 활동 포즈 그림이 있으면 그 동작으로 (대성공이어도 동작 그대로 폴짝)
+  const actFrame = sc.act ? `${stage}_${gender}_${sc.act}` : '';
+  const pose = fail ? 'tired' : actFrame && hasFrame(actFrame) ? sc.act! : great ? 'cheer' : sc.pose;
   const bg = sceneBg(week.outcome === 'RUNAWAY' ? 'RUNAWAY' : week.actionId);
 
   return (

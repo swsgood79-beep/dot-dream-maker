@@ -143,6 +143,11 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, fx: number, fy: num
       dy = Math.floor(t / 1200) % 2 ? 0.5 : 0;
       break;
   }
+  // 활동 포즈 그림이 있으면 그걸로 (가만히 서서 하는 동작이라 살짝 들썩이기만)
+  if (o.act && o.pose !== 'walk' && has(o.act)) {
+    kind = o.act;
+    dy = Math.floor(t / 280) % 2 ? -1 : 0;
+  }
   const backStand = `${o.stage}_${o.gender}_back_stand`;
   const name = o.pose === 'idle' && o.back && FRAMES[backStand] ? backStand : frameName(o.stage, o.gender, kind);
   // 시트 캐릭터는 오른쪽을 보고 있으므로 왼쪽으로 갈 때 좌우 반전

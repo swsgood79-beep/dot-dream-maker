@@ -198,6 +198,7 @@ export function IsometricRoomCanvas({
         kind: 'call',
         fn: () => {
           setBanner(`${w.week + 1}주차 · ${w.emoji} ${w.actionName}`);
+          sim.actor.act = null;
           setCaption(null);
           setFx(null);
           setBubble(null);
@@ -259,6 +260,8 @@ export function IsometricRoomCanvas({
             sim.actor.facing = furnitureFlipped(bed) ? 'L' : 'R';
           }
           haloRef.current = HALO[w.outcome];
+          // 집에서 하는 활동도 활동 포즈 그림이 있으면 그 동작으로 (예: 집안일 → 빗자루질)
+          sim.actor.act = w.outcome !== 'FAIL' && w.outcome !== 'STRIKE' && pose !== 'sleep' ? (sceneFor(w)?.act ?? null) : null;
           setBubble(w.outcome === 'STRIKE' ? '💢 학원 싫어!!' : w.outcome === 'GREAT' ? '✨' : POSE_BUBBLE[pose] ?? ACT_BUBBLE[w.actionType]);
           setCaption(sceneLine(w) || null);
           const sc = sceneFor(w);

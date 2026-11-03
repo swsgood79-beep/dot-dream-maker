@@ -60,6 +60,8 @@ export interface CharacterDrawOpts {
   alpha?: number;
   back?: boolean; // 뒷모습 (방 안쪽으로 걸을 때)
   tired?: boolean; // 스트레스 높음 → 평소 지친 모습
+  /** 활동 포즈 (빵 쟁반·빗자루·기타 등) — 그림이 있으면 pose 대신 사용 */
+  act?: string | null;
 }
 
 /** (fx, fy) = 발 중앙 화면 좌표 */

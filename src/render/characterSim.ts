@@ -13,6 +13,8 @@ export interface Actor {
   alpha: number;
   /** 가구 위에 올라가 그릴 때 (예: 침대에서 잠자기) */
   drawAt?: { gx: number; gy: number; lift: number } | null;
+  /** 활동 포즈 이름 (있으면 그 그림으로) */
+  act?: string | null;
 }
 
 export type Step =
@@ -198,6 +200,7 @@ export class CharacterSim {
     this.actor.alpha = 1;
     this.actor.pose = 'idle';
     this.actor.drawAt = null;
+    this.actor.act = null;
   }
 
   private walkTo(w: World, goals: Cell[]) {
