@@ -1,5 +1,5 @@
 {
-  "_comment": "가구 시트 설정. grid=[행,열], block=원본 도트 1칸 픽셀 수, items: '행,열' → [가구ID, 원본 정면 방향 L|R, (선택) 크기 배율]. L=화면 왼쪽 아래를 봄, R=오른쪽 아래를 봄. 적지 않은 칸(중복/빈칸)은 무시됨.",
+  "_comment": "가구 시트 설정. 방식 1) grid=[행,열] + items: '행,열' → [가구ID, 정면 L|R, (선택) 크기 배율]. 방식 2) rows: 행마다 왼쪽→오른쪽 순서 목록 [가구ID, 정면, 배율] 또는 null(건너뛸 그림). L=정면이 화면 왼쪽 아래, R=오른쪽 아래. block=원본 도트 1칸 픽셀 수.",
   "sheets": [
     {
       "file": "assets-src/furniture-f1.png",
@@ -61,6 +61,159 @@
         ]
       },
       "block": 4.0
+    },
+    {
+      "file": "assets-src/furniture-f2.png",
+      "block": 4.0,
+      "rows": [
+        [
+          [
+            "gaming_pc",
+            "R"
+          ],
+          [
+            "dual_monitor",
+            "R"
+          ],
+          [
+            "stock_monitor",
+            "R"
+          ],
+          [
+            "grand_piano",
+            "L"
+          ]
+        ],
+        [
+          [
+            "condenser_mic",
+            "L",
+            0.85
+          ],
+          [
+            "sound_booth",
+            "R"
+          ],
+          [
+            "easel",
+            "L"
+          ],
+          [
+            "plaster_bust",
+            "L",
+            0.85
+          ]
+        ],
+        [
+          [
+            "watercolor_kit",
+            "L"
+          ],
+          [
+            "ring_light",
+            "L"
+          ],
+          [
+            "broadcast_cam",
+            "L"
+          ],
+          [
+            "chroma_key",
+            "L"
+          ]
+        ]
+      ]
+    },
+    {
+      "file": "assets-src/furniture-f3.png",
+      "block": 4.0,
+      "rows": [
+        [
+          [
+            "treadmill",
+            "L"
+          ],
+          [
+            "dumbbell_rack",
+            "L"
+          ],
+          [
+            "full_mirror",
+            "L"
+          ],
+          [
+            "mini_oven",
+            "L"
+          ],
+          null
+        ],
+        [
+          [
+            "kitchen_counter",
+            "R"
+          ],
+          [
+            "spice_rack",
+            "L",
+            0.8
+          ],
+          [
+            "basic_bed",
+            "L"
+          ],
+          null,
+          [
+            "fluffy_bed",
+            "L"
+          ]
+        ],
+        [
+          [
+            "aroma_diffuser",
+            "L",
+            0.8
+          ],
+          null,
+          null,
+          [
+            "cat_cushion",
+            "L",
+            0.8
+          ],
+          [
+            "world_clock",
+            "L"
+          ],
+          [
+            "plant",
+            "L"
+          ]
+        ]
+      ]
+    },
+    {
+      "file": "assets-src/furniture-f4.png",
+      "block": 4.0,
+      "rows": [
+        [
+          [
+            "toy_box",
+            "L"
+          ],
+          [
+            "treasure_chest",
+            "R"
+          ],
+          [
+            "wooden_sword_rack",
+            "R"
+          ],
+          [
+            "magic_rug",
+            "L"
+          ]
+        ]
+      ]
     }
   ]
 }

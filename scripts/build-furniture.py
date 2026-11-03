@@ -103,7 +103,8 @@ def strip_sparkle(rgba):
     h, w, _ = rgba.shape
     y0, x0 = int(h * 0.55), int(w * 0.6)
     rgb = rgba[..., :3].astype(int)
-    pale = (rgb[..., 2] > 75) & ((rgb[..., 0] - rgb[..., 2]) < 75) & (rgba[..., 3] > 0)
+    spread = rgb.max(axis=2) - rgb.min(axis=2)
+    pale = (rgb[..., 2] > 75) & (spread < 70) & (rgb.max(axis=2) > 120) & (rgba[..., 3] > 0)
     pale[:y0, :] = False
     pale[:, :x0] = False
     for y in range(y0, h):
@@ -124,28 +125,45 @@ for sheet in conf['sheets']:
     path = ROOT / sheet['file']
     img = np.asarray(Image.open(path).convert('RGB')).astype(np.int32)
     H, W, _ = img.shape
-    rows, cols = sheet['grid']
     block = sheet.get('block') or estimate_block(img)
     nonwhite = (765 - img.sum(axis=2)) > 60
     boxes = components(nonwhite)
     print(f'{sheet["file"]}: {W}x{H}, block≈{block:.2f}px, {len(boxes)} objects')
-    for b in boxes:
-        cx, cy = (b[0] + b[2]) / 2, (b[1] + b[3]) / 2
-        key = f'{min(rows - 1, int(cy // (H / rows)))},{min(cols - 1, int(cx // (W / cols)))}'
-        if key not in sheet['items']:
-            continue
-        fid, face, *rest = sheet['items'][key]
+    assigned = []  # (box, [fid, face, scale?], 마지막 칸 여부)
+    if 'rows' in sheet:
+        # 방식 2: 행별 왼쪽→오른쪽 순서
+        nrows = len(sheet['rows'])
+        by_row = [[] for _ in range(nrows)]
+        for b in boxes:
+            by_row[min(nrows - 1, int(((b[1] + b[3]) / 2) // (H / nrows)))].append(b)
+        for r, (spec_row, found) in enumerate(zip(sheet['rows'], by_row)):
+            found.sort(key=lambda b: b[0])
+            if len(found) != len(spec_row):
+                sys.exit(f'{sheet["file"]} {r + 1}행: 설정 {len(spec_row)}개, 이미지 {len(found)}개')
+            for c, (b, item) in enumerate(zip(found, spec_row)):
+                if item:
+                    assigned.append((b, item, r == nrows - 1 and c == len(found) - 1))
+    else:
+        rows, cols = sheet['grid']
+        for b in boxes:
+            cx, cy = (b[0] + b[2]) / 2, (b[1] + b[3]) / 2
+            key = f'{min(rows - 1, int(cy // (H / rows)))},{min(cols - 1, int(cx // (W / cols)))}'
+            if key in sheet['items']:
+                assigned.append((b, sheet['items'][key], key == f'{rows - 1},{cols - 1}'))
+    for b, item, last in assigned:
+        fid, face, *rest = item
         extra = rest[0] if rest else 1.0
         cells = furniture_cells.get(fid, 1)
-        # 크기 제한: 먼저 기본 축소 후 가로/세로 상한을 넘으면 더 축소
+        # 크기 제한: 기본 축소 후 가로/세로 상한을 넘으면 더 축소
         bw, bh = (b[2] - b[0]) / block, (b[3] - b[1]) / block
         s = min(1.0, MAX_W_PER_TILE * cells / bw, MAX_H / bh) * extra
         spr = cut(img, b, block / s)
-        if key == f'{rows - 1},{cols - 1}' or sheet.get('sparkle_in') == key:
-            spr = strip_sparkle(spr)
+        if last:
+            spr = strip_sparkle(spr)  # Gemini 워터마크는 항상 오른쪽 아래
         sprites[fid] = (spr, face)
 
-missing = [k for s in conf['sheets'] for k, v in s['items'].items() if v[0] not in sprites]
+wanted = [v[0] for s in conf['sheets'] for v in (s['items'].values() if 'items' in s else [i for row in s['rows'] for i in row if i])]
+missing = [k for k in wanted if k not in sprites]
 if missing:
     sys.exit(f'칸에서 그림을 못 찾음: {missing}')
 

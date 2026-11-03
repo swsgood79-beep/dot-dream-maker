@@ -5,7 +5,7 @@ import { drawPixels, FURNITURE_BODY, FURNITURE_PIXELS, shade } from './sprites';
 const WOOD_D = '#8a5a35';
 import { CAT_FRAME, drawCharacter, drawFrame, PARENT_FRAME, RES, walkFrame } from './spriteCharacter';
 import { drawFurnitureModel, modelHeight as codeModelHeight } from './furnitureModels';
-import { drawFurnitureSprite, furnitureSpriteHeight } from './furnitureSprites';
+import { drawFurnitureSprite, furnitureSpriteHeight, hasFurnitureSprite } from './furnitureSprites';
 
 /** 가구 높이: 손그림 스프라이트가 있으면 그 높이, 없으면 코드 모델 높이 */
 const modelHeight = (id: string) => furnitureSpriteHeight(id) ?? codeModelHeight(id);
@@ -460,6 +460,8 @@ export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
 /** 반려묘가 자는 자리: 반려묘 쿠션 위 → 침대 옆 빈 칸 → 방 구석 */
 export function catSpot(n: number, placed: PlacedFurniture[]): { gx: number; gy: number; lift: number } | null {
   const cushion = placed.find((p) => p.furnitureId === 'cat_cushion');
+  // 손그림 쿠션에는 고양이가 이미 그려져 있으므로 따로 그리지 않음
+  if (cushion && hasFurnitureSprite('cat_cushion')) return null;
   if (cushion) return { gx: cushion.gridX + 0.5, gy: cushion.gridY + 0.5, lift: (FURNITURE_BODY.cat_cushion?.h ?? 3) + 1 };
   const taken = new Set(placed.flatMap((p) => footprint(p).map((c) => `${c.x},${c.y}`)));
   const prefer: Cell[] = [];

@@ -59,7 +59,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
           <PixelButton color="bg-sky" onClick={() => setMode('book')}>
             👑 엔딩 도감 ({unlockedEndings.length}/{ENDINGS.length})
           </PixelButton>
-          <p className="mt-2 text-[10px] text-white/60">v0.5.1 · 가구 스프라이트 F1</p>
+          <p className="mt-2 text-[10px] text-white/60">v0.5.2 · 손그림 가구 40종</p>
         </div>
       )}
 
