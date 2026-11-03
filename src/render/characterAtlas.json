@@ -422,439 +422,439 @@
  "CHILD_DAUGHTER_back_walk0": {
   "x": 2283,
   "y": 0,
-  "w": 31,
+  "w": 32,
   "h": 64,
-  "ax": 14.6
+  "ax": 16.5
  },
  "CHILD_DAUGHTER_back_walk1": {
-  "x": 2315,
+  "x": 2316,
   "y": 0,
-  "w": 31,
-  "h": 66,
-  "ax": 14.5
+  "w": 32,
+  "h": 64,
+  "ax": 16.5
  },
  "CHILD_DAUGHTER_back_walk2": {
-  "x": 2347,
+  "x": 2349,
   "y": 0,
-  "w": 33,
-  "h": 58,
-  "ax": 15.3
+  "w": 32,
+  "h": 64,
+  "ax": 16.5
  },
  "CHILD_DAUGHTER_back_walk3": {
-  "x": 2381,
+  "x": 2382,
   "y": 0,
-  "w": 31,
-  "h": 66,
-  "ax": 14.5
+  "w": 32,
+  "h": 64,
+  "ax": 16.5
  },
  "TEEN_DAUGHTER_back_stand": {
-  "x": 2413,
+  "x": 2415,
   "y": 0,
   "w": 33,
   "h": 71,
   "ax": 17.2
  },
  "TEEN_DAUGHTER_back_walk0": {
-  "x": 2447,
+  "x": 2449,
   "y": 0,
   "w": 32,
   "h": 70,
   "ax": 14.9
  },
  "TEEN_DAUGHTER_back_walk1": {
-  "x": 2480,
+  "x": 2482,
   "y": 0,
   "w": 32,
   "h": 72,
   "ax": 15.8
  },
  "TEEN_DAUGHTER_back_walk2": {
-  "x": 2513,
+  "x": 2515,
   "y": 0,
   "w": 34,
   "h": 67,
   "ax": 15.8
  },
  "TEEN_DAUGHTER_back_walk3": {
-  "x": 2548,
+  "x": 2550,
   "y": 0,
   "w": 32,
   "h": 72,
   "ax": 15.8
  },
  "YOUTH_DAUGHTER_back_stand": {
-  "x": 2581,
+  "x": 2583,
   "y": 0,
   "w": 32,
   "h": 78,
   "ax": 16.5
  },
  "YOUTH_DAUGHTER_back_walk0": {
-  "x": 2614,
+  "x": 2616,
   "y": 0,
   "w": 34,
   "h": 70,
   "ax": 15.3
  },
  "YOUTH_DAUGHTER_back_walk1": {
-  "x": 2649,
+  "x": 2651,
   "y": 0,
   "w": 30,
   "h": 75,
   "ax": 15.3
  },
  "YOUTH_DAUGHTER_back_walk2": {
-  "x": 2680,
+  "x": 2682,
   "y": 0,
   "w": 35,
   "h": 72,
   "ax": 17.5
  },
  "YOUTH_DAUGHTER_back_walk3": {
-  "x": 2716,
+  "x": 2718,
   "y": 0,
   "w": 30,
   "h": 75,
   "ax": 15.3
  },
  "CHILD_SON_desk": {
-  "x": 2747,
+  "x": 2749,
   "y": 0,
   "w": 38,
   "h": 57,
   "ax": 17.7
  },
  "CHILD_SON_exercise": {
-  "x": 2786,
+  "x": 2788,
   "y": 0,
   "w": 44,
   "h": 57,
   "ax": 21.5
  },
  "CHILD_SON_draw": {
-  "x": 2831,
+  "x": 2833,
   "y": 0,
   "w": 45,
   "h": 61,
   "ax": 22.0
  },
  "CHILD_SON_music": {
-  "x": 2877,
+  "x": 2879,
   "y": 0,
   "w": 36,
   "h": 63,
   "ax": 16.4
  },
  "CHILD_SON_pc": {
-  "x": 2914,
+  "x": 2916,
   "y": 0,
   "w": 38,
   "h": 51,
   "ax": 15.5
  },
  "CHILD_SON_work": {
-  "x": 2953,
+  "x": 2955,
   "y": 0,
   "w": 32,
   "h": 61,
   "ax": 15.6
  },
  "CHILD_SON_sleep": {
-  "x": 2986,
+  "x": 2988,
   "y": 0,
   "w": 44,
   "h": 18,
   "ax": 29.8
  },
  "TEEN_SON_desk": {
-  "x": 3031,
+  "x": 3033,
   "y": 0,
   "w": 39,
   "h": 66,
   "ax": 18.5
  },
  "TEEN_SON_exercise": {
-  "x": 3071,
+  "x": 3073,
   "y": 0,
   "w": 48,
   "h": 68,
   "ax": 24.0
  },
  "TEEN_SON_draw": {
-  "x": 3120,
+  "x": 3122,
   "y": 0,
   "w": 48,
   "h": 72,
   "ax": 23.8
  },
  "TEEN_SON_music": {
-  "x": 3169,
+  "x": 3171,
   "y": 0,
   "w": 38,
   "h": 74,
   "ax": 17.3
  },
  "TEEN_SON_pc": {
-  "x": 3208,
+  "x": 3210,
   "y": 0,
   "w": 41,
   "h": 65,
   "ax": 17.3
  },
  "TEEN_SON_work": {
-  "x": 3250,
+  "x": 3252,
   "y": 0,
   "w": 33,
   "h": 71,
   "ax": 16.2
  },
  "TEEN_SON_sleep": {
-  "x": 3284,
+  "x": 3286,
   "y": 0,
   "w": 48,
   "h": 20,
   "ax": 31.8
  },
  "TEEN_SON_tired": {
-  "x": 3333,
+  "x": 3335,
   "y": 0,
   "w": 38,
   "h": 72,
   "ax": 17.9
  },
  "YOUTH_SON_desk": {
-  "x": 3372,
+  "x": 3374,
   "y": 0,
   "w": 51,
   "h": 57,
   "ax": 20.8
  },
  "YOUTH_SON_exercise": {
-  "x": 3424,
+  "x": 3426,
   "y": 0,
   "w": 51,
   "h": 77,
   "ax": 24.8
  },
  "YOUTH_SON_draw": {
-  "x": 3476,
+  "x": 3478,
   "y": 0,
   "w": 43,
   "h": 81,
   "ax": 17.8
  },
  "YOUTH_SON_music": {
-  "x": 3520,
+  "x": 3522,
   "y": 0,
   "w": 36,
   "h": 79,
   "ax": 16.8
  },
  "YOUTH_SON_pc": {
-  "x": 3557,
+  "x": 3559,
   "y": 0,
   "w": 50,
   "h": 73,
   "ax": 19.5
  },
  "YOUTH_SON_work": {
-  "x": 3608,
+  "x": 3610,
   "y": 0,
   "w": 40,
   "h": 81,
   "ax": 16.4
  },
  "YOUTH_SON_sleep": {
-  "x": 3649,
+  "x": 3651,
   "y": 0,
   "w": 51,
   "h": 34,
   "ax": 30.4
  },
  "YOUTH_SON_tired": {
-  "x": 3701,
+  "x": 3703,
   "y": 0,
   "w": 37,
   "h": 77,
   "ax": 17.6
  },
  "CHILD_DAUGHTER_desk": {
-  "x": 3739,
+  "x": 3741,
   "y": 0,
   "w": 41,
   "h": 63,
   "ax": 16.2
  },
  "CHILD_DAUGHTER_exercise": {
-  "x": 3781,
+  "x": 3783,
   "y": 0,
   "w": 45,
   "h": 52,
   "ax": 21.4
  },
  "CHILD_DAUGHTER_draw": {
-  "x": 3827,
+  "x": 3829,
   "y": 0,
   "w": 44,
   "h": 62,
   "ax": 19.5
  },
  "CHILD_DAUGHTER_music": {
-  "x": 3872,
+  "x": 3874,
   "y": 0,
   "w": 39,
   "h": 65,
   "ax": 19.3
  },
  "CHILD_DAUGHTER_pc": {
-  "x": 3912,
+  "x": 3914,
   "y": 0,
   "w": 45,
   "h": 59,
   "ax": 18.5
  },
  "CHILD_DAUGHTER_work": {
-  "x": 3958,
+  "x": 3960,
   "y": 0,
   "w": 38,
   "h": 65,
   "ax": 18.2
  },
  "TEEN_DAUGHTER_desk": {
-  "x": 3997,
+  "x": 3999,
   "y": 0,
   "w": 47,
   "h": 52,
   "ax": 20.2
  },
  "TEEN_DAUGHTER_exercise": {
-  "x": 4045,
+  "x": 4047,
   "y": 0,
   "w": 48,
   "h": 55,
   "ax": 24.2
  },
  "TEEN_DAUGHTER_draw": {
-  "x": 4094,
+  "x": 4096,
   "y": 0,
   "w": 47,
   "h": 66,
   "ax": 22.6
  },
  "TEEN_DAUGHTER_music": {
-  "x": 4142,
+  "x": 4144,
   "y": 0,
   "w": 36,
   "h": 72,
   "ax": 16.9
  },
  "TEEN_DAUGHTER_pc": {
-  "x": 4179,
+  "x": 4181,
   "y": 0,
   "w": 44,
   "h": 64,
   "ax": 17.3
  },
  "TEEN_DAUGHTER_work": {
-  "x": 4224,
+  "x": 4226,
   "y": 0,
   "w": 38,
   "h": 71,
   "ax": 17.5
  },
  "TEEN_DAUGHTER_sleep": {
-  "x": 4263,
+  "x": 4265,
   "y": 0,
   "w": 48,
   "h": 22,
   "ax": 31.4
  },
  "TEEN_DAUGHTER_tired": {
-  "x": 4312,
+  "x": 4314,
   "y": 0,
   "w": 33,
   "h": 72,
   "ax": 17.0
  },
  "YOUTH_DAUGHTER_desk": {
-  "x": 4346,
+  "x": 4348,
   "y": 0,
   "w": 49,
   "h": 55,
   "ax": 19.7
  },
  "YOUTH_DAUGHTER_exercise": {
-  "x": 4396,
+  "x": 4398,
   "y": 0,
   "w": 49,
   "h": 67,
   "ax": 24.9
  },
  "YOUTH_DAUGHTER_draw": {
-  "x": 4446,
+  "x": 4448,
   "y": 0,
   "w": 49,
   "h": 78,
   "ax": 22.5
  },
  "YOUTH_DAUGHTER_music": {
-  "x": 4496,
+  "x": 4498,
   "y": 0,
   "w": 40,
   "h": 78,
   "ax": 18.2
  },
  "YOUTH_DAUGHTER_pc": {
-  "x": 4537,
+  "x": 4539,
   "y": 0,
   "w": 45,
   "h": 72,
   "ax": 18.3
  },
  "YOUTH_DAUGHTER_work": {
-  "x": 4583,
+  "x": 4585,
   "y": 0,
   "w": 42,
   "h": 78,
   "ax": 18.2
  },
  "YOUTH_DAUGHTER_sleep": {
-  "x": 4626,
+  "x": 4628,
   "y": 0,
   "w": 49,
   "h": 21,
   "ax": 16.2
  },
  "YOUTH_DAUGHTER_tired": {
-  "x": 4676,
+  "x": 4678,
   "y": 0,
   "w": 34,
   "h": 74,
   "ax": 17.1
  },
  "PARENT_walk0": {
-  "x": 4711,
+  "x": 4713,
   "y": 0,
   "w": 34,
   "h": 80,
   "ax": 16.9
  },
  "PARENT_walk1": {
-  "x": 4746,
+  "x": 4748,
   "y": 0,
   "w": 34,
   "h": 80,
   "ax": 16.9
  },
  "PARENT_walk2": {
-  "x": 4781,
+  "x": 4783,
   "y": 0,
   "w": 34,
   "h": 80,
   "ax": 16.8
  },
  "PARENT_walk3": {
-  "x": 4816,
+  "x": 4818,
   "y": 0,
   "w": 34,
   "h": 80,

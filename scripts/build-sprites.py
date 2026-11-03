@@ -150,7 +150,7 @@ def cut(img, box, block=BLOCK):
     return out[ys.min() : ys.max() + 1, xs.min() : xs.max() + 1]
 
 
-def walk_frames(s):
+def walk_frames(s, lift=None):
     """s: HxWx4 서기 스프라이트 → 걷기 4프레임 (각 H+2 x W)"""
     h, w, _ = s.shape
     a = s[..., 3] > 0
@@ -197,7 +197,7 @@ def walk_frames(s):
         return lay
 
     # (왼다리 dx,dy), (오른다리 dx,dy), 몸 dy, (왼팔 dy, 오른팔 dy)
-    lift = max(2, h // 28)
+    lift = lift or max(2, h // 28)
     # 발 디딤(contact) 프레임: 한쪽 다리 들고 몸이 1px 내려앉음 / 교차(passing) 프레임: 기본 자세
     cycle = [
         ((-1, -lift), (1, 0), 1, (1, -1)),   # 왼발 앞으로
@@ -263,6 +263,8 @@ for g, path in WALK_SHEETS.items():
 # 걷기 5장 중 행마다 자동 선택: 발 간격이 가장 좁은 그림 = 다리 모음(교차),
 # 발 간격이 넓고 뒤쪽 발 방향이 서로 반대인 두 장 = 왼발/오른발 보폭 → [보폭A, 교차, 보폭B, 교차]
 # 키는 앞모습 서기 키에 맞춘다.
+# 원본 걷기 그림이 이상한 줄 (딸 유년기: 왼쪽 위를 향해 그려졌고 발이 뜨는 등 다리 모양이 어색함)
+BACK_SYNTH = {'CHILD_DAUGHTER'}
 BACK_SHEETS = {
     'SON': 'assets-src/son-back-sheet.png',
     'DAUGHTER': 'assets-src/daughter-back-sheet.png',
@@ -290,6 +292,15 @@ for g, path in BACK_SHEETS.items():
     for r, st in enumerate(STAGES):
         row = bboxes[r * 6:(r + 1) * 6]
         stand_box, walks = row[0], row[1:]
+        if f'{st}_{g}' in BACK_SYNTH:
+            # 원본 걷기 그림이 이상한 줄: 똑바로 등을 보인 '뒤 서기'에서 걷기 4프레임을 직접 생성
+            target_h = sprites[f'{st}_{g}_stand'].shape[0]
+            stand = cut(img_b, stand_box, (stand_box[3] - stand_box[1]) / target_h)
+            sprites[f'{st}_{g}_back_stand'] = stand
+            for i, wf in enumerate(walk_frames(stand, lift=3)):
+                sprites[f'{st}_{g}_back_walk{i}'] = wf
+            print(f'  {g} {st} 뒷모습 걷기: 뒤 서기 그림에서 4프레임 생성')
+            continue
         feats = [gait_features(img_b, b) for b in walks]
         pass_i = min(range(5), key=lambda i: feats[i][0])
         rest = sorted((i for i in range(5) if i != pass_i), key=lambda i: -feats[i][0])
