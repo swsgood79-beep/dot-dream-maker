@@ -477,6 +477,14 @@ JOB_SHEETS = {
         ('assets-src/job-son-5.png', {'37': (0, 0), '38': (0, 1), '39': (0, 2), '40': (1, 0), '41': (1, 2), '42': (1, 4), '43': (2, 0), '44': (2, 1), '45': (2, 3)}),
         ('assets-src/job-son-6.png', {'46': (0, 0), '47': (0, 1), '48': (0, 3), '49': (2, 0), '50': (2, 2)}),
     ],
+    # 딸 시트는 한 줄에 7장인 줄이 있어서 (행, 그 줄의 몇 번째 그림)으로 고른다
+    'DAUGHTER': [
+        ('assets-src/job-daughter-1.png', {'01': (0, 0), '02': (0, 1), '03': (0, 2), '04': (1, 0), '05': (1, 1), '06': (1, 3), '07': (2, 0), '08': (2, 2), '09': (2, 5)}, 'comp'),
+        ('assets-src/job-daughter-2.png', {'10': (0, 0), '11': (0, 1), '12': (0, 2), '13': (1, 0), '14': (1, 2), '15': (1, 5), '16': (2, 0), '17': (2, 2), '18': (2, 4)}, 'comp'),
+        ('assets-src/job-daughter-3.png', {'19': (0, 0), '20': (0, 1), '21': (0, 2), '22': (1, 0), '23': (1, 1), '24': (1, 2), '25': (2, 0), '26': (2, 1), '27': (2, 4)}, 'comp'),
+        ('assets-src/job-daughter-4.png', {'28': (0, 0), '29': (0, 1), '30': (0, 2), '31': (1, 0), '32': (1, 1), '33': (1, 3), '34': (2, 0), '35': (2, 2), '36': (2, 5)}, 'comp'),
+        ('assets-src/job-daughter-5.png', {'37': (0, 0), '38': (0, 1), '39': (0, 2), '40': (1, 0), '41': (1, 1), '42': (1, 3), '43': (2, 0), '44': (2, 2), '45': (2, 5)}, 'comp'),
+    ],
 }
 
 
@@ -489,11 +497,31 @@ def cell_box(img_, r, c, rows=3, cols=6):
     return (x0 + xs_.min(), y0 + ys_.min(), x0 + xs_.max() + 1, y0 + ys_.max() + 1)
 
 
+def comp_rows(img_, rows=3):
+    """그림 덩어리를 찾아 줄별로 왼쪽부터 정렬"""
+    m = (765 - img_.sum(axis=2)) > 60
+    out = {}
+    for b in components(m, f=2, min_cells=150):
+        out.setdefault(int((b[1] + b[3]) / 2 / (img_.shape[0] / rows)), []).append(b)
+    return {r: sorted(v) for r, v in out.items()}
+
+
+def tight_box(img_, b):
+    x0, y0, x1, y1 = b
+    m = (765 - img_[y0:y1, x0:x1].sum(axis=2)) > 60
+    ys_, xs_ = np.where(m)
+    return (x0 + xs_.min(), y0 + ys_.min(), x0 + xs_.max() + 1, y0 + ys_.max() + 1)
+
+
 for g, sheets_ in JOB_SHEETS.items():
     target_h = sprites[f'YOUTH_{g}_stand'].shape[0]
-    for path, picks in sheets_:
+    for path, picks, *mode in sheets_:
         img_j = np.asarray(Image.open(path).convert('RGB')).astype(np.int32)
-        boxes_j = {num: cell_box(img_j, r, c) for num, (r, c) in picks.items()}
+        if mode and mode[0] == 'comp':
+            rows_j = comp_rows(img_j)
+            boxes_j = {num: tight_box(img_j, rows_j[r][k]) for num, (r, k) in picks.items()}
+        else:
+            boxes_j = {num: cell_box(img_j, r, c) for num, (r, c) in picks.items()}
         # 시트 기준 축소 비율: 고른 그림들 키의 중앙값 = 청년 서기 키
         blk = float(np.median([b[3] - b[1] for b in boxes_j.values()])) / target_h
         for num, b in boxes_j.items():
