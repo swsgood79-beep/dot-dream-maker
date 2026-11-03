@@ -6,6 +6,8 @@ import { ENDINGS } from '../data/endingData';
 import { PixelButton, STAT_META } from './ui';
 import { Icon } from './Icon';
 import { EncyclopediaPanel } from './panels/EncyclopediaPanel';
+import { AchievementPanel, HallPanel } from './HallPanel';
+import { ACHIEVEMENTS } from '../data/legacyData';
 import { TEMPERAMENTS, type TemperamentId } from '../data/temperamentData';
 import { DEFAULT_PARENT, PARENT_TOTAL, ABILITIES, type ParentProfile } from '../data/parentData';
 import { ParentPicker } from './ParentPicker';
@@ -21,7 +23,9 @@ const WISHES: { stat: StatKey; text: string }[] = [
 
 export function TitleScreen({ onStart }: { onStart: () => void }) {
   const { game, newGame, unlockedEndings, carryIdea, playthrough } = useGameStore();
-  const [mode, setMode] = useState<'menu' | 'family' | 'create' | 'book'>('menu');
+  const [mode, setMode] = useState<'menu' | 'family' | 'create' | 'book' | 'hall' | 'ach'>('menu');
+  const hallCount = useGameStore((s) => s.hallOfFame?.length ?? 0);
+  const achCount = useGameStore((s) => s.achievements?.length ?? 0);
   const [parent, setParent] = useState<ParentProfile>(DEFAULT_PARENT);
   const parentReady = ABILITIES.reduce((a, k) => a + parent.points[k], 0) === PARENT_TOTAL;
   const [name, setName] = useState('');
@@ -31,6 +35,16 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
   const [birthMonth, setBirthMonth] = useState(() => 1 + Math.floor(Math.random() * 12));
   // 엔딩을 한 번이라도 본 뒤부터 기질을 직접 고를 수 있다
   const canPickTemper = unlockedEndings.length > 0;
+
+  if (mode === 'hall' || mode === 'ach') {
+    return (
+      <div className="flex h-full flex-col bg-[#2b2f5c] p-3">
+        <p className="mb-2 text-center text-lg font-bold text-gold drop-shadow-[2px_2px_0_#000]">{mode === 'hall' ? '🏛️ 명예의 전당' : '🏅 업적'}</p>
+        <div className="pixel-box flex-1 overflow-y-auto p-3">{mode === 'hall' ? <HallPanel /> : <AchievementPanel />}</div>
+        <PixelButton className="mt-3" onClick={() => setMode('menu')}>← 돌아가기</PixelButton>
+      </div>
+    );
+  }
 
   if (mode === 'book') {
     return (
@@ -69,7 +83,15 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
           <PixelButton color="bg-sky" onClick={() => setMode('book')}>
             👑 엔딩 도감 ({unlockedEndings.length}/{ENDINGS.length})
           </PixelButton>
-          <p className="mt-2 text-[10px] text-white/60">v0.15.0 · 이어지는 이야기와 생일</p>
+          <div className="grid grid-cols-2 gap-2">
+            <PixelButton color="bg-white" onClick={() => setMode('hall')}>
+              🏛️ 명예의 전당 ({hallCount})
+            </PixelButton>
+            <PixelButton color="bg-white" onClick={() => setMode('ach')}>
+              🏅 업적 ({achCount}/{ACHIEVEMENTS.length})
+            </PixelButton>
+          </div>
+          <p className="mt-2 text-[10px] text-white/60">v0.16.0 · 명예의 전당</p>
         </div>
       )}
 

@@ -3,7 +3,7 @@ import { sfx } from '../audio/sfx';
 import { EVENT_MAP, STYLE_META, eventText, fillName } from '../data/parentingData';
 import { growthStage } from '../engine/room';
 import type { EventOutcome } from '../engine/parenting';
-import { frameName } from '../render/spriteCharacter';
+import { frameName, hasFrame } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
 import { EffectChips, PixelButton } from './ui';
@@ -15,6 +15,8 @@ export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => 
   const resolve = useGameStore((s) => s.resolveEvent);
   const [result, setResult] = useState<{ out: EventOutcome; style: string } | null>(null);
   const ev = EVENT_MAP[id];
+  // 손님(첫째)은 선택 뒤에도 계속 보이도록 처음 모습을 기억
+  const [visitor] = useState(() => ev?.visitor?.(game) ?? null);
   if (!ev) return null;
   const stage = growthStage(game.age);
   const moodPose = game.status.stress >= 60 ? 'tired' : 'stand';
@@ -29,6 +31,7 @@ export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => 
           {ev.emoji} {ev.title}
         </p>
         <div className="room-bg mb-2 flex h-28 items-end justify-center gap-2 border-3 border-ink">
+          {visitor && hasFrame(visitor) && <Sprite name={visitor} scale={1.1} />}
           <Sprite name={frameName(stage, game.gender, result ? (result.out.delta.affection ?? 0) >= 0 ? 'cheer' : 'stand' : moodPose)} scale={1.3} />
         </div>
 
@@ -58,7 +61,7 @@ export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => 
         ) : (
           <div className="flex flex-col items-center gap-2">
             <div className="relative w-full rounded-lg border-3 border-ink bg-white p-2 text-center text-xs">
-              “{result.out.reply}”
+              <span className="whitespace-pre-line">“{result.out.reply}”</span>
             </div>
             <EffectChips fx={result.out.delta} />
             {result.out.wishText && (

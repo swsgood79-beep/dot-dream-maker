@@ -659,3 +659,44 @@ describe('story arcs & birthday', () => {
 });
 
 import { EVENT_MAP as EVENT_MAP_, eventText as eventText_ } from '../data/parentingData';
+
+import { ACHIEVEMENTS, epilogueLines, makeHallEntry, newAchievements } from '../data/legacyData';
+
+describe('legacy: hall of fame, visit, achievements, 20 years later', () => {
+  it('there are 30 unique achievements', () => {
+    expect(ACHIEVEMENTS.length).toBe(30);
+    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(30);
+  });
+
+  it('ending creates a hall entry and unlocks achievements', () => {
+    const s = newGame_('하나', 'DAUGHTER', 'INT', [], 0, 'SHY');
+    s.dreamJob = 'END_01';
+    s.status.affection = 100;
+    const e = ENDING_MAP.END_01;
+    const h = makeHallEntry(s, e, 1);
+    expect(h.dream).toBe(true);
+    const got = newAchievements(s, e, { hall: [h], unlockedEndings: ['END_01'] }, []);
+    expect(got).toEqual(expect.arrayContaining(['FIRST', 'S_END', 'DREAM', 'LOVE_MAX', 'NO_BURST']));
+    expect(newAchievements(s, e, { hall: [h], unlockedEndings: ['END_01'] }, got)).toEqual([]);
+  });
+
+  it('20 years later mentions the job and the friend', () => {
+    const s = newGame_('하나', 'DAUGHTER', 'INT');
+    const lines = epilogueLines(s, ENDING_MAP.END_39).join(' ');
+    expect(lines).toContain('서른아홉');
+    expect(lines).toContain('119 구조대원');
+    expect(lines).toContain('단짝');
+  });
+
+  it('the previous child visits once with a furniture gift', () => {
+    const s = newGame_('두리', 'SON', 'INT');
+    s.prevChild = { name: '하나', gender: 'DAUGHTER', endingId: 'END_19' };
+    s.age = 10;
+    expect(eligibleEvents(s).map((e) => e.id)).toContain('V_VISIT');
+    s.pendingEvent = 'V_VISIT';
+    const out = resolveParentingEvent(s, 0)!;
+    expect(out.reply).toContain('선물');
+    expect(s.inventory).toContain('easel');
+    expect(s.prevChild).toBeUndefined();
+  });
+});

@@ -143,7 +143,7 @@ export function resolveParentingEvent(s: SaveState, choiceIndex: number): EventO
   s.seenEvents = [...(s.seenEvents ?? []), ev.id];
   s.memories = [...(s.memories ?? []), `${ev.id}:${c.style}`];
   s.pendingEvent = null;
-  const reply = fillName(c.reply, s.childName, s.friend);
+  let reply = fillName(c.reply, s.childName, s.friend);
   addPhoto(s, { emoji: ev.emoji, title: ev.title, caption: reply, pose: (delta.affection ?? 0) >= 0 ? 'cheer' : 'stand' });
   if (c.reopenWishes) s.wishClosed = false;
   if (ev.arc) {
@@ -159,7 +159,8 @@ export function resolveParentingEvent(s: SaveState, choiceIndex: number): EventO
       },
     };
   }
-  ev.onResolve?.(s, c.style);
+  const extra = ev.onResolve?.(s, c.style);
+  if (extra) reply += `\n${extra}`;
   if (c.flag && !s.flags.includes(c.flag)) s.flags.push(c.flag);
   let wishText: string | undefined;
   if (c.wish && !s.wish && WISH_MAP[c.wish]) {
@@ -174,6 +175,7 @@ export function resolveParentingEvent(s: SaveState, choiceIndex: number): EventO
     s.clues = [...(s.clues ?? []), clue];
     if (s.clues.length >= CLUES_TO_REVEAL) {
       s.temperRevealed = true;
+      s.temperRevealedAge = s.age;
       revealed = temper.id;
     }
   }

@@ -1,6 +1,20 @@
 import type { StatKey } from '../types/game';
 import type { SaveState } from '../engine/simulation';
 import { ARC_EVENTS } from './arcData';
+import { ENDINGS } from './endingData';
+
+const ENDING_TITLE: Record<string, string> = Object.fromEntries(ENDINGS.map((e) => [e.id, e.title.replace(/ \(.*\)$/, '')]));
+const ENDING_CATEGORY: Record<string, string> = Object.fromEntries(ENDINGS.map((e) => [e.id, e.category]));
+/** 첫째가 직업 분야에 맞춰 들고 오는 가구 */
+const VISIT_GIFT: Record<string, string> = {
+  ELITE: 'encyclopedia_shelf',
+  TECH: 'whiteboard',
+  ENT: 'easel',
+  BIZ: 'world_clock',
+  ACTION: 'wooden_sword_rack',
+  HIDDEN: 'globe',
+  DARK: 'plant',
+};
 
 /** 선택지·부탁 결과로 바뀌는 수치 (스탯은 성장 곡선 없이 그대로 더함) */
 export type EffectKey = StatKey | 'stress' | 'affection' | 'delinquency' | 'fame' | 'gold' | 'idea';
@@ -44,7 +58,10 @@ export interface ParentingEvent {
   /** 여러 달에 걸친 연속 이야기의 한 단계 */
   arc?: { id: string; step: number; variant?: string; final?: boolean; gap?: number };
   /** 선택 직후 추가 처리 (연속 이야기 분기 결과 정하기 등) */
-  onResolve?: (s: SaveState, style: ParentStyle) => void;
+  /** 선택 직후 추가 처리. 문자열을 돌려주면 아이 반응 뒤에 덧붙임 */
+  onResolve?: (s: SaveState, style: ParentStyle) => string | void;
+  /** 아이 옆에 함께 그릴 손님 스프라이트 */
+  visitor?: (s: SaveState) => string | null;
 }
 
 export const eventText = (e: ParentingEvent, s: SaveState) => (typeof e.text === 'function' ? e.text(s) : e.text);
@@ -475,6 +492,31 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
       { label: '거스름돈 계산부터 정확히 하게 한다', style: 'STRICT', fx: { INT: 8, TEC: 4, stress: 4 }, reply: '3천 원 내셨으니까... 1,200원! 맞지?' },
       { label: '하고 싶은 만큼만 하라고 한다', style: 'FREE', fx: { CHA: 6, gold: 50, stress: -3 }, reply: '용돈 벌었다! 오늘 장사 잘됐어!' },
     ],
+  },
+
+  // ───────── 이전 판에 키운 아이가 어른이 되어 찾아온다
+  {
+    id: 'V_VISIT', emoji: '🎁', title: '어른이 된 첫째의 방문', minAge: 9, maxAge: 13, weight: 8,
+    cond: (s) => !!s.prevChild,
+    visitor: (s) => (s.prevChild ? `JOB_${s.prevChild.endingId}_${s.prevChild.gender}` : null),
+    text: (s) => {
+      const p = s.prevChild!;
+      const t = ENDING_TITLE[p.endingId] ?? '어른';
+      return `띵동! 현관에 ${p.name}${hasBatchim(p.name) ? '이' : '가'} 서 있어요. ${t}이(가) 된 첫째가 커다란 선물 상자를 들고 동생을 보러 왔대요!`;
+    },
+    choices: [
+      { label: '저녁을 차려 다 같이 먹는다', style: 'WARM', fx: { affection: 6, stress: -8 }, reply: '우와... 나도 크면 저렇게 멋있어질 거야!' },
+      { label: '동생에게 해 줄 조언을 부탁한다', style: 'STRICT', fx: { INT: 6, MOR: 6 }, reply: '엄마 아빠 말씀 잘 들으래. ...근데 다 듣진 말래! ㅋㅋ' },
+      { label: '둘이 실컷 놀게 둔다', style: 'FREE', fx: { CHA: 6, stress: -12 }, reply: '하루 종일 같이 놀았어! 다음에 또 온대!' },
+    ],
+    onResolve: (s) => {
+      const p = s.prevChild!;
+      const fid = VISIT_GIFT[ENDING_CATEGORY[p.endingId] ?? 'BIZ'] ?? 'plant';
+      s.inventory.push(fid);
+      if (!s.collectedFurniture.includes(fid)) s.collectedFurniture.push(fid);
+      s.prevChild = undefined; // 한 판에 한 번
+      return `(🎁 첫째가 쓰던 가구를 선물로 받았다! → 방꾸미기 창고)`;
+    },
   },
 
   // ───────── 단짝 친구

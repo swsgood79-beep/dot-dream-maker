@@ -15,8 +15,9 @@ import { dominantStyle } from '../engine/parenting';
 import { PhotoAlbum } from './PhotoAlbum';
 import { buildLetter } from '../data/letterData';
 import { TEMPERAMENT_MAP } from '../data/temperamentData';
+import { ACHIEVEMENTS, epilogueLines } from '../data/legacyData';
 
-type Step = 'intro' | 'album' | 'photos' | 'drum' | 'reveal' | 'letter';
+type Step = 'intro' | 'album' | 'photos' | 'drum' | 'reveal' | 'letter' | 'later';
 
 const STAGE_TITLE = { CHILD: '유년기', TEEN: '청소년기', YOUTH: '청년기' };
 
@@ -49,6 +50,7 @@ function Typewriter({ text }: { text: string }) {
 
 export function EndingScreen({ onDone }: { onDone: () => void }) {
   const { ending, game, unlockedEndings, finishEnding } = useGameStore();
+  const newAch = useGameStore((s) => s.newAchievements) ?? [];
   const [step, setStep] = useState<Step>('intro');
   const [page, setPage] = useState(0);
   const pages = useMemo(
@@ -176,19 +178,51 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
                   {t.emoji} {t.label} 아이 · 들어준 부탁 {game.wishesGranted ?? 0}번 · 함께한 사건 {game.seenEvents?.length ?? 0}가지
                 </p>
               )}
-              <PixelButton
-                className="w-full"
-                color="bg-gold"
-                onClick={() => {
-                  finishEnding();
-                  onDone();
-                }}
-              >
-                타이틀로 (다음 회차 💡 30% 인계)
+              <PixelButton className="w-full" color="bg-gold" onClick={() => setStep('later')}>
+                🌅 20년 후...
               </PixelButton>
             </div>
           );
         })()}
+
+      {step === 'later' && (
+        <div className="pop-in flex min-h-0 w-full flex-1 flex-col items-center gap-2">
+          <p className="text-lg font-bold text-gold">🌅 20년 후...</p>
+          <div className="flex h-28 items-end justify-center">
+            <Sprite name={hasFrame(jobFrame) ? jobFrame : frameName('YOUTH', game.gender, 'cheer')} scale={1.6} />
+          </div>
+          <div className="min-h-0 w-full flex-1 overflow-y-auto rounded border-3 border-ink bg-[#1b1f3b]/70 p-3 text-left text-[12px] leading-relaxed">
+            {epilogueLines(game, ending).map((l, i) => (
+              <p key={i} className="float-in mb-1.5" style={{ animationDelay: `${i * 0.5}s`, animationFillMode: 'both' }}>
+                {l}
+              </p>
+            ))}
+            {newAch.length > 0 && (
+              <div className="mt-3 rounded border-2 border-gold bg-black/30 p-2">
+                <p className="mb-1 font-bold text-gold">🏅 새로 달성한 업적 {newAch.length}개 (다음 판 💡+{newAch.length * 3})</p>
+                {newAch.map((id) => {
+                  const a = ACHIEVEMENTS.find((x) => x.id === id)!;
+                  return (
+                    <p key={id} className="text-[11px]">
+                      {a.emoji} <b>{a.name}</b> <span className="opacity-70">— {a.desc}</span>
+                    </p>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <PixelButton
+            className="w-full"
+            color="bg-gold"
+            onClick={() => {
+              finishEnding();
+              onDone();
+            }}
+          >
+            타이틀로 (명예의 전당에 기록됨)
+          </PixelButton>
+        </div>
+      )}
 
       {step === 'drum' && (
         <div className="flex flex-col items-center gap-3">

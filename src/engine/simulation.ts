@@ -85,6 +85,9 @@ export interface SaveState extends GameState {
   birthMonth?: number;
   pendingBirthday?: boolean;
   giftsLiked?: number; // 원하던 생일 선물을 맞힌 횟수
+  // ── v0.16 다회차
+  temperRevealedAge?: number; // 기질을 알아챈 나이 (업적)
+  prevChild?: { name: string; gender: Gender; endingId: string }; // 이전 판에 키운 아이 (방문 이벤트)
 }
 
 /** 게임 시작부터 센 달 수 (8세 1월 = 1) */

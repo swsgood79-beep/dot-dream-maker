@@ -13,6 +13,7 @@ import { resolveReport } from '../engine/school';
 import { readDiary as readDiaryEngine, respondCaught as respondCaughtEngine, skipDiary as skipDiaryEngine } from '../engine/diary';
 import { CUTSCENE_MAP } from '../data/cutsceneData';
 import { giftOptions, giveGift } from '../data/birthdayData';
+import { makeHallEntry, newAchievements, type HallEntry } from '../data/legacyData';
 import type { Effect, ParentStyle } from '../data/parentingData';
 import { addPhoto, finishContest, perfFactor, type ContestResult, createNewGame, refreshCombos, runMonth, type MonthResult, type SaveState } from '../engine/simulation';
 
@@ -26,6 +27,12 @@ interface GameStore {
   carryIdea: number;
   playthrough: number;
   lastResult: MonthResult | null;
+  /** 명예의 전당: 지금까지 키운 아이들 (다회차 영구 보존) */
+  hallOfFame: HallEntry[];
+  /** 달성한 업적 ID (다회차 영구 보존) */
+  achievements: string[];
+  /** 이번 엔딩에서 새로 달성한 업적 */
+  newAchievements: string[];
   /** 월간 스케줄 실행 연출 재생 중 */
   playing: boolean;
   /** 효과음 끄기 */
@@ -117,6 +124,9 @@ export const useGameStore = create<GameStore>()(
         carryIdea: 0,
         playthrough: 1,
         lastResult: null,
+        hallOfFame: [],
+        achievements: [],
+        newAchievements: [],
         playing: false,
         muted: false,
         toggleMute: () => {
@@ -136,6 +146,9 @@ export const useGameStore = create<GameStore>()(
           const random = temperament === 'RANDOM';
           const t = random ? TEMPERAMENTS[Math.floor(Math.random() * TEMPERAMENTS.length)].id : temperament;
           const g = createNewGame(name, gender, bonus, [...unlockedEndings], carryIdea, t, !random, parent);
+          // 지난 판에 키운 아이가 어른이 되어 찾아온다
+          const prev = (get().hallOfFame ?? []).slice(-1)[0];
+          if (prev) g.prevChild = { name: prev.name, gender: prev.gender, endingId: prev.endingId };
           g.birthMonth = birthMonth ?? 1 + Math.floor(Math.random() * 12);
           if (g.birthMonth === 1) g.pendingBirthday = true; // 1월생은 시작하자마자 생일
           set({
@@ -157,7 +170,13 @@ export const useGameStore = create<GameStore>()(
           const result = runMonth(g, Math.random, { interactiveContest: true });
           const unlocked = Array.from(new Set([...get().unlockedEndings, ...result.state.unlockedEndings]));
           set({ game: result.state, lastResult: result, unlockedEndings: unlocked, playing: true });
-          if (result.ending) set({ ending: result.ending });
+          if (result.ending) {
+            // 명예의 전당 기록 + 업적 판정
+            const { hallOfFame, achievements, playthrough } = get();
+            const hall = [...(hallOfFame ?? []), makeHallEntry(result.state, result.ending, playthrough)];
+            const fresh = newAchievements(result.state, result.ending, { hall, unlockedEndings: unlocked }, achievements ?? []);
+            set({ ending: result.ending, hallOfFame: hall, achievements: [...(achievements ?? []), ...fresh], newAchievements: fresh });
+          }
         },
 
         dismissResult: () => set({ lastResult: null, playing: false }),
@@ -338,7 +357,8 @@ export const useGameStore = create<GameStore>()(
         finishEnding: () => {
           const g = get().game;
           // 2회차 인계: 남은 영감 포인트의 30%
-          const carry = g ? Math.floor(g.ideaPoints * 0.3) : 0;
+          // 새 업적 하나당 영감 +3 추가 인계
+          const carry = g ? Math.floor(g.ideaPoints * 0.3) + 3 * (get().newAchievements?.length ?? 0) : 0;
           set((st) => ({ game: null, ending: null, lastResult: null, carryIdea: carry, playthrough: st.playthrough + 1 }));
         },
 
@@ -366,6 +386,9 @@ export const useGameStore = create<GameStore>()(
         carryIdea: st.carryIdea,
         playthrough: st.playthrough,
         ending: st.ending,
+        hallOfFame: st.hallOfFame,
+        achievements: st.achievements,
+        newAchievements: st.newAchievements,
       }),
     },
   ),

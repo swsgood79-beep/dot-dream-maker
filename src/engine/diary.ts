@@ -99,7 +99,10 @@ export function readDiary(s: SaveState, rng: Rng) {
   if (e.secret?.kind === 'TEMPER' && s.temperament && !s.temperRevealed) {
     clue = `(일기) ${e.lines.find((l) => l === TEMPER_SECRET[s.temperament!])}`;
     s.clues = [...(s.clues ?? []), clue];
-    if (s.clues.length >= CLUES_TO_REVEAL) s.temperRevealed = true;
+    if (s.clues.length >= CLUES_TO_REVEAL) {
+      s.temperRevealed = true;
+      s.temperRevealedAge = s.age;
+    }
   }
   const caught = rng() < caughtChance(s);
   if (caught) s.diaryCaught = (s.diaryCaught ?? 0) + 1;
