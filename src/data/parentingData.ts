@@ -23,6 +23,8 @@ export interface EventChoice {
   wish?: string;
   /** 닫혔던 마음이 열려 다시 부탁을 하게 됨 */
   reopenWishes?: boolean;
+  /** 게임 플래그 추가 (예: FRIEND_AWAY) */
+  flag?: string;
 }
 
 export interface ParentingEvent {
@@ -42,6 +44,8 @@ export interface ParentingEvent {
 
 /** 예전 선택 기억: '이벤트ID:스타일' */
 const mem = (s: SaveState, ...tags: string[]) => tags.some((t) => (s.memories ?? []).includes(t));
+
+const friendHere = (s: SaveState) => !!s.friend && !s.flags.includes('FRIEND_AWAY');
 
 const partTimeCount = (s: SaveState) =>
   Object.entries(s.actionCounts).reduce((a, [k, v]) => a + (k.startsWith('JOB_') ? v : 0), 0);
@@ -384,6 +388,48 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
     ],
   },
 
+  // ───────── 단짝 친구
+  {
+    id: 'F_SLEEPOVER', emoji: '🛌', title: '단짝네서 자고 올래', minAge: 9, maxAge: 12, weight: 1.5,
+    cond: friendHere,
+    text: '"{friend}네 집에서 자고 와도 돼? 응? 제발~"',
+    choices: [
+      { label: '과일 바구니를 들려 보낸다', style: 'WARM', fx: { CHA: 6, affection: 4, gold: -50 }, reply: '{friend}네 엄마가 예의 바르다고 칭찬했어!' },
+      { label: '아직은 이르다고 한다', style: 'STRICT', fx: { MOR: 3, affection: -4 }, reply: '...다른 애들은 다 가는데.' },
+      { label: '{friend}를 우리 집으로 초대하자', style: 'FREE', fx: { CHA: 8, affection: 3, gold: -100 }, reply: '밤새 베개 싸움 했어! 최고의 날이야!' },
+    ],
+  },
+  {
+    id: 'F_MOVING', emoji: '🚚', title: '단짝의 전학', minAge: 10, maxAge: 11, weight: 1.2,
+    cond: friendHere,
+    text: '{name이} 울면서 들어왔어요. "{friend}가 다음 주에 멀리 전학 간대..."',
+    choices: [
+      { label: '작별 편지 쓰는 걸 도와준다', style: 'WARM', fx: { ART: 8, affection: 6, stress: -5 }, reply: '편지에 우리 집 주소 적었어. 꼭 답장 준대.', flag: 'FRIEND_AWAY' },
+      { label: '새 친구를 사귀면 된다고 한다', style: 'STRICT', fx: { CHA: 5, stress: 6, affection: -2 }, reply: '...{friend} 같은 애는 없단 말이야.', flag: 'FRIEND_AWAY' },
+      { label: '마지막 날 실컷 놀게 해 준다', style: 'FREE', fx: { stress: -10, STR: 4, affection: 3 }, reply: '놀이공원에서 사진 100장 찍었어!', flag: 'FRIEND_AWAY' },
+    ],
+  },
+  {
+    id: 'F_TEEN_FIGHT', emoji: '💔', title: '단짝과의 냉전', minAge: 13, maxAge: 16, weight: 1.5,
+    cond: friendHere,
+    text: '{friend}랑 크게 싸웠대요. 일주일째 말을 안 한다는데, 화해하는 법을 모르겠대요.',
+    choices: [
+      { label: '내 친구와 화해했던 이야기를 해 준다', style: 'WARM', fx: { CHA: 6, affection: 6, stress: -6 }, reply: '...먼저 연락해 볼게. 엄마 아빠도 그랬구나.' },
+      { label: '잘못한 게 있으면 먼저 사과하라고 한다', style: 'STRICT', fx: { MOR: 8, stress: 4 }, reply: '내가 먼저 사과했어. 걔도 미안하대.' },
+      { label: '시간이 해결해 줄 거라고 한다', style: 'FREE', fx: { stress: -4, CHA: 3 }, reply: '(일주일 뒤) 급식실에서 자연스럽게 화해했어 ㅋㅋ' },
+    ],
+  },
+  {
+    id: 'F_REUNION', emoji: '📲', title: '다시 만난 단짝', minAge: 16, maxAge: 19, weight: 2,
+    cond: (s) => !!s.friend && s.flags.includes('FRIEND_AWAY'),
+    text: '"엄마 아빠! SNS에서 {friend}를 찾았어! 초등학교 때 전학 간 {friend} 기억나?"',
+    choices: [
+      { label: '이번 방학에 만나러 다녀오라고 한다', style: 'WARM', fx: { affection: 6, CHA: 6, stress: -10, gold: -200 }, reply: '하나도 안 변했어! 아니, 키는 엄청 컸어!' },
+      { label: '시험 끝나고 만나라고 한다', style: 'STRICT', fx: { INT: 5, affection: -2 }, reply: '...응. 수능 끝나고 만나기로 했어.' },
+      { label: '반갑겠다~ 실컷 연락해', style: 'FREE', fx: { CHA: 5, stress: -6 }, reply: '밤새 통화했어. 걔도 나 보고 싶었대!' },
+    ],
+  },
+
   // ───────── 기억: 예전에 했던 선택이 몇 년 뒤 돌아온다
   {
     id: 'M_VASE_WARM', emoji: '🏺', title: '그때 그 꽃병', minAge: 13, maxAge: 17, weight: 3,
@@ -564,9 +610,12 @@ function hasBatchim(word: string) {
   return (c - 0xac00) % 28 !== 0;
 }
 
-export function fillName(text: string, name: string) {
+export function fillName(text: string, name: string, friend = '친구') {
   const b = hasBatchim(name);
+  // 친구는 부르는 이름으로: 받침 있으면 '서연이', 없으면 '지호' → 뒤에 조사를 붙여도 자연스럽다
+  const call = hasBatchim(friend) ? friend + '이' : friend;
   return text
+    .replace(/\{friend\}/g, call)
     .replace(/\{name이\}/g, name + (b ? '이' : '가'))
     .replace(/\{name은\}/g, name + (b ? '은' : '는'))
     .replace(/\{name을\}/g, name + (b ? '을' : '를'))

@@ -16,6 +16,7 @@ import { computeActiveCombos, computeAura, roomSizeForAge } from './room';
 import { rollParentingEvent, updateWish } from './parenting';
 import type { ParentStyle } from '../data/parentingData';
 import { TEMPERAMENT_MAP, type TemperamentId } from '../data/temperamentData';
+import { CUTSCENES, pickFriend } from '../data/cutsceneData';
 
 export const STAT_KEYS: StatKey[] = ['INT', 'STR', 'ART', 'CHA', 'MOR', 'TEC'];
 export const APT_KEYS: AptitudeKey[] = ['APT_MED', 'APT_LAW', 'APT_IT', 'APT_ENT', 'APT_BIZ', 'APT_ADV'];
@@ -56,6 +57,11 @@ export interface SaveState extends GameState {
   memories?: string[]; // '이벤트ID:스타일' — 몇 년 뒤 돌아오는 기억, 엔딩 편지 재료
   photos?: Photo[]; // 가족 사진첩
   wishClosed?: boolean; // 부탁을 자주 무시당해 마음을 닫음
+  // ── v0.10 성장 컷신·학교 생활
+  friend?: string; // 단짝 친구 이름
+  pendingCutscene?: string | null;
+  seenCutscenes?: string[];
+  pendingReport?: boolean; // 이번 달 성적표 확인 대기
 }
 
 export interface Photo {
@@ -185,6 +191,10 @@ export function createNewGame(
     memories: [],
     photos: [{ age: 8, month: 1, emoji: '🎒', title: '우리 집에 온 날', caption: `${childName}의 12년 이야기가 시작됐다.`, pose: 'stand' }],
     wishClosed: false,
+    friend: pickFriend(childName),
+    pendingCutscene: null,
+    seenCutscenes: [],
+    pendingReport: false,
   };
 }
 
@@ -548,5 +558,9 @@ export function runMonth(input: SaveState, rng: Rng = Math.random): MonthResult 
     } else events.push(`🎂 ${s.age}세가 되었다!`);
   }
   rollParentingEvent(s, rng);
+  // 새 달 시작: 성장 컷신 · 성적표
+  const cut = CUTSCENES.find((c) => c.age === s.age && c.month === s.month && !(s.seenCutscenes ?? []).includes(c.id));
+  if (cut) s.pendingCutscene = cut.id;
+  if ((s.month === 7 || s.month === 2) && !(s.age === 8 && s.month === 2)) s.pendingReport = true;
   return { state: s, weeks, events, contest: contestResult };
 }

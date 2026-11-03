@@ -7,6 +7,8 @@ import { MonthResultModal } from './MonthResultModal';
 import { Icon } from './Icon';
 import { ContestModal } from './ContestModal';
 import { EventModal } from './EventModal';
+import { CutsceneModal } from './CutsceneModal';
+import { ReportCardModal } from './ReportCardModal';
 import { WISH_MAP } from '../data/parentingData';
 import { sfx } from '../audio/sfx';
 import type { MonthResult } from '../engine/simulation';
@@ -48,7 +50,12 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const toggleMute = useGameStore((s) => s.toggleMute);
   // 선택 후 아이 반응을 보여 주는 동안 모달을 유지하기 위해 표시 중인 상황 ID를 따로 보관
   const [eventShown, setEventShown] = useState<string | null>(null);
-  const openEvent = !lastResult && !playing ? (eventShown ?? game.pendingEvent ?? null) : null;
+  const [reportShown, setReportShown] = useState(false);
+  // 새 달 시작 순서: 월간 결과 → 성장 컷신 → 성적표 → 육아 상황
+  const idle = !lastResult && !playing;
+  const openCut = idle && !eventShown && !reportShown ? (game.pendingCutscene ?? null) : null;
+  const openReport = idle && !openCut && !eventShown && (reportShown || !!game.pendingReport);
+  const openEvent = idle && !openCut && !openReport ? (eventShown ?? game.pendingEvent ?? null) : null;
   const showContest = !!(lastResult && !playing && lastResult.contest && contestSeen !== lastResult);
 
   const stress = game.status.stress;
@@ -215,6 +222,8 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
         <ContestModal contest={lastResult.contest} gender={game.gender} age={lastResult.contest.age} onClose={() => setContestSeen(lastResult)} />
       )}
       {lastResult && !playing && !showContest && <MonthResultModal result={lastResult} onClose={dismissResult} />}
+      {openCut && <CutsceneModal key={openCut} id={openCut} />}
+      {openReport && <ReportCardModal onPick={() => setReportShown(true)} onClose={() => setReportShown(false)} />}
       {openEvent && <EventModal key={openEvent} id={openEvent} onPick={() => setEventShown(openEvent)} onClose={() => setEventShown(null)} />}
     </div>
   );

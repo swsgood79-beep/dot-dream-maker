@@ -2,6 +2,7 @@ import type { EndingDefinition } from '../types/game';
 import type { SaveState } from '../engine/simulation';
 import { dominantStyle } from '../engine/parenting';
 import { TEMPERAMENT_MAP } from './temperamentData';
+import { fillName } from './parentingData';
 
 /** 예전 선택(이벤트ID:스타일)이 편지 속 한 문장이 된다 */
 export const MEMORY_LINES: Record<string, string> = {
@@ -68,6 +69,13 @@ export function buildLetter(s: SaveState, ending: EndingDefinition): { greeting:
   const failed = s.wishesFailed ?? 0;
   if (granted >= 6 && granted > failed * 2) body.push('제 부탁 하나하나 들어주느라 고생 많으셨죠. 다 기억하고 있어요.');
   else if (failed > granted) body.push('가끔은 제 말을 들어주지 않아서 서운했어요. 그래도 이제는 그때 사정도 조금 알 것 같아요.');
+
+  if (s.friend) {
+    const away = s.flags.includes('FRIEND_AWAY');
+    const met = (s.seenEvents ?? []).includes('F_REUNION');
+    if (!away) body.push(fillName('입학식 날 처음 만난 {friend}는 아직도 제 제일 친한 친구예요.', s.childName, s.friend));
+    else if (met) body.push(fillName('전학 갔던 {friend}랑 다시 만나서, 요즘도 자주 연락해요.', s.childName, s.friend));
+  }
 
   const style = dominantStyle(s);
   if (style) body.push(STYLE_LINE[style]);

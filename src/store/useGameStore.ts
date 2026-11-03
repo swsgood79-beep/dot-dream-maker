@@ -8,7 +8,10 @@ import type { EndingDefinition, Gender, StatKey } from '../types/game';
 import { TEMPERAMENTS, type TemperamentId } from '../data/temperamentData';
 import { canPlace, findFreeSpot } from '../engine/room';
 import { resolveParentingEvent, type EventOutcome } from '../engine/parenting';
-import { createNewGame, refreshCombos, runMonth, type MonthResult, type SaveState } from '../engine/simulation';
+import { resolveReport } from '../engine/school';
+import { CUTSCENE_MAP } from '../data/cutsceneData';
+import type { Effect, ParentStyle } from '../data/parentingData';
+import { addPhoto, createNewGame, refreshCombos, runMonth, type MonthResult, type SaveState } from '../engine/simulation';
 
 export type Toast = { id: number; text: string };
 
@@ -42,6 +45,8 @@ interface GameStore {
   talk: (kind?: 'talk' | 'praise' | 'scold') => void;
   /** 육아 상황에 대한 부모의 선택 → 아이 반응 */
   resolveEvent: (choiceIndex: number) => EventOutcome | null;
+  finishCutscene: () => void;
+  reactReport: (style: ParentStyle) => { reply: string; delta: Effect } | null;
   giveAllowance: () => void;
   finishEnding: () => void;
   quitToTitle: () => void;
@@ -225,6 +230,25 @@ export const useGameStore = create<GameStore>()(
               get().pushToast('☝️ 차분히 타일렀어요. 비행 -6, 도덕 +4, 친밀도 -3');
             }
           }),
+
+        finishCutscene: () =>
+          void mutate((g) => {
+            const id = g.pendingCutscene;
+            if (!id) return false;
+            const c = CUTSCENE_MAP[id];
+            g.seenCutscenes = [...(g.seenCutscenes ?? []), id];
+            g.pendingCutscene = null;
+            if (c) addPhoto(g, { emoji: c.emoji, title: c.title, caption: '오늘을 오래오래 기억하고 싶다.', pose: 'cheer' });
+          }),
+
+        reactReport: (style) => {
+          let out: { reply: string; delta: Effect } | null = null;
+          mutate((g) => {
+            if (!g.pendingReport) return false;
+            out = resolveReport(g, style);
+          });
+          return out;
+        },
 
         resolveEvent: (choiceIndex) => {
           let out: EventOutcome | null = null;

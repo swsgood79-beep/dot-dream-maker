@@ -446,3 +446,47 @@ describe('temperament, memories, letter', () => {
     expect(l.closing).toContain('사랑');
   });
 });
+
+import { computeReport, resolveReport } from '../engine/school';
+import { CUTSCENES } from '../data/cutsceneData';
+
+describe('school life & cutscenes', () => {
+  it('friend name gets colloquial particle', () => {
+    expect(fillName('{friend}랑 놀았어', '하나', '서연')).toBe('서연이랑 놀았어');
+    expect(fillName('{friend}랑 놀았어', '하나', '지호')).toBe('지호랑 놀았어');
+  });
+
+  it('report card grades follow school level', () => {
+    const s = newGame_('하나', 'DAUGHTER', 'INT');
+    s.age = 10; s.month = 7;
+    expect(computeReport(s).school).toBe('초등학교 3학년');
+    expect(['수', '우', '미', '양', '가']).toContain(computeReport(s).subjects[0].grade);
+    s.age = 18;
+    expect(computeReport(s).subjects[0].grade).toMatch(/등급$/);
+    s.pendingReport = true;
+    resolveReport(s, 'WARM');
+    expect(s.pendingReport).toBe(false);
+  });
+
+  it('cutscenes and report cards are scheduled during 12 years', () => {
+    let s = newGame_('하나', 'SON', 'INT');
+    const cuts = new Set<string>();
+    let reports = 0;
+    for (let m = 0; m < 144; m++) {
+      const r = runMonth_(s, () => 0.5);
+      s = r.state;
+      if (s.pendingCutscene) {
+        cuts.add(s.pendingCutscene);
+        s.seenCutscenes = [...(s.seenCutscenes ?? []), s.pendingCutscene];
+        s.pendingCutscene = null;
+      }
+      if (s.pendingReport) {
+        reports++;
+        s.pendingReport = false;
+      }
+      if (r.ending) break;
+    }
+    expect(cuts.size).toBe(CUTSCENES.length);
+    expect(reports).toBeGreaterThanOrEqual(22);
+  });
+});

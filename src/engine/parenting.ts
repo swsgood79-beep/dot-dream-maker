@@ -125,9 +125,10 @@ export function resolveParentingEvent(s: SaveState, choiceIndex: number): EventO
   s.seenEvents = [...(s.seenEvents ?? []), ev.id];
   s.memories = [...(s.memories ?? []), `${ev.id}:${c.style}`];
   s.pendingEvent = null;
-  const reply = fillName(c.reply, s.childName);
+  const reply = fillName(c.reply, s.childName, s.friend);
   addPhoto(s, { emoji: ev.emoji, title: ev.title, caption: reply, pose: (delta.affection ?? 0) >= 0 ? 'cheer' : 'stand' });
   if (c.reopenWishes) s.wishClosed = false;
+  if (c.flag && !s.flags.includes(c.flag)) s.flags.push(c.flag);
   let wishText: string | undefined;
   if (c.wish && !s.wish && WISH_MAP[c.wish]) {
     startWish(s, c.wish);
