@@ -116,3 +116,11 @@ export function furnitureSpriteUrl(id: string): string {
   urlCache.set(id, url);
   return url;
 }
+
+/** 손그림 가구가 좌우 반전되어 그려지는지 (회전에 따른 정면 방향 vs 원본 방향) */
+export function furnitureFlipped(p: Pick<PlacedFurniture, 'furnitureId' | 'rotation'>): boolean {
+  const f = FRAMES[p.furnitureId];
+  if (!f) return p.rotation === 90 || p.rotation === 270;
+  const want = p.rotation === 90 || p.rotation === 270 ? 'R' : 'L';
+  return want !== f.face;
+}

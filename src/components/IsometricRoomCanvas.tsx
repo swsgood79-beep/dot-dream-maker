@@ -3,6 +3,7 @@ import { FURNITURE_MAP } from '../data/furnitureData';
 import { canPlace, computeActiveCombos, footprint, growthStage } from '../engine/room';
 import { canvasSize, COMBO_COLORS, depthSorted, furnitureBounds, renderRoom, unproject, type RoomView } from '../render/isoRenderer';
 import { FURNITURE_BODY, pixelIconUrl } from '../render/sprites';
+import { furnitureFlipped, hasFurnitureSprite } from '../render/furnitureSprites';
 import { characterHeight, RES } from '../render/spriteCharacter';
 import { besideCells, CharacterSim, doorCell, type Step } from '../render/characterSim';
 import { CatSim } from '../render/catSim';
@@ -221,7 +222,10 @@ export function IsometricRoomCanvas({
             const fp = footprint(bed);
             const cx = fp.reduce((a, c) => a + c.x, 0) / fp.length + 0.5;
             const cy = fp.reduce((a, c) => a + c.y, 0) / fp.length + 0.5;
-            sim.actor.drawAt = { gx: cx, gy: cy, lift: (FURNITURE_BODY[bed.furnitureId]?.h ?? 6) + 2 };
+            // 누운 그림(침대 각도로 그려짐)의 발끝이 침대 칸 가운데보다 살짝 아래에 오도록
+            sim.actor.drawAt = { gx: cx, gy: cy, lift: hasFurnitureSprite(bed.furnitureId) ? -2 : (FURNITURE_BODY[bed.furnitureId]?.h ?? 6) - 2 };
+            // 누운 그림은 머리가 오른쪽 위(침대 머리판 쪽) → 침대가 좌우 반전되어 그려지면 같이 반전
+            sim.actor.facing = furnitureFlipped(bed) ? 'L' : 'R';
           }
           haloRef.current = HALO[w.outcome];
           setBubble(w.outcome === 'GREAT' ? '✨' : POSE_BUBBLE[pose] ?? ACT_BUBBLE[w.actionType]);

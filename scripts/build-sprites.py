@@ -400,6 +400,20 @@ for g, path in POSE_SHEETS.items():
             else:
                 sprites[name] = cut(img_p, named[name], blk)
 
+# 침대에 누운 그림 시트 (2행 × 3열): 위 = 아들, 아래 = 딸 / 왼쪽부터 유년·청소년·청년
+# 침대 각도(머리 오른쪽 위, 발 왼쪽 아래)로 그려져 있어 그대로 사용. 행동 시트의 잠자기 그림을 대체.
+# 크기: 그림 폭 = 서 있을 때 키의 70% (침대 폭과 비슷)
+SLEEP_SHEET = 'assets-src/sleep-sheet.png'
+img_s = np.asarray(Image.open(SLEEP_SHEET).convert('RGB')).astype(np.int32)
+sboxes = components((765 - img_s.sum(axis=2)) > 60, f=2, min_cells=40)
+assert len(sboxes) == 6, f'{SLEEP_SHEET}: expected 6, found {len(sboxes)}'
+sboxes.sort(key=lambda b: (int(((b[1] + b[3]) / 2) // (img_s.shape[0] / 2)), b[0]))
+for (g, st), b in zip([(g, st) for g in ('SON', 'DAUGHTER') for st in STAGES], sboxes):
+    target_w = sprites[f'{st}_{g}_stand'].shape[0] * 0.7
+    blk = (b[2] - b[0]) / target_w
+    blk *= cut(img_s, b, blk).shape[1] / target_w
+    sprites[f'{st}_{g}_sleep'] = defringe(cut(img_s, b, blk))
+
 # 반려묘 시트: [앉기, 걷기A, 걷기B, 기지개, 그루밍, 식빵 자세] — 모두 오른쪽을 봄 (왼쪽은 게임에서 좌우 반전)
 # 크기: 식빵 자세의 폭 = 기존 잠자는 고양이(CAT_sleep) 폭
 CAT_SHEET = 'assets-src/cat-sheet.png'
