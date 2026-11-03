@@ -249,3 +249,30 @@ describe('cat', () => {
     expect([...poses].filter((p) => p !== 'walk').length).toBeGreaterThanOrEqual(3);
   });
 });
+
+describe('walking direction', () => {
+  it('prefers an L-shaped path over a zigzag', () => {
+    const path = pathToward(8, [], { x: 6, y: 6 }, [{ x: 1, y: 2 }]);
+    let turns = 0;
+    for (let i = 2; i < path.length; i++) {
+      const d1 = [path[i - 1].x - path[i - 2].x, path[i - 1].y - path[i - 2].y].join();
+      const d2 = [path[i].x - path[i - 1].x, path[i].y - path[i - 1].y].join();
+      if (d1 !== d2) turns++;
+    }
+    expect(turns).toBeLessThanOrEqual(1);
+  });
+  it('does not flip facing every tile while walking toward the back wall', () => {
+    const sim = new CharacterSim();
+    sim.actor.gx = 6.5;
+    sim.actor.gy = 6.5;
+    sim.runScript([{ kind: 'goto', resolve: () => ({ x: 0, y: 1 }) }]);
+    const facings: string[] = [];
+    for (let i = 0; i < 200 && sim.scripted; i++) {
+      sim.update(50, { n: 8, placed: [] });
+      if (sim.actor.pose === 'walk') facings.push(sim.actor.facing);
+    }
+    let flips = 0;
+    for (let i = 1; i < facings.length; i++) if (facings[i] !== facings[i - 1]) flips++;
+    expect(flips).toBeLessThanOrEqual(1);
+  });
+});

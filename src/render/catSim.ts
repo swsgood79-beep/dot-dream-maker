@@ -1,7 +1,7 @@
 import type { Cell } from '../engine/room';
 import type { PlacedFurniture } from '../types/game';
 import type { Facing } from './character';
-import { blockedSet, pathToward } from './characterSim';
+import { blockedSet, lookDirection, pathToward } from './characterSim';
 
 /** 반려묘 행동: 걷기 → 멈춰서 앉기/그루밍/기지개/식빵/잠 → 다시 걷기 */
 export type CatPose = 'walk' | 'sit' | 'groom' | 'stretch' | 'loaf' | 'sleep';
@@ -75,9 +75,9 @@ export class CatSim {
       const dy = next.y + 0.5 - a.gy;
       const dist = Math.hypot(dx, dy);
       const step = (SPEED * dt) / 1000;
-      const sdx = dx - dy; // 화면 x 방향
-      if (sdx > 0.01) a.facing = 'R';
-      else if (sdx < -0.01) a.facing = 'L';
+      const look = lookDirection(a.gx, a.gy, this.path);
+      if (look.sdx > 0.3) a.facing = 'R';
+      else if (look.sdx < -0.3) a.facing = 'L';
       a.pose = 'walk';
       if (dist <= step) {
         a.gx = next.x + 0.5;

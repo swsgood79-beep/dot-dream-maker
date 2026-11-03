@@ -81,7 +81,49 @@ export function pathToward(n: number, placed: PlacedFurniture[], start: Cell, ta
       }
     }
   }
-  return best ? buildPath(prev, best) : [];
+  if (!best) return [];
+  const [gx, gy] = best.split(',').map(Number);
+  // 지그재그(계단식) 대신 'ㄱ자' 경로를 우선: 한 방향으로 쭉 간 뒤 한 번만 꺾음 (막혀 있으면 BFS 경로)
+  return straightPath(start, { x: gx, y: gy }, blocked) ?? buildPath(prev, best);
+}
+
+function straightPath(from: Cell, to: Cell, blocked: Set<string>): Cell[] | null {
+  const tryOrder = (xFirst: boolean): Cell[] | null => {
+    const path: Cell[] = [];
+    let { x, y } = from;
+    const stepX = () => {
+      while (x !== to.x) {
+        x += Math.sign(to.x - x);
+        if (blocked.has(`${x},${y}`)) return false;
+        path.push({ x, y });
+      }
+      return true;
+    };
+    const stepY = () => {
+      while (y !== to.y) {
+        y += Math.sign(to.y - y);
+        if (blocked.has(`${x},${y}`)) return false;
+        path.push({ x, y });
+      }
+      return true;
+    };
+    const ok = xFirst ? stepX() && stepY() : stepY() && stepX();
+    return ok ? path : null;
+  };
+  // 더 긴 축을 먼저 가면 방향이 덜 바뀜
+  const xFirst = Math.abs(to.x - from.x) >= Math.abs(to.y - from.y);
+  return tryOrder(xFirst) ?? tryOrder(!xFirst);
+}
+
+/**
+ * 몸 방향: 바로 다음 칸이 아니라 2~3칸 앞을 기준으로 정하고, 애매하면 유지 (한 칸마다 휙휙 돌지 않게)
+ * 반환: 화면 x(+ = 오른쪽), 화면 y(- = 위쪽/방 안쪽) 방향 성분
+ */
+export function lookDirection(gx: number, gy: number, path: Cell[]): { sdx: number; sdy: number } {
+  const t = path[Math.min(2, path.length - 1)];
+  const dx = t.x + 0.5 - gx;
+  const dy = t.y + 0.5 - gy;
+  return { sdx: dx - dy, sdy: dx + dy };
 }
 
 /** 가구 옆(상하좌우) 빈 칸 목록 — 이 칸들로 걸어가서 가구를 사용 */
@@ -159,12 +201,11 @@ export class CharacterSim {
       const dy = ty - a.gy;
       const dist = Math.hypot(dx, dy);
       const stepLen = (SPEED * dt) / 1000;
-      const sdx = dx - dy; // 화면 x 방향
-      if (sdx > 0.01) a.facing = 'R';
-      else if (sdx < -0.01) a.facing = 'L';
-      const sdy = dx + dy; // 화면 y 방향 (음수 = 위쪽 = 방 안쪽)
-      if (sdy < -0.01) a.back = true;
-      else if (sdy > 0.01) a.back = false;
+      const look = lookDirection(a.gx, a.gy, this.path);
+      if (look.sdx > 0.3) a.facing = 'R';
+      else if (look.sdx < -0.3) a.facing = 'L';
+      if (look.sdy < -0.3) a.back = true; // 화면 위쪽(방 안쪽)으로 가는 중
+      else if (look.sdy > 0.3) a.back = false;
       a.pose = 'walk';
       if (dist <= stepLen) {
         a.gx = tx;
