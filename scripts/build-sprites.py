@@ -371,6 +371,20 @@ for g, path in POSE_SHEETS.items():
             else:
                 sprites[name] = cut(img_p, named[name], blk)
 
+# 반려묘 시트: [앉기, 걷기A, 걷기B, 기지개, 그루밍, 식빵 자세] — 모두 오른쪽을 봄 (왼쪽은 게임에서 좌우 반전)
+# 크기: 식빵 자세의 폭 = 기존 잠자는 고양이(CAT_sleep) 폭
+CAT_SHEET = 'assets-src/cat-sheet.png'
+CAT_NAMES = ['CAT_sit', 'CAT_walk0', 'CAT_walk1', 'CAT_stretch', 'CAT_groom', 'CAT_loaf']
+img_c = np.asarray(Image.open(CAT_SHEET).convert('RGB')).astype(np.int32)
+cboxes = sorted(components((765 - img_c.sum(axis=2)) > 60), key=lambda b: b[0])
+assert len(cboxes) == len(CAT_NAMES), f'{CAT_SHEET}: expected {len(CAT_NAMES)}, found {len(cboxes)}'
+cat_w = sprites['CAT_sleep'].shape[1]
+loaf_box = cboxes[CAT_NAMES.index('CAT_loaf')]
+cblk = (loaf_box[2] - loaf_box[0]) / cat_w
+cblk *= cut(img_c, loaf_box, cblk).shape[1] / cat_w
+for n, b in zip(CAT_NAMES, cboxes):
+    sprites[n] = cut(img_c, b, cblk)
+
 # 손그림 걷기가 없는 캐릭터(딸, 부모님)는 서기 프레임에서 생성
 for name in list(sprites):
     if name.endswith('_stand'):

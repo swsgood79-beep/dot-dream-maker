@@ -5,6 +5,7 @@ import { canvasSize, COMBO_COLORS, depthSorted, furnitureBounds, renderRoom, unp
 import { FURNITURE_BODY, pixelIconUrl } from '../render/sprites';
 import { characterHeight, RES } from '../render/spriteCharacter';
 import { besideCells, CharacterSim, doorCell, type Step } from '../render/characterSim';
+import { CatSim } from '../render/catSim';
 import { project } from '../render/isoRenderer';
 import { sfx } from '../audio/sfx';
 import type { MonthResult, WeekResult } from '../engine/simulation';
@@ -98,6 +99,7 @@ export function IsometricRoomCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [scale, setScale] = useState(2);
   const simRef = useRef(new CharacterSim());
+  const catRef = useRef(new CatSim());
   // 부모님 NPC: 방 안을 느긋하게 돌아다님
   const npcRef = useRef<CharacterSim>(null);
   if (!npcRef.current) {
@@ -262,6 +264,8 @@ export function IsometricRoomCanvas({
     actor: { actor: simRef.current.actor, gender: game.gender },
     npc: npcRef.current.actor,
     tired: game.status.stress >= 80,
+    // 반려묘 쿠션이 있으면 고양이는 쿠션 그림 속에서 잠 (쿠션 그림에 고양이가 그려져 있음)
+    cat: game.placedFurniture.some((p) => p.furnitureId === 'cat_cushion') ? null : catRef.current.actor,
     ghost:
       hover && (placingId || movingId)
         ? (() => {
@@ -286,6 +290,7 @@ export function IsometricRoomCanvas({
       if (v) {
         simRef.current.update(dt, { n: v.n, placed: v.placed });
         npcRef.current?.update(dt * 0.6, { n: v.n, placed: v.placed });
+        catRef.current.update(dt, v.n, v.placed);
         renderRoom(ctx, { ...v, time: t, actorHalo: haloRef.current });
         // 말풍선이 캐릭터 머리 위를 따라다니도록 DOM 위치 갱신
         const b = bubbleRef.current;

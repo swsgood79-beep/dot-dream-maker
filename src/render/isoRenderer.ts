@@ -3,13 +3,14 @@ import { footprint, type Cell } from '../engine/room';
 import type { GrowthStage, PlacedFurniture } from '../types/game';
 import { drawPixels, FURNITURE_BODY, FURNITURE_PIXELS, shade } from './sprites';
 const WOOD_D = '#8a5a35';
-import { CAT_FRAME, drawCharacter, drawFrame, PARENT_FRAME, RES, walkFrame } from './spriteCharacter';
+import { drawCharacter, drawFrame, PARENT_FRAME, RES, walkFrame } from './spriteCharacter';
 import { drawFurnitureModel, modelHeight as codeModelHeight } from './furnitureModels';
-import { drawFurnitureSprite, furnitureSpriteHeight, hasFurnitureSprite } from './furnitureSprites';
+import { drawFurnitureSprite, furnitureSpriteHeight } from './furnitureSprites';
 
 /** 가구 높이: 손그림 스프라이트가 있으면 그 높이, 없으면 코드 모델 높이 */
 const modelHeight = (id: string) => furnitureSpriteHeight(id) ?? codeModelHeight(id);
 import type { Actor } from './characterSim';
+import type { CatActor } from './catSim';
 import type { Gender } from '../types/game';
 
 /** 아이소메트릭 2:1 타일 (논리 해상도 px) */
@@ -45,6 +46,7 @@ export interface RoomView {
   actorHalo?: string | null; // 행동 중 발밑 하이라이트 색
   npc?: Actor | null; // 부모님
   tired?: boolean; // 스트레스 80 이상
+  cat?: CatActor | null; // 반려묘 (반려묘 쿠션이 있으면 쿠션 그림 속에서 잠)
 }
 
 export function canvasSize(n: number) {
@@ -435,14 +437,28 @@ export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
       },
     });
   }
-  const cat = catSpot(n, v.placed);
-  if (cat) {
+  if (v.cat) {
+    const cat = v.cat;
     list.push({
-      key: Math.floor(cat.gx) + Math.floor(cat.gy) + 2.05 + (cat.lift ? 0.5 : 0),
+      key: Math.floor(cat.gx) + Math.floor(cat.gy) + 2.05,
       draw: () => {
         const [sx, sy] = project(n, cat.gx, cat.gy);
-        const breathe = Math.floor(v.time / 900) % 2 ? -0.5 : 0;
-        drawFrame(ctx, CAT_FRAME, sx, sy - cat.lift + 2 + breathe, false);
+        // 그림자
+        ctx.save();
+        ctx.globalAlpha = 0.18;
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy - 1, 7, 2.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        const t = v.time;
+        let frame = 'CAT_' + cat.pose;
+        let dy = 0;
+        if (cat.pose === 'walk') frame = `CAT_walk${Math.floor(t / 200) % 2}`;
+        else if (cat.pose === 'sleep' || cat.pose === 'loaf') dy = Math.floor(t / 900) % 2 ? -0.5 : 0; // 숨쉬기
+        else if (cat.pose === 'groom') dy = Math.floor(t / 280) % 2 ? -0.5 : 0;
+        // 고양이 그림은 오른쪽을 봄 → 왼쪽으로 갈 때 좌우 반전
+        drawFrame(ctx, frame, sx, sy + 1 + dy, cat.facing === 'L');
       },
     });
   }
@@ -456,19 +472,4 @@ export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
       if (c.x >= 0 && c.y >= 0 && c.x < n && c.y < n) tile(ctx, n, c.x, c.y, v.ghost.valid ? 'rgba(91,214,168,0.6)' : 'rgba(229,72,77,0.6)');
     drawFurniture(ctx, n, g, { alpha: 0.6, time: v.time });
   }
-}
-
-/** 반려묘가 자는 자리: 반려묘 쿠션 위 → 침대 옆 빈 칸 → 방 구석 */
-export function catSpot(n: number, placed: PlacedFurniture[]): { gx: number; gy: number; lift: number } | null {
-  const cushion = placed.find((p) => p.furnitureId === 'cat_cushion');
-  // 손그림 쿠션에는 고양이가 이미 그려져 있으므로 따로 그리지 않음
-  if (cushion && hasFurnitureSprite('cat_cushion')) return null;
-  if (cushion) return { gx: cushion.gridX + 0.5, gy: cushion.gridY + 0.5, lift: (FURNITURE_BODY.cat_cushion?.h ?? 3) + 1 };
-  const taken = new Set(placed.flatMap((p) => footprint(p).map((c) => `${c.x},${c.y}`)));
-  const prefer: Cell[] = [];
-  for (const p of placed.filter((p) => FURNITURE_MAP[p.furnitureId]?.category === 'REST'))
-    for (const c of footprint(p)) prefer.push({ x: c.x + 1, y: c.y }, { x: c.x, y: c.y + 1 });
-  prefer.push({ x: n - 1, y: 0 }, { x: n - 1, y: n - 1 });
-  const spot = prefer.find((c) => c.x >= 0 && c.y >= 0 && c.x < n && c.y < n && !taken.has(`${c.x},${c.y}`));
-  return spot ? { gx: spot.x + 0.5, gy: spot.y + 0.5, lift: 0 } : null;
 }

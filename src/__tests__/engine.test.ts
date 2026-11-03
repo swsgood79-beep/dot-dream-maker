@@ -228,3 +228,24 @@ describe('back view', () => {
     expect(sim.actor.back).toBe(false);
   });
 });
+
+import { CatSim } from '../render/catSim';
+describe('cat', () => {
+  it('has all cat frames', () => {
+    for (const k of ['CAT_sleep', 'CAT_sit', 'CAT_walk0', 'CAT_walk1', 'CAT_stretch', 'CAT_groom', 'CAT_loaf'])
+      expect(Object.keys(atlas)).toContain(k);
+  });
+  it('wanders, rests, and never stands inside furniture', () => {
+    const cat = new CatSim(mulberry32(5));
+    const placed = [{ instanceId: 'a', furnitureId: 'oak_desk', gridX: 2, gridY: 2, rotation: 0 as const }];
+    const poses = new Set<string>();
+    for (let i = 0; i < 4000; i++) {
+      cat.update(50, 6, placed);
+      poses.add(cat.actor.pose);
+      const c = { x: Math.floor(cat.actor.gx), y: Math.floor(cat.actor.gy) };
+      expect(c.x === 2 && c.y === 2).toBe(false);
+    }
+    expect(poses.has('walk')).toBe(true);
+    expect([...poses].filter((p) => p !== 'walk').length).toBeGreaterThanOrEqual(3);
+  });
+});

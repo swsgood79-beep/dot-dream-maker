@@ -171,5 +171,4 @@ export function walkFrame(base: string, t: number): string | null {
   return FRAMES[name] ? name : null;
 }
 
-export const CAT_FRAME = 'CAT_sleep';
 export const PARENT_FRAME = 'PARENT_stand';
