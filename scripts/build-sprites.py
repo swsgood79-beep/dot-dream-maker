@@ -150,6 +150,20 @@ def cut(img, box, block=BLOCK):
     return out[ys.min() : ys.max() + 1, xs.min() : xs.max() + 1]
 
 
+def defringe(rgba, passes=2):
+    """압축된 작은 이미지의 흰 배경 번짐 제거: 투명 영역에 닿은 밝은 회백색 테두리 픽셀을 지운다"""
+    for _ in range(passes):
+        a = rgba[..., 3] > 0
+        rgb = rgba[..., :3].astype(int)
+        pale = (rgb.min(axis=2) > 175) & (rgb.max(axis=2) - rgb.min(axis=2) < 45)
+        edge = np.zeros_like(a)
+        pad = np.pad(~a, 1, constant_values=True)
+        for dy, dx in ((0, 1), (2, 1), (1, 0), (1, 2)):
+            edge |= pad[dy : dy + a.shape[0], dx : dx + a.shape[1]]
+        rgba[a & pale & edge] = 0
+    return rgba
+
+
 def fit_cut(img, box, target_h):
     """잘라낸 그림의 실제 키가 target_h 가 되도록 축소 비율을 두 번에 걸쳐 맞춘다
     (검출 상자에는 여백이 섞여 있어 상자 높이로만 계산하면 작아짐)"""
@@ -287,7 +301,9 @@ for g, path in WALK_SHEETS.items():
 # 발 간격이 넓고 뒤쪽 발 방향이 서로 반대인 두 장 = 왼발/오른발 보폭 → [보폭A, 교차, 보폭B, 교차]
 # 키는 앞모습 서기 키에 맞춘다.
 # 원본 걷기 그림이 이상한 줄 (딸 유년기: 왼쪽 위를 향해 그려졌고 발이 뜨는 등 다리 모양이 어색함)
-BACK_SYNTH = {'CHILD_DAUGHTER'}
+BACK_SYNTH: set = set()
+# 따로 받은 뒷모습 걷기 시트 (2행 × 4열, 8프레임 사이클)
+BACK_CUSTOM = {'CHILD_DAUGHTER': 'assets-src/daughter-child-back-walk.png'}
 BACK_SHEETS = {
     'SON': 'assets-src/son-back-sheet.png',
     'DAUGHTER': 'assets-src/daughter-back-sheet.png',
@@ -315,6 +331,19 @@ for g, path in BACK_SHEETS.items():
     for r, st in enumerate(STAGES):
         row = bboxes[r * 6:(r + 1) * 6]
         stand_box, walks = row[0], row[1:]
+        if f'{st}_{g}' in BACK_CUSTOM:
+            # 따로 받은 손그림 뒷모습 걷기 시트 (행→열 순서 = 걷기 순서)
+            target_h = sprites[f'{st}_{g}_stand'].shape[0]
+            sprites[f'{st}_{g}_back_stand'], _ = fit_cut(img_b, stand_box, target_h)
+            cimg = np.asarray(Image.open(BACK_CUSTOM[f'{st}_{g}']).convert('RGB')).astype(np.int32)
+            cb = components((765 - cimg.sum(axis=2)) > 60, f=2, min_cells=40)
+            row_h = cimg.shape[0] / 2
+            cb.sort(key=lambda b: (int(((b[1] + b[3]) / 2) // row_h), b[0]))
+            _, cblk = fit_cut(cimg, cb[0], target_h)
+            for i, b in enumerate(cb):
+                sprites[f'{st}_{g}_back_walk{i}'] = defringe(cut(cimg, b, cblk))
+            print(f'  {g} {st} 뒷모습 걷기: 손그림 {len(cb)}프레임')
+            continue
         if f'{st}_{g}' in BACK_SYNTH:
             # 원본 걷기 그림이 이상한 줄: 똑바로 등을 보인 '뒤 서기'에서 걷기 4프레임을 직접 생성
             target_h = sprites[f'{st}_{g}_stand'].shape[0]
