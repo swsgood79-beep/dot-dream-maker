@@ -14,6 +14,8 @@ import type { Pose } from '../render/character';
 import { useGameStore } from '../store/useGameStore';
 import { PixelButton, ko } from './ui';
 import { catTapLine, childTapLine } from '../data/roomTalk';
+import { sceneFor, sceneLine } from '../data/activityScenes';
+import { ActivitySceneView } from './ActivitySceneView';
 
 /**
  * 카이로소프트풍 2D 아이소메트릭 도트 방 (HTML5 Canvas)
@@ -108,6 +110,11 @@ export function IsometricRoomCanvas({
   const haloRef = useRef<string | null>(null);
   const bubbleRef = useRef<HTMLDivElement>(null);
   const [catBubble, setCatBubble] = useState<string | null>(null);
+  // 스케줄 연출: 바깥 활동 장면 · 이번 주 한 줄 · 집 안 활동 효과
+  const [scene, setScene] = useState<WeekResult | null>(null);
+  const [caption, setCaption] = useState<string | null>(null);
+  const [fx, setFx] = useState<string[] | null>(null);
+  const fxRef = useRef<HTMLDivElement>(null);
   const catBubbleRef = useRef<HTMLDivElement>(null);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const petChild = useGameStore((s) => s.petChild);
@@ -185,6 +192,8 @@ export function IsometricRoomCanvas({
         kind: 'call',
         fn: () => {
           setBanner(`${w.week + 1}주차 · ${w.emoji} ${w.actionName}`);
+          setCaption(null);
+          setFx(null);
           setBubble(null);
           haloRef.current = null;
         },
@@ -194,13 +203,32 @@ export function IsometricRoomCanvas({
         steps.push({ kind: 'call', fn: () => setBubble(ACT_BUBBLE[w.actionType]) });
         steps.push({ kind: 'call', fn: () => sfx('door') });
         steps.push({ kind: 'fade', to: 0, ms: 350 });
-        steps.push({ kind: 'wait', ms: 600, pose: 'idle', onStart: () => setBubble(null) });
-        steps.push({ kind: 'fade', to: 1, ms: 350 });
-        // 밖에서 돌아올 때는 평소 모습 (앞치마 알바 포즈는 집 안에서 하는 일에만)
-        steps.push({ kind: 'wait', ms: 1300, pose: w.outcome === 'GREAT' ? 'cheer' : w.outcome === 'FAIL' ? 'tired' : 'idle', onStart: () => {
-          haloRef.current = HALO[w.outcome];
-          spawnPopups(w.popups.length ? w.popups : [`${w.goldDelta > 0 ? '+' : ''}${w.goldDelta}G`]);
-        } });
+        if (sceneFor(w)) {
+          // 밖에 있는 동안 그 장소 장면을 보여 줌 (스탯 변화도 장면 안에서)
+          steps.push({ kind: 'wait', ms: 300, pose: 'idle', onStart: () => setBubble(null) });
+          steps.push({
+            kind: 'call',
+            fn: () => {
+              setScene(w);
+              sfx(w.outcome === 'GREAT' ? 'great' : w.outcome === 'FAIL' || w.outcome === 'RUNAWAY' ? 'fail' : 'stat');
+            },
+          });
+          steps.push({ kind: 'wait', ms: 2300, pose: 'idle' });
+          steps.push({ kind: 'call', fn: () => setScene(null) });
+          steps.push({ kind: 'fade', to: 1, ms: 350 });
+          steps.push({ kind: 'wait', ms: 700, pose: w.outcome === 'GREAT' ? 'cheer' : w.outcome === 'FAIL' ? 'tired' : 'idle', onStart: () => {
+            haloRef.current = HALO[w.outcome];
+            setBubble(w.outcome === 'GREAT' ? '✨' : w.outcome === 'FAIL' ? '😓' : '🏠');
+          } });
+        } else {
+          steps.push({ kind: 'wait', ms: 600, pose: 'idle', onStart: () => setBubble(null) });
+          steps.push({ kind: 'fade', to: 1, ms: 350 });
+          // 밖에서 돌아올 때는 평소 모습 (앞치마 알바 포즈는 집 안에서 하는 일에만)
+          steps.push({ kind: 'wait', ms: 1300, pose: w.outcome === 'GREAT' ? 'cheer' : w.outcome === 'FAIL' ? 'tired' : 'idle', onStart: () => {
+            haloRef.current = HALO[w.outcome];
+            spawnPopups(w.popups.length ? w.popups : [`${w.goldDelta > 0 ? '+' : ''}${w.goldDelta}G`]);
+          } });
+        }
       } else {
         steps.push({
           kind: 'goto',
@@ -226,6 +254,9 @@ export function IsometricRoomCanvas({
           }
           haloRef.current = HALO[w.outcome];
           setBubble(w.outcome === 'GREAT' ? '✨' : POSE_BUBBLE[pose] ?? ACT_BUBBLE[w.actionType]);
+          setCaption(sceneLine(w) || null);
+          const sc = sceneFor(w);
+          setFx(w.outcome === 'FAIL' ? ['💦', '😵'] : sc ? (w.outcome === 'GREAT' ? [...sc.fx, '✨'] : sc.fx) : null);
           spawnPopups(w.popups);
         } });
       }
@@ -235,6 +266,9 @@ export function IsometricRoomCanvas({
       fn: () => {
         setBanner(null);
         setBubble(null);
+        setScene(null);
+        setCaption(null);
+        setFx(null);
         haloRef.current = null;
         doneRef.current?.();
       },
@@ -247,6 +281,9 @@ export function IsometricRoomCanvas({
     simRef.current.stopScript();
     setBanner(null);
     setBubble(null);
+    setScene(null);
+    setCaption(null);
+    setFx(null);
     setPopups([]);
     haloRef.current = null;
     doneRef.current?.();
@@ -304,6 +341,12 @@ export function IsometricRoomCanvas({
           const [sx, sy] = project(v.n, a.gx, a.gy);
           const sc = scaleRef.current;
           b.style.transform = `translate(${sx * sc}px, ${(sy - characterHeight(v.stage, game.gender) - 6) * sc}px) translate(-50%, -100%)`;
+        }
+        const fr = fxRef.current;
+        if (fr) {
+          const a = simRef.current.actor;
+          const [fx0, fy0] = project(v.n, a.gx, a.gy);
+          fr.style.transform = `translate(${fx0 * scaleRef.current}px, ${(fy0 - characterHeight(v.stage, game.gender) * 0.6) * scaleRef.current}px)`;
         }
         const cb = catBubbleRef.current;
         if (cb) {
@@ -403,6 +446,17 @@ export function IsometricRoomCanvas({
           <div ref={bubbleRef} className="pointer-events-none absolute top-0 left-0" style={{ visibility: bubble ? 'visible' : 'hidden' }}>
             <div className="pop-in border-2 border-ink bg-white px-1 text-sm leading-tight shadow-[2px_2px_0_rgba(0,0,0,.4)]">{bubble}</div>
           </div>
+          <div ref={fxRef} className="pointer-events-none absolute top-0 left-0">
+            {fx?.map((e, i) => (
+              <span
+                key={`${e}-${i}-${caption}`}
+                className="scene-fx text-base font-bold"
+                style={{ left: (i - fx.length / 2) * 14, top: 0, animationDelay: `${i * 0.3}s`, ['--dx' as string]: `${(i % 2 ? 1 : -1) * 10}px`, color: '#5bff8a' }}
+              >
+                {e}
+              </span>
+            ))}
+          </div>
           <div ref={catBubbleRef} className="pointer-events-none absolute top-0 left-0" style={{ visibility: catBubble ? 'visible' : 'hidden' }}>
             <div className="pop-in border-2 border-ink bg-[#fff6e5] px-1 text-xs leading-tight shadow-[2px_2px_0_rgba(0,0,0,.4)]">{catBubble}</div>
           </div>
@@ -432,9 +486,15 @@ export function IsometricRoomCanvas({
             </span>
           ))}
         </div>
+        {scene && <ActivitySceneView week={scene} stage={growthStage(game.age)} gender={game.gender} />}
         {banner && (
-          <div className="pop-in pointer-events-none absolute top-2 left-1/2 -translate-x-1/2 border-3 border-ink bg-gold px-3 py-1 text-xs font-bold whitespace-nowrap shadow-[3px_3px_0_#000]">
+          <div className="pop-in pointer-events-none absolute top-2 left-1/2 z-30 -translate-x-1/2 border-3 border-ink bg-gold px-3 py-1 text-xs font-bold whitespace-nowrap shadow-[3px_3px_0_#000]">
             {banner}
+          </div>
+        )}
+        {caption && !scene && (
+          <div key={caption} className="pop-in pointer-events-none absolute right-3 bottom-2 left-3 z-30 rounded border-2 border-ink bg-[#fffaf0]/95 px-2 py-1 text-center text-[11px] font-bold text-ink shadow-[2px_2px_0_rgba(0,0,0,.3)]">
+            {caption}
           </div>
         )}
       </div>
