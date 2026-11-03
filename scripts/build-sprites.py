@@ -422,6 +422,48 @@ for name in list(sprites):
             for i, wf in enumerate(walk_frames(sprites[name])):
                 sprites[f'{base}_walk{i}'] = wf
 
+# 걷기 그림 방향 통일: Gemini가 같은 걷기 동작 안에서도 일부 장을 반대 방향으로 그리는 경우가 있음
+# (예: 딸 유년기 뒷모습 아랫줄 4장, 딸 청년 뒷모습 3번째 장) → 걷는 도중 고개가 휙 돌아가 보임.
+# 첫 장을 기준으로, 각 장의 머리 부분이 '그대로'보다 '좌우 반전'이 더 닮았으면 반전한다.
+def head_patch(spr, flip=False):
+    s_ = spr[:, ::-1] if flip else spr
+    a_ = s_[..., 3] > 0
+    ys_ = np.where(a_.any(axis=1))[0]
+    top, hh = ys_.min(), ys_.max() - ys_.min()
+    hd = s_[top : top + int(hh * 0.45)].astype(float)
+    xs_ = np.where((hd[..., 3] > 0).any(axis=0))[0]
+    cx = int(round((xs_.min() + xs_.max()) / 2))
+    out = np.zeros((hd.shape[0], 40, 4))
+    for x in range(40):
+        sx = cx - 20 + x
+        if 0 <= sx < hd.shape[1]:
+            out[:, x] = hd[:, sx]
+    return out
+
+
+def head_diff(p1, p2):
+    h_ = min(p1.shape[0], p2.shape[0])
+    p1, p2 = p1[:h_], p2[:h_]
+    m1, m2 = p1[..., 3] > 0, p2[..., 3] > 0
+    both = m1 & m2
+    col = np.abs(p1[..., :3] - p2[..., :3]).sum(axis=2)[both].mean() / 765 if both.any() else 1
+    return (m1 ^ m2).mean() + col
+
+
+walk_sets = sorted({n.rsplit('_walk', 1)[0] for n in sprites if '_walk' in n and n.rsplit('_walk', 1)[1].isdigit()})
+for base in walk_sets:
+    ref = head_patch(sprites[f'{base}_walk0'])
+    i = 1
+    flipped = []
+    while f'{base}_walk{i}' in sprites:
+        spr = sprites[f'{base}_walk{i}']
+        if head_diff(head_patch(spr, True), ref) < head_diff(head_patch(spr), ref) * 0.9:
+            sprites[f'{base}_walk{i}'] = spr[:, ::-1].copy()
+            flipped.append(i)
+        i += 1
+    if flipped:
+        print(f'  방향 통일: {base} 걷기 {[f + 1 for f in flipped]}번째 장 좌우 반전')
+
 names = list(sprites)
 frames = [sprites[n] for n in names]
 gap = 1

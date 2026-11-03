@@ -452,28 +452,28 @@
   "y": 0,
   "w": 33,
   "h": 68,
-  "ax": 18.4
+  "ax": 14.6
  },
  "CHILD_DAUGHTER_back_walk5": {
   "x": 2480,
   "y": 0,
   "w": 33,
   "h": 68,
-  "ax": 17.3
+  "ax": 15.7
  },
  "CHILD_DAUGHTER_back_walk6": {
   "x": 2514,
   "y": 0,
   "w": 31,
   "h": 68,
-  "ax": 16.6
+  "ax": 14.4
  },
  "CHILD_DAUGHTER_back_walk7": {
   "x": 2546,
   "y": 0,
   "w": 32,
   "h": 68,
-  "ax": 16.5
+  "ax": 15.5
  },
  "TEEN_DAUGHTER_back_stand": {
   "x": 2579,
@@ -536,7 +536,7 @@
   "y": 0,
   "w": 37,
   "h": 75,
-  "ax": 18.4
+  "ax": 18.6
  },
  "YOUTH_DAUGHTER_back_walk3": {
   "x": 2901,
