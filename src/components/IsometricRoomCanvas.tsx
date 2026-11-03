@@ -5,7 +5,8 @@ import { canvasSize, COMBO_COLORS, depthSorted, furnitureBounds, renderRoom, unp
 import { FURNITURE_BODY, pixelIconUrl } from '../render/sprites';
 import { furnitureFlipped, hasFurnitureSprite } from '../render/furnitureSprites';
 import { characterHeight, RES } from '../render/spriteCharacter';
-import { besideCells, CharacterSim, doorCell, type Step } from '../render/characterSim';
+import { besideCells, CharacterSim, doorCell, nearestFreeCell, type Step } from '../render/characterSim';
+import { isColdRoom } from '../engine/psyche';
 import { CatSim } from '../render/catSim';
 import { project } from '../render/isoRenderer';
 import { sfx } from '../audio/sfx';
@@ -39,6 +40,7 @@ const HALO: Record<WeekResult['outcome'], string> = {
   SICK: '#8fe3ff',
   RUNAWAY: '#e5484d',
   NO_GOLD: '#9aa0ad',
+  STRIKE: '#7a8bb5',
 };
 
 /** 스탯별 팝업 색 (참고 이미지: +INT 초록, +ART 분홍) */
@@ -68,6 +70,7 @@ const EDU_POSE: Record<string, Pose> = {
   EDU_04: 'pc', EDU_05: 'music', EDU_06: 'draw', EDU_07: 'exercise',
 };
 function poseFor(w: WeekResult): Pose {
+  if (w.outcome === 'STRIKE') return w.targetInstanceId ? 'sleep' : 'tired';
   if (w.outcome === 'GREAT') return 'cheer';
   if (w.outcome === 'FAIL') return 'tired';
   if (w.actionType === 'REST') return w.targetInstanceId ? 'sleep' : 'read';
@@ -122,6 +125,9 @@ export function IsometricRoomCanvas({
   doneRef.current = onPlaybackDone;
 
   const n = game.roomSize;
+  // GDD 11.2 방 공기: 공부 가구만 가득 + 스트레스 → 숨 막히는 청회색 방
+  const cold = isColdRoom(game);
+  const distant = !!game.doorLocked || game.status.affection <= 35;
   const { w, h } = canvasSize(n);
   const sel = game.placedFurniture.find((p) => p.instanceId === selected) ?? null;
 
@@ -185,7 +191,7 @@ export function IsometricRoomCanvas({
     };
     const steps: Step[] = [];
     for (const w of playback.weeks) {
-      const outside = w.actionType === 'RUNAWAY' || (!w.targetInstanceId && w.actionType !== 'REST');
+      const outside = w.actionType === 'RUNAWAY' || (!w.targetInstanceId && w.actionType !== 'REST' && w.outcome !== 'STRIKE');
       // 공부 → 독서 포즈, 휴식 → 침대 위에서 책 읽기, 대성공 → 만세 점프, 알바 → 바쁘게 움직이기
       const pose = poseFor(w);
       steps.push({
@@ -253,7 +259,7 @@ export function IsometricRoomCanvas({
             sim.actor.facing = furnitureFlipped(bed) ? 'L' : 'R';
           }
           haloRef.current = HALO[w.outcome];
-          setBubble(w.outcome === 'GREAT' ? '✨' : POSE_BUBBLE[pose] ?? ACT_BUBBLE[w.actionType]);
+          setBubble(w.outcome === 'STRIKE' ? '💢 학원 싫어!!' : w.outcome === 'GREAT' ? '✨' : POSE_BUBBLE[pose] ?? ACT_BUBBLE[w.actionType]);
           setCaption(sceneLine(w) || null);
           const sc = sceneFor(w);
           setFx(w.outcome === 'FAIL' ? ['💦', '😵'] : sc ? (w.outcome === 'GREAT' ? [...sc.fx, '✨'] : sc.fx) : null);
@@ -276,6 +282,26 @@ export function IsometricRoomCanvas({
     sim.runScript(steps);
     return () => sim.stopScript();
   }, [playback]);
+
+  // 거리감: 새 달이 시작되면 친밀도가 높은 아이는 문 쪽으로 마중 나오고, 낮은 아이는 등을 돌려 구석으로 간다
+  useEffect(() => {
+    if (playback) return;
+    const sim = simRef.current;
+    const aff = game.status.affection;
+    if (distant) {
+      sim.runScript([
+        { kind: 'goto', resolve: (wd) => nearestFreeCell(wd.n, wd.placed, { x: wd.n - 1, y: 0 }, new Set()) },
+        { kind: 'wait', ms: 2200, pose: 'idle', onStart: () => setBubble('...') },
+        { kind: 'call', fn: () => setBubble(null) },
+      ]);
+    } else if (aff >= 70) {
+      sim.runScript([
+        { kind: 'goto', resolve: (wd) => nearestFreeCell(wd.n, wd.placed, { x: 1, y: wd.n - 1 }, new Set()) },
+        { kind: 'wait', ms: 1800, pose: 'cheer', onStart: () => setBubble('❤️') },
+        { kind: 'call', fn: () => setBubble(null) },
+      ]);
+    }
+  }, [game.month, game.age]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const skipPlayback = () => {
     simRef.current.stopScript();
@@ -382,6 +408,18 @@ export function IsometricRoomCanvas({
       return lx >= sx - width / 2 && lx <= sx + width / 2 && ly >= sy - height && ly <= sy + 3;
     };
     const ch = simRef.current.actor;
+    if (!sel && onActor(ch.gx, ch.gy, characterHeight(growthStage(game.age), game.gender), 24) && distant) {
+      // 마음이 멀어진 아이: 휙 등을 돌려 구석으로
+      simRef.current.runScript([
+        { kind: 'goto', resolve: (wd) => nearestFreeCell(wd.n, wd.placed, { x: wd.n - 1, y: 0 }, new Set()) },
+        { kind: 'wait', ms: 1500, pose: 'idle' },
+      ]);
+      setBubble(game.doorLocked ? '🔒 ...나가 줘.' : '☁️ ...');
+      sfx('sad');
+      if (tapTimer.current) clearTimeout(tapTimer.current);
+      tapTimer.current = setTimeout(() => setBubble(null), 1800);
+      return;
+    }
     if (!sel && onActor(ch.gx, ch.gy, characterHeight(growthStage(game.age), game.gender), 24)) {
       const r = childTapLine(game);
       const petted = petChild();
@@ -440,7 +478,7 @@ export function IsometricRoomCanvas({
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerLeave={() => setHover(null)}
-            style={{ width: w * scale, height: h * scale, imageRendering: 'pixelated', touchAction: 'manipulation' }}
+            style={{ width: w * scale, height: h * scale, imageRendering: 'pixelated', touchAction: 'manipulation', filter: cold ? 'saturate(0.45) hue-rotate(175deg) brightness(0.88)' : undefined, transition: 'filter 1.2s' }}
           />
           {/* 머리 위 말풍선 */}
           <div ref={bubbleRef} className="pointer-events-none absolute top-0 left-0" style={{ visibility: bubble ? 'visible' : 'hidden' }}>
@@ -460,6 +498,16 @@ export function IsometricRoomCanvas({
           <div ref={catBubbleRef} className="pointer-events-none absolute top-0 left-0" style={{ visibility: catBubble ? 'visible' : 'hidden' }}>
             <div className="pop-in border-2 border-ink bg-[#fff6e5] px-1 text-xs leading-tight shadow-[2px_2px_0_rgba(0,0,0,.4)]">{catBubble}</div>
           </div>
+          {/* 방문 잠금 */}
+          {game.doorLocked &&
+            (() => {
+              const [lx, ly] = project(n, 0.05, n - 0.5);
+              return (
+                <span className="pointer-events-none absolute animate-pulse leading-none" style={{ left: lx * scale, top: (ly - 30) * scale, fontSize: 14 * scale, transform: 'translate(-50%, -50%)' }}>
+                  🔒
+                </span>
+              );
+            })()}
           {/* 12월: 빈 뒷벽 칸에 크리스마스트리 */}
           {game.month === 12 &&
             (() => {

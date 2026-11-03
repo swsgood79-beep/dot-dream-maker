@@ -213,9 +213,11 @@ function targetedRun(def: EndingDefinition, seed: number) {
     for (const cid of p.combos) for (const fid of COMBO_MAP[cid].requiredFurnitureIds) buy(s, fid, reserve);
     if (def.minFurnitureCollectionRate && s.age >= 15) for (const fid of Object.keys(FURNITURE_MAP)) if (!s.collectedFurniture.includes(fid)) buyCollect(s, fid, reserve);
     if (s.pendingEvent) resolveParentingEvent(s, Math.floor(rng() * 3));
-    // 매달 대화 (무료)
+    // 매달 대화 (무료) — 실제 대화 버튼처럼 기록 (안 하면 방임으로 쌓임)
     s.status.affection = Math.min(100, s.status.affection + 3);
     s.status.stress = Math.max(0, s.status.stress - 3);
+    s.talkedThisMonth = true;
+    s.talkKind = 'talk';
     s.monthlySchedule = planMonth(s, p);
     if (process.env.DBG && s.month === 6 && s.age % 2 === 0) {
       const acts = SCHEDULE_ACTIONS.filter((a) => a.minAge <= s.age);
@@ -254,6 +256,8 @@ function casualRun(seed: number) {
     if (rng() < 0.5) {
       s.status.affection = Math.min(100, s.status.affection + 3);
       s.status.stress = Math.max(0, s.status.stress - 3);
+      s.talkedThisMonth = true;
+      s.talkKind = 'talk';
     }
     const acts = SCHEDULE_ACTIONS.filter((a) => a.minAge <= s.age);
     const sched: string[] = [];

@@ -1,6 +1,7 @@
 import type { EndingDefinition, Gender } from '../types/game';
 import type { SaveState } from '../engine/simulation';
 import { buildLetter } from './letterData';
+import { relationEnding, type Relation } from '../engine/psyche';
 import { PARENT_JOB_MAP } from './parentData';
 import type { TemperamentId } from './temperamentData';
 import type { ParentJobId } from './parentData';
@@ -15,6 +16,7 @@ export interface HallEntry {
   quote: string;
   dream: boolean;
   playthrough: number;
+  relation?: Relation;
 }
 
 export function makeHallEntry(s: SaveState, e: EndingDefinition, playthrough: number): HallEntry {
@@ -28,6 +30,7 @@ export function makeHallEntry(s: SaveState, e: EndingDefinition, playthrough: nu
     quote: l.body.find((x) => !x.startsWith('이제 저는')) ?? l.closing,
     dream: s.dreamJob === e.id,
     playthrough,
+    relation: relationEnding(s),
   };
 }
 
@@ -77,6 +80,8 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'TROPHY_10', emoji: '🏆', name: '트로피 수집가', desc: '대회 우승·입상 10번 이상', check: (s) => wins(s) >= 10 },
   { id: 'TEMPER_ALL', emoji: '🎭', name: '다섯 가지 마음', desc: '기질 5종을 모두 키워 봤다', check: (_, __, m) => new Set(m.hall.map((h) => h.temperament).filter(Boolean)).size >= 5 },
   { id: 'HOMES_4', emoji: '🏘️', name: '여러 집 이야기', desc: '서로 다른 부모 직업 4종으로 키워 봤다', check: (_, __, m) => new Set(m.hall.map((h) => h.parentJob).filter((j) => j && j !== 'CUSTOM')).size >= 4 },
+  { id: 'HEALTHY', emoji: '🌱', name: '건강한 자립', desc: '친밀도·자존감·자율성이 모두 높은 채로 어른이 되었다', check: (s) => relationEnding(s) === 'HEALTHY' },
+  { id: 'REC_COACH', emoji: '🎥', name: '마음 번역가', desc: '관찰 카메라로 속마음을 보고 공감 코칭을 3번 했다', check: (s) => (s.attitudes?.COACHING ?? 0) >= 6 && (s.actionCounts.REC_GOLD ?? 0) >= 3 },
   { id: 'BOOK_10', emoji: '📚', name: '도감 수집가', desc: '엔딩 도감 10종을 모았다', check: (_, __, m) => m.unlockedEndings.length >= 10 },
 ];
 
@@ -115,8 +120,16 @@ export function epilogueLines(s: SaveState, e: EndingDefinition): string[] {
     EASYGOING: '여전히 느긋하지만, 해야 할 일은 결국 다 해내요.',
   };
   if (s.temperament) L.push(tl[s.temperament]);
-  const aff = s.status.affection;
-  L.push(aff >= 80 ? '주말마다 부모님 댁에 들러 저녁을 먹고 가요.' : aff >= 50 ? '명절이면 꼭 집에 와서 하룻밤 자고 가요.' : '가끔 전화가 와요. 짧지만, 따뜻한 목소리로.');
+  const rel = relationEnding(s);
+  L.push(
+    rel === 'HEALTHY'
+      ? '주말마다 부모님 댁에 들러 저녁을 먹고 가요. 이제는 부모님 걱정을 하는 쪽이 되었어요.'
+      : rel === 'HOLLOW'
+        ? '연락은 끊긴 지 오래예요. 가끔 뉴스에서 이름을 볼 때마다, 그 작은 방이 떠올라요.'
+        : rel === 'DEPENDENT'
+          ? '여전히 하루에도 몇 번씩 전화가 와요. "엄마, 이거 어떻게 해?"'
+          : '명절이면 꼭 집에 와서 하룻밤 자고 가요.',
+  );
   if (s.friend) {
     const f = josa(s.friend, '이', '');
     if (!s.flags.includes('FRIEND_AWAY')) L.push(`입학식 날 만난 ${f}와는 아직도 단짝이에요.`);

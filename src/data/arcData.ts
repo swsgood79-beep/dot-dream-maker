@@ -56,6 +56,7 @@ export const ARC_EVENTS: ParentingEvent[] = [
         WARM: '요즘 {name이} 조금 늦게 들어와요. 그래도 "늦어요 미안" 문자는 꼬박꼬박 보내요.',
         STRICT: '{name이} 통금을 어기고 밤 11시에 들어왔어요. 전화도 받지 않았어요.',
         FREE: '{name이} 어디서 누구랑 뭘 하는지 도통 말을 안 해요. 오늘도 늦었어요.',
+        PROTECT: '{name이} 늦게 들어오면서 투덜대요. "엄마 아빠가 자꾸 데리러 오니까 애들이 놀려!"',
       })[lastStyle(s, 'REBEL') ?? 'FREE'],
     choices: [
       { label: '현관에서 기다렸다가 "밥은 먹었어?" 묻는다', style: 'WARM', fx: { affection: 5, delinquency: -2 }, reply: '...응. 기다리지 말라니까. (작게) 고마워.' },
@@ -86,6 +87,7 @@ export const ARC_EVENTS: ParentingEvent[] = [
         WARM: '책상 위에 쪽지가 있어요. "그동안 미안했어. 끝까지 기다려 줘서 고마워. 이제 좀 어른이 된 것 같아."',
         STRICT: '폭풍 같던 시간이 지나갔어요. 방문은 다시 열렸지만, {name}의 말수는 조금 줄었어요.',
         FREE: '{name이} 스스로 마음을 정리하고 돌아왔어요. "나 혼자 생각할 시간이 필요했어."',
+        PROTECT: '폭풍은 지나갔지만, {name}은(는) 여전히 무슨 일이든 엄마 아빠에게 먼저 물어봐요.',
       })[arcMajor(s, 'REBEL')],
     choices: [
       { label: '꼭 안아 준다', style: 'WARM', fx: { affection: 10, stress: -10 }, reply: '...아 진짜, 숨 막혀. (안 놓음)' },

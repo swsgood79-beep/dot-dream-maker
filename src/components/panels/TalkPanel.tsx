@@ -47,6 +47,7 @@ export function TalkPanel() {
         </div>
       )}
 
+      {game.doorLocked && <p className="mb-1 rounded border-2 border-ink bg-[#e3e8f5] px-2 py-1 text-[11px]">🔒 방문이 잠겨 있어요. 문 너머로만 이야기할 수 있어 효과가 절반이에요. 방에서 [🔍 관찰하기]가 보이면 눌러 보세요.</p>}
       <p className="mb-1 text-[11px] font-bold text-wood">이번 달 이야기 나누기 {done && '(완료)'}</p>
       <div className="mb-2 grid grid-cols-3 gap-1.5">
         <PixelButton color="bg-mint" onClick={() => talk('talk')} disabled={done}>
@@ -60,7 +61,7 @@ export function TalkPanel() {
         </PixelButton>
       </div>
       <p className="mb-3 text-[10px] opacity-70">
-        대화: 친밀도↑ 스트레스↓ · 칭찬: 친밀도↑ 매력↑ · 타이르기: 비행↓ 도덕↑ 대신 친밀도↓ (한 달에 한 번)
+        대화: 친밀도↑ 스트레스↓ · 칭찬: 친밀도↑ 자존감↑ · 타이르기: 비행↓ 도덕↑ 대신 친밀도·자존감↓ (한 달에 한 번) · 한 번도 이야기하지 않은 달은 📦 방임으로 쌓여요
       </p>
       <PixelButton className="w-full" onClick={give} disabled={game.gold < 100}>
         💸 용돈 주기 (100G · 친밀도 +2)

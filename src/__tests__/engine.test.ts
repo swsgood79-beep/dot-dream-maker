@@ -667,8 +667,8 @@ import { ACHIEVEMENTS, epilogueLines, makeHallEntry, newAchievements } from '../
 
 describe('legacy: hall of fame, visit, achievements, 20 years later', () => {
   it('there are 30 unique achievements', () => {
-    expect(ACHIEVEMENTS.length).toBe(30);
-    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(30);
+    expect(ACHIEVEMENTS.length).toBe(32);
+    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(32);
   });
 
   it('ending creates a hall entry and unlocks achievements', () => {
@@ -701,5 +701,54 @@ describe('legacy: hall of fame, visit, achievements, 20 years later', () => {
     expect(out.reply).toContain('선물');
     expect(s.inventory).toContain('easel');
     expect(s.prevChild).toBeUndefined();
+  });
+});
+
+import { dominantAttitude, isColdRoom, monthlyPsyche, relationEnding } from '../engine/psyche';
+import { recordStyle } from '../engine/parenting';
+
+describe('realistic parenting (GDD 11)', () => {
+  it('styles move self-esteem / autonomy and build attitudes', () => {
+    const s = newGame_('하나', 'SON', 'INT');
+    for (let i = 0; i < 6; i++) recordStyle(s, 'STRICT');
+    expect(s.status.selfEsteem).toBeLessThan(50);
+    expect(dominantAttitude(s)).toBe('TIGER');
+    const h = newGame_('하나', 'SON', 'INT');
+    for (let i = 0; i < 6; i++) recordStyle(h, 'PROTECT');
+    expect(h.status.autonomy).toBeLessThan(40);
+    expect(dominantAttitude(h)).toBe('HELICOPTER');
+  });
+
+  it('an exhausted child sometimes refuses the academy (strike)', () => {
+    const s = newGame_('하나', 'SON', 'INT');
+    s.status.stress = 85;
+    s.monthlySchedule = ['EDU_01', 'EDU_01', 'EDU_01', 'EDU_01'];
+    const r = runMonth_(s, () => 0.1);
+    expect(r.weeks.some((w) => w.outcome === 'STRIKE')).toBe(true);
+    expect(r.state.acting?.kind).toBe('STRIKE');
+  });
+
+  it('study-only room with high stress becomes cold and the door locks', () => {
+    const s = newGame_('하나', 'SON', 'INT');
+    s.placedFurniture.push(
+      { instanceId: 'a', furnitureId: 'oak_desk', gridX: 2, gridY: 0, rotation: 0 },
+      { instanceId: 'b', furnitureId: 'encyclopedia_shelf', gridX: 3, gridY: 0, rotation: 0 },
+      { instanceId: 'c', furnitureId: 'led_lamp', gridX: 4, gridY: 0, rotation: 0 },
+    );
+    s.status.stress = 75;
+    expect(isColdRoom(s)).toBe(true);
+    const ev: string[] = [];
+    monthlyPsyche(s, [], ev, 5);
+    expect(s.doorLocked).toBe(true);
+  });
+
+  it('relation ending depends on affection, self-esteem and autonomy', () => {
+    const s = newGame_('하나', 'SON', 'INT');
+    Object.assign(s.status, { affection: 80, selfEsteem: 70, autonomy: 70 });
+    expect(relationEnding(s)).toBe('HEALTHY');
+    Object.assign(s.status, { affection: 30 });
+    expect(relationEnding(s)).toBe('HOLLOW');
+    Object.assign(s.status, { affection: 60, autonomy: 20 });
+    expect(relationEnding(s)).toBe('DEPENDENT');
   });
 });

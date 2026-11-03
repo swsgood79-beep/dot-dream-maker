@@ -2,7 +2,7 @@ import { ACTION_MAP } from '../data/scheduleData';
 import { WISH_MAP, fillName, type Effect, type ParentStyle } from '../data/parentingData';
 import { CLUES_TO_REVEAL, TEMPERAMENT_MAP } from '../data/temperamentData';
 import { growthStage } from './room';
-import { applyEffect } from './parenting';
+import { applyEffect, recordStyle } from './parenting';
 import { wantedGift } from '../data/birthdayData';
 import type { ContestResult, Rng, SaveState, WeekResult } from './simulation';
 
@@ -126,8 +126,7 @@ export const CAUGHT_CHOICES: { label: string; style: ParentStyle; fx: Effect; re
 export function respondCaught(s: SaveState, i: number) {
   const c = CAUGHT_CHOICES[i];
   const delta = applyEffect(s, c.fx);
-  s.parenting = { WARM: 0, STRICT: 0, FREE: 0, ...s.parenting };
-  s.parenting[c.style] += 1;
+  recordStyle(s, c.style);
   s.memories = [...(s.memories ?? []), `DIARY_CAUGHT:${c.style}`];
   return { reply: c.reply, delta };
 }

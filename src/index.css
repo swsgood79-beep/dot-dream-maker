@@ -246,3 +246,15 @@ button {
 @media (prefers-reduced-motion: reduce) {
   .scene-in, .scene-fx, .scene-hop, .scene-wobble { animation: none; }
 }
+
+/* REC 관찰 카메라 */
+@keyframes rec-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.rec-blink { animation: rec-blink 1s steps(1) infinite; }
+@keyframes bubble-crack {
+  0% { transform: scale(1) rotate(0); opacity: 1; }
+  40% { transform: scale(1.05) rotate(-2deg); }
+  100% { transform: scale(0.6) rotate(8deg) translateY(30px); opacity: 0; }
+}
+.bubble-crack { animation: bubble-crack 0.7s ease-in forwards; }
+@keyframes rec-zoom { from { transform: scale(1); } to { transform: scale(1.25); } }
+.rec-zoom { animation: rec-zoom 1.2s ease-out forwards; }

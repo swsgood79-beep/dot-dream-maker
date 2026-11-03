@@ -1,6 +1,6 @@
 import type { StatKey } from '../types/game';
 import type { Effect, ParentStyle } from '../data/parentingData';
-import { applyEffect } from './parenting';
+import { applyEffect, recordStyle } from './parenting';
 import { addPhoto, type SaveState } from './simulation';
 
 /** 성적표가 나오는 달: 7월(1학기), 2월(학년 마무리) */
@@ -84,6 +84,7 @@ export const REPORT_REACTIONS: { label: string; style: ParentStyle }[] = [
   { label: '👏 "고생했어, 수고 많았어!"', style: 'WARM' },
   { label: '📏 "다음엔 더 잘할 수 있어. 계획을 세워 보자"', style: 'STRICT' },
   { label: '🕊️ "성적보다 네가 즐거운 게 중요해"', style: 'FREE' },
+  { label: '🛡️ "괜찮아, 선생님께는 엄마 아빠가 잘 말해 볼게"', style: 'PROTECT' },
 ];
 
 export function reportReaction(avg: number, style: ParentStyle): { fx: Effect; reply: string } {
@@ -97,6 +98,8 @@ export function reportReaction(avg: number, style: ParentStyle): { fx: Effect; r
     return good
       ? { fx: { INT: 8, MOR: 3, stress: 4 }, reply: '알았어. 더 높이 가 볼게.' }
       : { fx: { INT: 10, stress: bad ? 12 : 7, affection: bad ? -5 : -1 }, reply: bad ? '...(고개 숙임) 알겠어요.' : '계획표 짜 볼게.' };
+  if (style === 'PROTECT')
+    return { fx: { stress: -10, affection: 3 }, reply: bad ? '...진짜? 휴, 다행이다. (다음에도 그래 줄 거지?)' : '응... 엄마 아빠가 알아서 해 줘.' };
   return good
     ? { fx: { stress: -8, ART: 3, affection: 3 }, reply: '공부도 재밌어서 하는 거야~' }
     : { fx: { stress: -10, affection: 4, MOR: -2 }, reply: bad ? '진짜? 휴... (근데 진짜 괜찮은 건가?)' : '응! 즐겁게 할게!' };
@@ -106,8 +109,8 @@ export function resolveReport(s: SaveState, style: ParentStyle) {
   const card = computeReport(s);
   const r = reportReaction(card.avg, style);
   const delta = applyEffect(s, r.fx);
-  s.parenting = { WARM: 0, STRICT: 0, FREE: 0, ...s.parenting };
-  s.parenting[style] += 1;
+  const psy = recordStyle(s, style);
+  for (const [k, v] of Object.entries(psy)) (delta as Record<string, number>)[k] = ((delta as Record<string, number>)[k] ?? 0) + (v as number);
   s.pendingReport = false;
   if (card.avg >= 1.15)
     addPhoto(s, { emoji: '📜', title: `${card.school} ${card.term} 우수 성적표`, caption: card.comments[0], pose: 'cheer' });

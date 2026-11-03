@@ -13,6 +13,7 @@ import { DiaryModal } from './DiaryModal';
 import { BirthdayModal } from './BirthdayModal';
 import { SeasonFx } from './SeasonFx';
 import { Tutorial } from './Tutorial';
+import { RecModal } from './RecModal';
 import { WISH_MAP } from '../data/parentingData';
 import { sfx } from '../audio/sfx';
 import type { ContestId, MonthResult } from '../engine/simulation';
@@ -59,6 +60,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const [reportShown, setReportShown] = useState(false);
   const [bdayShown, setBdayShown] = useState(false);
   const [diaryOpen, setDiaryOpen] = useState(false);
+  const [recOpen, setRecOpen] = useState(false);
   const tutorialDone = useGameStore((s) => s.tutorialDone);
   const setTutorialDone = useGameStore((s) => s.setTutorialDone);
   // 첫 판의 첫 달에만 튜토리얼 (옛 저장으로 이어하는 중이면 보이지 않음)
@@ -173,6 +175,17 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
           onPlaybackDone={endPlayback}
         />
         <SeasonFx month={game.month} />
+        {game.acting && !playing && !placingId && (
+          <button
+            onClick={() => {
+              sfx('page');
+              setRecOpen(true);
+            }}
+            className="pop-in absolute top-2 left-2 z-10 flex items-center gap-1 rounded border-2 border-ink bg-[#1b1f3b] px-2 py-1 text-[11px] font-bold text-white shadow-[2px_2px_0_rgba(0,0,0,.35)]"
+          >
+            <span className="rec-blink text-[#ff3b3b]">●</span> 🔍 관찰하기
+          </button>
+        )}
         {game.diaryNew && !playing && !placingId && (
           <button
             onClick={() => {
@@ -286,6 +299,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
           }}
         />
       )}
+      {recOpen && <RecModal onClose={() => setRecOpen(false)} />}
       {diaryOpen && <DiaryModal onClose={() => setDiaryOpen(false)} />}
       {openCut && <CutsceneModal key={openCut} id={openCut} />}
       {openReport && <ReportCardModal onPick={() => setReportShown(true)} onClose={() => setReportShown(false)} />}

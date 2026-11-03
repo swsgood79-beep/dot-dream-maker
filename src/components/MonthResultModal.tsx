@@ -12,6 +12,7 @@ const OUTCOME_LABEL = {
   SICK: { text: '요양', cls: 'bg-sky' },
   RUNAWAY: { text: '가출', cls: 'bg-accent text-white' },
   NO_GOLD: { text: '골드부족', cls: 'bg-stone-300' },
+  STRIKE: { text: '파업', cls: 'bg-[#7a8bb5] text-white' },
 };
 
 /** 1주~4주를 순차적으로 보여주는 월간 결과 모달 (팝업 텍스트가 솟아오름) */

@@ -15,6 +15,7 @@ import type {
 import { computeActiveCombos, computeAura, roomSizeForAge } from './room';
 import { rollParentingEvent, updateWish } from './parenting';
 import { writeDiary, type DiaryEntry } from './diary';
+import { dominantAttitude, monthlyPsyche, type Acting, type Attitude } from './psyche';
 import type { ParentStyle } from '../data/parentingData';
 import { TEMPERAMENT_MAP, type TemperamentId } from '../data/temperamentData';
 import { CUTSCENES, pickFriend } from '../data/cutsceneData';
@@ -88,6 +89,12 @@ export interface SaveState extends GameState {
   // ── v0.16 다회차
   temperRevealedAge?: number; // 기질을 알아챈 나이 (업적)
   prevChild?: { name: string; gender: Gender; endingId: string }; // 이전 판에 키운 아이 (방문 이벤트)
+  // ── v0.20 현실 육아 (GDD 11장)
+  attitudes?: Record<Attitude, number>; // 4대 양육 태도 누적
+  doorLocked?: boolean; // 방문 잠금
+  acting?: Acting | null; // 관찰 카메라로 볼 수 있는 이상행동
+  actingCooldown?: number;
+  allowanceThisMonth?: boolean;
 }
 
 /** 게임 시작부터 센 달 수 (8세 1월 = 1) */
@@ -114,7 +121,7 @@ export interface WeekResult {
   actionId: string;
   actionName: string;
   emoji: string;
-  outcome: 'GREAT' | 'SUCCESS' | 'FAIL' | 'SICK' | 'RUNAWAY' | 'NO_GOLD';
+  outcome: 'GREAT' | 'SUCCESS' | 'FAIL' | 'SICK' | 'RUNAWAY' | 'NO_GOLD' | 'STRIKE';
   statDelta: Partial<CharacterStats>;
   stressDelta: number;
   goldDelta: number;
@@ -183,7 +190,7 @@ export function createNewGame(
   const stats: CharacterStats = { INT: 20, STR: 20, ART: 20, CHA: 20, MOR: 40, TEC: 15 };
   stats[bonusStat] += 30;
   if (parent) for (const [k, v] of Object.entries(parentStartBonus(parent.points)) as [StatKey, number][]) stats[k] += v;
-  const status: CharacterStatus = { stress: 0, affection: 50, fame: 0, delinquency: 0 };
+  const status: CharacterStatus = { stress: 0, affection: 50, fame: 0, delinquency: 0, selfEsteem: 50, autonomy: 50 };
   return {
     childName,
     gender,
@@ -214,7 +221,8 @@ export function createNewGame(
     wish: null,
     wishesGranted: 0,
     wishesFailed: 0,
-    parenting: { WARM: 0, STRICT: 0, FREE: 0 },
+    parenting: { WARM: 0, STRICT: 0, FREE: 0, PROTECT: 0 },
+    attitudes: { TIGER: 0, HELICOPTER: 0, NEGLECT: 0, COACHING: 0 },
     talkKind: null,
     temperament,
     temperRevealed,
@@ -313,6 +321,19 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
   }
 
   const stress = s.status.stress;
+  const attitude = dominantAttitude(s);
+  // 스케줄 파업 (GDD 11.2): 지치거나 마음이 멀어진 아이는 학원에 가지 않고 버틴다
+  if (action.type === 'EDUCATION' && outcome === 'SUCCESS' && (stress >= 80 || s.status.affection <= 30) && rng() < 0.35) {
+    s.gold += action.weeklyGoldDelta; // 학원비는 이미 냄
+    s.status.stress = clamp(stress - 6, 0, 100);
+    s.status.selfEsteem = clamp((s.status.selfEsteem ?? 50) - 2, 0, 100);
+    s.actionCounts.STRIKE = (s.actionCounts.STRIKE ?? 0) + 1;
+    return {
+      week, actionId: action.id, actionName: `${action.name} (거부)`, emoji: '💢', outcome: 'STRIKE', statDelta: {}, stressDelta: -6,
+      goldDelta: action.weeklyGoldDelta, comboMultiplier: 1, usedCombos: [], popups: ['파업!'], notes: ['학원 가기를 거부하고 침대에 누워 버렸다'],
+      actionType: action.type, targetInstanceId: s.placedFurniture.find((p) => FURNITURE_MAP[p.furnitureId].category === 'REST')?.instanceId,
+    };
+  }
   const temper = s.temperament ? TEMPERAMENT_MAP[s.temperament] : null;
   // 이번 행동에 실제로 영향을 주는 콤보만 사용
   const usedCombos = s.activeCombos.filter((id) => {
@@ -330,6 +351,7 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
   // 성공/대성공 판정
   const successRate = stress >= 80 ? 0.5 : stress >= 50 ? 0.8 : 1.0;
   let greatRate = stress < 50 ? 0.15 : 0;
+  if (attitude === 'COACHING' && s.age >= 17) greatRate *= 2; // 코칭형: 후반부 대성공 2배
   if (isArt && usedCombos.includes('CMB_05')) greatRate += 0.2;
   const isFail = action.type !== 'REST' && rng() >= successRate;
   const isGreat = !isFail && action.type !== 'REST' && rng() < greatRate;
@@ -363,7 +385,7 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
       else {
         const m = comboMult(k);
         maxMult = Math.max(maxMult, m);
-        const tm = (temper?.statMul[k] ?? 1) * parentStatMul(s.parent?.points, k);
+        const tm = (temper?.statMul[k] ?? 1) * parentStatMul(s.parent?.points, k) * (attitude === 'TIGER' && (k === 'INT' || k === 'TEC') ? 1.2 : 1);
         gain = Math.round((base + auraV) * GAIN_SCALE * growthCurve(s.stats[k]) * m * conditionFactor * tm);
       }
     }
@@ -381,7 +403,7 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
   let stressDelta = action.weeklyStressDelta;
   if (stressDelta > 0) {
     const mul = usedCombos.reduce((m, id) => m + (COMBO_MAP[id].stressMultiplier ?? 0), 1);
-    stressDelta = Math.max(0, Math.round(stressDelta * mul * (temper?.stressMul ?? 1) - aura.stressReduction));
+    stressDelta = Math.max(0, Math.round(stressDelta * mul * (temper?.stressMul ?? 1) * (attitude === 'HELICOPTER' ? 0.6 : 1) - aura.stressReduction));
   } else if (stressDelta < 0) {
     const rb = usedCombos.reduce((m, id) => m + (COMBO_MAP[id].restBonus ?? 0), 0);
     stressDelta = Math.round(stressDelta * (1 + rb) - aura.stressReduction);
@@ -546,6 +568,12 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
   // STEP 4. 월말 이벤트 및 상태 체크
   if (s.status.stress >= 100) {
     s.burstCount++;
+    if (dominantAttitude(s) === 'HELICOPTER') {
+      // 과보호형: 부모가 모든 걸 대신 막아 줘서 아프거나 가출하지 않음 (대신 자율성↓)
+      s.status.stress = 60;
+      s.status.autonomy = clamp((s.status.autonomy ?? 50) - 5, 0, 100);
+      events.push('🚁 스트레스 폭발! 하지만 엄마 아빠가 모든 걸 대신 막아 줬다 (자율성 -5)');
+    } else {
     const sickChance = s.activeCombos.includes('CMB_06') ? 0.25 : 0.5;
     if (s.status.affection >= 60 || rng() < sickChance) {
       s.gold -= 300;
@@ -558,6 +586,7 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
       s.runawayWeeks = 2;
       s.status.stress = 50;
       events.push('💢 스트레스 폭발! 가출 — 도덕성 -15, 비행 +10, 다음 달 2주 스케줄 취소');
+    }
     }
   }
   for (const id of s.activeCombos) {
@@ -579,8 +608,10 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
   events.push(`💰 부모님 지원금 +${allowance}G`);
 
   // 턴 종료
+  monthlyPsyche(s, weeks, events, monthIndex(s));
   s.talkedThisMonth = false;
   s.talkKind = null;
+  s.allowanceThisMonth = false;
   s.pettedThisMonth = false;
   if (s.month === 12 && s.age === 19) {
     if (s.burstCount === 0 && !s.flags.includes('NO_BURST')) s.flags.push('NO_BURST');

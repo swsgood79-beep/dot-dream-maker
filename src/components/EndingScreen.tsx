@@ -16,8 +16,10 @@ import { PhotoAlbum } from './PhotoAlbum';
 import { buildLetter } from '../data/letterData';
 import { TEMPERAMENT_MAP } from '../data/temperamentData';
 import { ACHIEVEMENTS, epilogueLines } from '../data/legacyData';
+import { DiaryRecap, PhoneEnding } from './EndingExtras';
+import { relationEnding } from '../engine/psyche';
 
-type Step = 'intro' | 'album' | 'photos' | 'drum' | 'reveal' | 'letter' | 'later';
+type Step = 'intro' | 'album' | 'photos' | 'recap' | 'drum' | 'reveal' | 'phone' | 'letter' | 'later';
 
 const STAGE_TITLE = { CHILD: '유년기', TEEN: '청소년기', YOUTH: '청년기' };
 
@@ -135,7 +137,7 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
               <PixelButton
                 className="flex-1"
                 color="bg-gold"
-                onClick={() => setStep((game.photos?.length ?? 0) > 1 ? 'photos' : 'drum')}
+                onClick={() => setStep((game.photos?.length ?? 0) > 1 ? 'photos' : 'recap')}
               >
                 {(game.photos?.length ?? 0) > 1 ? '📷 가족 사진첩 ▶' : '🎉 진로 발표!'}
               </PixelButton>
@@ -150,13 +152,31 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
           <div className="min-h-0 w-full flex-1 overflow-y-auto rounded border-3 border-ink bg-[#e9dcc0]">
             <PhotoAlbum photos={game.photos!} gender={game.gender} />
           </div>
-          <PixelButton className="w-full" color="bg-gold" onClick={() => setStep('drum')}>
-            🎉 진로 발표!
+          <PixelButton className="w-full" color="bg-gold" onClick={() => setStep('recap')}>
+            📔 몰래 써 온 일기 ▶
           </PixelButton>
         </div>
       )}
 
-      {step === 'letter' &&
+      {step === 'recap' && <DiaryRecap game={game} onDone={() => setStep('drum')} />}
+
+      {step === 'phone' && <PhoneEnding game={game} ending={ending} onDone={() => setStep('letter')} />}
+
+      {step === 'letter' && relationEnding(game) === 'HOLLOW' && (
+        <div className="pop-in flex w-full flex-1 flex-col items-center justify-center gap-4 text-center">
+          <p className="text-5xl">📭</p>
+          <p className="text-sm leading-relaxed">
+            편지는 오지 않았다.
+            <br />
+            <span className="opacity-70">빈 우편함 앞에서, 12년 동안 했던 말들을 하나씩 떠올려 본다.</span>
+          </p>
+          <PixelButton className="w-full" color="bg-gold" onClick={() => setStep('later')}>
+            🌅 20년 후...
+          </PixelButton>
+        </div>
+      )}
+
+      {step === 'letter' && relationEnding(game) !== 'HOLLOW' &&
         (() => {
           const l = buildLetter(game, ending);
           const t = game.temperament && game.temperRevealed ? TEMPERAMENT_MAP[game.temperament] : null;
@@ -307,8 +327,8 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
           <p className="text-xs">
             👑 엔딩 도감 {unlockedEndings.length} / {ENDINGS.length} · 도감에 등록되었습니다
           </p>
-          <PixelButton color="bg-gold" onClick={() => setStep('letter')}>
-            📮 {game.childName}의 편지 읽기
+          <PixelButton color="bg-gold" onClick={() => setStep('phone')}>
+            📱 몇 년 뒤...
           </PixelButton>
         </div>
       )}

@@ -20,6 +20,8 @@ export interface CharacterStatus {
   affection: number; // 부모 친밀도 0~100
   fame: number; // 명성 0~500
   delinquency: number; // 비행 수치 0~100
+  selfEsteem?: number; // 자존감 0~100 (GDD 11장, 옛 저장은 50으로 간주)
+  autonomy?: number; // 자율성 0~100
 }
 
 export type AptitudeLevels = Record<AptitudeKey, { level: number; exp: number }>;

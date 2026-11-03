@@ -12,6 +12,7 @@ import {
   type ParentingEvent,
 } from '../data/parentingData';
 import type { StatKey } from '../types/game';
+import { STYLE_ATTITUDE, STYLE_PSYCHE, bumpAttitude } from './psyche';
 import { addPhoto, monthIndex, type Rng, type SaveState, type WeekResult } from './simulation';
 import { CLUES_TO_REVEAL, TEMPERAMENT_MAP, type TemperamentId } from '../data/temperamentData';
 
@@ -40,9 +41,9 @@ export function applyEffect(s: SaveState, fx: Effect): Effect {
       before = s.ideaPoints;
       after = s.ideaPoints = Math.max(0, s.ideaPoints + v);
     } else {
-      const sk = k as 'stress' | 'affection' | 'delinquency' | 'fame';
+      const sk = k as 'stress' | 'affection' | 'delinquency' | 'fame' | 'selfEsteem' | 'autonomy';
       const max = sk === 'fame' ? 500 : 100;
-      before = s.status[sk];
+      before = s.status[sk] ?? 50;
       after = s.status[sk] = clamp(before + v, 0, max);
     }
     if (after !== before) out[k] = after - before;
@@ -50,18 +51,23 @@ export function applyEffect(s: SaveState, fx: Effect): Effect {
   return out;
 }
 
-function bumpStyle(s: SaveState, style: ParentStyle) {
-  s.parenting = { WARM: 0, STRICT: 0, FREE: 0, ...s.parenting };
-  s.parenting[style] += 1;
+/** 부모의 대응 기록: 스타일 횟수 + 내면 심리(자존감·자율성) + 양육 태도 누적 (GDD 11.1) */
+export function recordStyle(s: SaveState, style: ParentStyle): Effect {
+  s.parenting = { WARM: 0, STRICT: 0, FREE: 0, PROTECT: 0, ...s.parenting };
+  s.parenting[style] = (s.parenting[style] ?? 0) + 1;
+  const att = STYLE_ATTITUDE[style];
+  if (att) bumpAttitude(s, att);
+  return applyEffect(s, STYLE_PSYCHE[style]);
 }
+
 
 /** 가장 많이 고른 양육 스타일 (동점이면 다정 > 자율 > 엄격) */
 export function dominantStyle(s: Pick<SaveState, 'parenting'>): ParentStyle | null {
   const p = s.parenting;
   if (!p) return null;
-  const order: ParentStyle[] = ['WARM', 'FREE', 'STRICT'];
-  const best = order.reduce((a, b) => (p[b] > p[a] ? b : a), order[0]);
-  return p[best] > 0 ? best : null;
+  const order: ParentStyle[] = ['WARM', 'FREE', 'PROTECT', 'STRICT'];
+  const best = order.reduce((a, b) => ((p[b] ?? 0) > (p[a] ?? 0) ? b : a), order[0]);
+  return (p[best] ?? 0) > 0 ? best : null;
 }
 
 /* ───────── 육아 상황 ───────── */
@@ -139,7 +145,8 @@ export function resolveParentingEvent(s: SaveState, choiceIndex: number): EventO
   const temper = s.temperament ? TEMPERAMENT_MAP[s.temperament] : null;
   // 같은 대응이라도 아이 기질에 따라 결과가 달라진다
   const delta = applyEffect(s, mergeFx(c.fx, temper?.styleFx[c.style]));
-  bumpStyle(s, c.style);
+  const psy = recordStyle(s, c.style);
+  for (const [k, v] of Object.entries(psy) as [EffectKey, number][]) delta[k] = (delta[k] ?? 0) + v;
   s.seenEvents = [...(s.seenEvents ?? []), ev.id];
   s.memories = [...(s.memories ?? []), `${ev.id}:${c.style}`];
   s.pendingEvent = null;

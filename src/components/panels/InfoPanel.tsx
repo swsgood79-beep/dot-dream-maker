@@ -11,6 +11,7 @@ import { CLUES_TO_REVEAL, TEMPERAMENT_MAP } from '../../data/temperamentData';
 import { PhotoAlbum } from '../PhotoAlbum';
 import { DiaryPage } from '../DiaryModal';
 import { ENDING_MAP } from '../../data/endingData';
+import { ATTITUDE_META, achieveRatio, autonomy, dominantAttitude, isColdRoom, selfEsteem, type Attitude } from '../../engine/psyche';
 import { ABILITIES, ABILITY_META, describeParent } from '../../data/parentData';
 import { useState } from 'react';
 
@@ -115,10 +116,53 @@ export function InfoPanel() {
           </div>
         </>
       )}
+      <p className="mb-1 font-bold">마음 상태</p>
+      {(() => {
+        const dom = dominantAttitude(game);
+        const at = game.attitudes ?? { TIGER: 0, HELICOPTER: 0, NEGLECT: 0, COACHING: 0 };
+        const ratio = Math.round(achieveRatio(game) * 100);
+        return (
+          <div className="mb-3 rounded border-2 border-ink bg-white p-2">
+            {[
+              ['🌟 자존감', selfEsteem(game), '#ffcc4d'],
+              ['🧭 자율성', autonomy(game), '#6ec3f4'],
+            ].map(([l, v, c]) => (
+              <div key={l as string} className="mb-1 flex items-center gap-2">
+                <span className="w-16 shrink-0">{l}</span>
+                <Bar value={v as number} max={100} color={c as string} />
+                <span className="w-8 shrink-0 text-right">{v}</span>
+              </div>
+            ))}
+            <p className="mt-1">
+              {dom ? (
+                <>
+                  {ATTITUDE_META[dom].emoji} 양육 태도: <b>{ATTITUDE_META[dom].label}</b>
+                  <span className="block text-[10px] opacity-70">
+                    {ATTITUDE_META[dom].desc} · 효과: {ATTITUDE_META[dom].short} · 오래가면: {ATTITUDE_META[dom].long}
+                  </span>
+                </>
+              ) : (
+                <span className="opacity-70">양육 태도가 아직 뚜렷하지 않아요</span>
+              )}
+            </p>
+            <p className="mt-1 flex flex-wrap gap-x-2 text-[10px] opacity-70">
+              {(Object.keys(ATTITUDE_META) as Attitude[]).map((k) => (
+                <span key={k}>
+                  {ATTITUDE_META[k].emoji} {Math.round(at[k] ?? 0)}
+                </span>
+              ))}
+            </p>
+            <p className="mt-1 text-[10px]">
+              🏠 방 공기: {isColdRoom(game) ? <b className="text-[#5a6fa0]">숨 막히는 방 (공부 가구 {ratio}%)</b> : `괜찮음 (공부 가구 ${ratio}%)`}
+              {game.doorLocked && <b className="ml-1 text-accent">· 🔒 방문 잠김</b>}
+            </p>
+          </div>
+        );
+      })()}
       <p className="mb-1 font-bold">양육 일기</p>
       {(() => {
         const dom = dominantStyle(game);
-        const p = game.parenting ?? { WARM: 0, STRICT: 0, FREE: 0 };
+        const p: Record<string, number> = game.parenting ?? { WARM: 0, STRICT: 0, FREE: 0, PROTECT: 0 };
         return (
           <div className="mb-3 rounded border-2 border-ink bg-white p-2">
             {game.parent && (
@@ -141,7 +185,7 @@ export function InfoPanel() {
             <div className="flex gap-2 text-[10px]">
               {(Object.keys(STYLE_META) as ParentStyle[]).map((k) => (
                 <span key={k}>
-                  {STYLE_META[k].emoji} {STYLE_META[k].label} {p[k]}
+                  {STYLE_META[k].emoji} {STYLE_META[k].label} {p[k] ?? 0}
                 </span>
               ))}
             </div>

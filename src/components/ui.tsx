@@ -149,9 +149,11 @@ const EFFECT_LABEL: Record<string, string> = {
   fame: '명성',
   gold: '골드',
   idea: '영감',
+  selfEsteem: '자존감',
+  autonomy: '자율성',
 };
-const EFFECT_ICON: Record<string, string | null> = { stress: 'STRESS', fame: 'FAME', gold: 'GOLD', idea: 'IDEA', affection: null, delinquency: null };
-const EFFECT_EMOJI: Record<string, string> = { affection: '❤️', delinquency: '😈' };
+const EFFECT_ICON: Record<string, string | null> = { stress: 'STRESS', fame: 'FAME', gold: 'GOLD', idea: 'IDEA', affection: null, delinquency: null, selfEsteem: null, autonomy: null };
+const EFFECT_EMOJI: Record<string, string> = { affection: '❤️', delinquency: '😈', selfEsteem: '🌟', autonomy: '🧭' };
 /** 수치가 오르면 나쁜 항목 */
 const BAD_UP = new Set(['stress', 'delinquency']);
 

@@ -18,15 +18,16 @@ const VISIT_GIFT: Record<string, string> = {
 };
 
 /** 선택지·부탁 결과로 바뀌는 수치 (스탯은 성장 곡선 없이 그대로 더함) */
-export type EffectKey = StatKey | 'stress' | 'affection' | 'delinquency' | 'fame' | 'gold' | 'idea';
+export type EffectKey = StatKey | 'stress' | 'affection' | 'delinquency' | 'fame' | 'gold' | 'idea' | 'selfEsteem' | 'autonomy';
 export type Effect = Partial<Record<EffectKey, number>>;
 
 /** 양육 스타일: 다정 · 엄격 · 자율 */
-export type ParentStyle = 'WARM' | 'STRICT' | 'FREE';
+export type ParentStyle = 'WARM' | 'STRICT' | 'FREE' | 'PROTECT';
 export const STYLE_META: Record<ParentStyle, { label: string; emoji: string; desc: string }> = {
   WARM: { label: '다정한', emoji: '🤗', desc: '아이의 마음을 먼저 들어 주는 부모' },
   STRICT: { label: '엄격한', emoji: '📏', desc: '규칙과 책임을 가르치는 부모' },
   FREE: { label: '믿고 맡기는', emoji: '🕊️', desc: '스스로 해 보게 두는 부모' },
+  PROTECT: { label: '감싸 주는', emoji: '🛡️', desc: '대신 막아 주고 해결해 주는 부모' },
 };
 
 export interface EventChoice {

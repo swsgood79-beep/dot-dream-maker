@@ -1,6 +1,7 @@
 import { ENDING_MAP } from '../data/endingData';
 import { ACHIEVEMENTS } from '../data/legacyData';
 import { PARENT_JOB_MAP } from '../data/parentData';
+import { RELATION_META } from '../engine/psyche';
 import { TEMPERAMENT_MAP } from '../data/temperamentData';
 import { frameName, hasFrame } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
@@ -28,6 +29,7 @@ export function HallPanel() {
                 <b className="text-sm">{h.name}</b>
                 <span className="opacity-60">· {h.playthrough}번째 아이</span>
                 {h.dream && <span title="꿈을 이룸">🌟</span>}
+                {h.relation && <span title={RELATION_META[h.relation].label}>{RELATION_META[h.relation].emoji}</span>}
               </p>
               <p className="flex items-center gap-1">
                 <span className={`rounded border border-ink px-1 text-[9px] font-bold ${TIER_COLOR[e.tier]}`}>{e.tier}</span>

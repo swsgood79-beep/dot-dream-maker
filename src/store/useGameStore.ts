@@ -8,7 +8,8 @@ import type { EndingDefinition, Gender, StatKey } from '../types/game';
 import { TEMPERAMENTS, type TemperamentId } from '../data/temperamentData';
 import { DEFAULT_PARENT, parentTalkBonus, type ParentProfile } from '../data/parentData';
 import { canPlace, findFreeSpot } from '../engine/room';
-import { resolveParentingEvent, type EventOutcome } from '../engine/parenting';
+import { applyEffect, recordStyle, resolveParentingEvent, type EventOutcome } from '../engine/parenting';
+import { REC_CHOICES, bumpAttitude, dominantAttitude } from '../engine/psyche';
 import { resolveReport } from '../engine/school';
 import { readDiary as readDiaryEngine, respondCaught as respondCaughtEngine, skipDiary as skipDiaryEngine } from '../engine/diary';
 import { CUTSCENE_MAP } from '../data/cutsceneData';
@@ -81,6 +82,8 @@ interface GameStore {
   playContest: (perf: number | null) => ContestResult | null;
   reactReport: (style: ParentStyle) => { reply: string; delta: Effect } | null;
   giveAllowance: () => void;
+  /** 관찰 카메라 대응: 'gold' = 관찰 후 해금되는 공감 코칭, 0/1 = 일반 대응 */
+  resolveActing: (choice: 'gold' | 0 | 1) => { reply: string; delta: Effect } | null;
   finishEnding: () => void;
   quitToTitle: () => void;
   pushToast: (text: string) => void;
@@ -216,7 +219,8 @@ export const useGameStore = create<GameStore>()(
           const g = createNewGame(name, gender, bonus, [...unlockedEndings], carryIdea, t, !random, parent);
           // 지난 판에 키운 아이가 어른이 되어 찾아온다
           const prev = (get().hallOfFame ?? []).slice(-1)[0];
-          if (prev) g.prevChild = { name: prev.name, gender: prev.gender, endingId: prev.endingId };
+          // 절연으로 끝난 아이는 찾아오지 않는다 (GDD 11.3: 건강한 자립 → 가문 멘토)
+          if (prev && prev.relation !== 'HOLLOW') g.prevChild = { name: prev.name, gender: prev.gender, endingId: prev.endingId };
           g.birthMonth = birthMonth ?? 1 + Math.floor(Math.random() * 12);
           set({
             game: g,
@@ -251,11 +255,13 @@ export const useGameStore = create<GameStore>()(
         buyFurniture: (furnitureId) => {
           const def = FURNITURE_MAP[furnitureId];
           return mutate((g) => {
-            if (g.gold < def.costGold || g.ideaPoints < def.costIdea) {
+            // 방임형: 대화 대신 물건 → 가구 15% 할인 (GDD 11.1)
+            const cost = dominantAttitude(g) === 'NEGLECT' ? Math.round(def.costGold * 0.85) : def.costGold;
+            if (g.gold < cost || g.ideaPoints < def.costIdea) {
               get().pushToast('재화가 부족합니다');
               return false;
             }
-            g.gold -= def.costGold;
+            g.gold -= cost;
             g.ideaPoints -= def.costIdea;
             if (!g.collectedFurniture.includes(furnitureId)) g.collectedFurniture.push(furnitureId);
             const spot = findFreeSpot(g.placedFurniture, g.roomSize, furnitureId);
@@ -315,27 +321,63 @@ export const useGameStore = create<GameStore>()(
             g.talkedThisMonth = true;
             g.talkKind = kind;
             const st = g.status;
-            g.parenting = { WARM: 0, STRICT: 0, FREE: 0, ...g.parenting };
             const hb = parentTalkBonus(g.parent?.points); // 인품 높은 부모는 대화가 더 따뜻하다
+            // 방문이 잠겨 있으면 문 너머로만 이야기 → 효과 절반
+            const lock = g.doorLocked ? 0.5 : 1;
+            const lockNote = g.doorLocked ? ' (🔒 문 너머로)' : '';
             if (kind === 'talk') {
-              st.affection = Math.min(100, st.affection + 3 + hb);
+              const a = Math.round((3 + hb) * lock);
+              st.affection = Math.min(100, st.affection + a);
               st.stress = Math.max(0, st.stress - 3);
-              get().pushToast(`💬 즐거운 대화! 친밀도 +${3 + hb}, 스트레스 -3`);
+              get().pushToast(`💬 대화했어요! 친밀도 +${a}, 스트레스 -3${lockNote}`);
             } else if (kind === 'praise') {
-              st.affection = Math.min(100, st.affection + 4 + hb);
+              const a = Math.round((4 + hb) * lock);
+              st.affection = Math.min(100, st.affection + a);
               st.stress = Math.max(0, st.stress - 2);
               g.stats.CHA = Math.min(999, g.stats.CHA + 3);
-              g.parenting.WARM += 1;
-              get().pushToast(`👏 칭찬해 줬어요! 친밀도 +${4 + hb}, 매력 +3`);
+              recordStyle(g, 'WARM');
+              get().pushToast(`👏 칭찬해 줬어요! 친밀도 +${a}, 매력 +3, 자존감↑${lockNote}`);
             } else {
               st.delinquency = Math.max(0, st.delinquency - 6);
               st.affection = Math.max(0, st.affection - 3);
               st.stress = Math.min(100, st.stress + 2);
               g.stats.MOR = Math.min(999, g.stats.MOR + 4);
-              g.parenting.STRICT += 1;
-              get().pushToast('☝️ 차분히 타일렀어요. 비행 -6, 도덕 +4, 친밀도 -3');
+              recordStyle(g, 'STRICT');
+              get().pushToast('☝️ 타일렀어요. 비행 -6, 도덕 +4, 친밀도 -3, 자존감↓');
             }
           }),
+
+        resolveActing: (choice) => {
+          let out: { reply: string; delta: Effect } | null = null;
+          mutate((g) => {
+            const act = g.acting;
+            if (!act) return false;
+            const set = REC_CHOICES[act.kind];
+            let delta: Effect;
+            let reply: string;
+            if (choice === 'gold') {
+              delta = applyEffect(g, set.gold.fx);
+              recordStyle(g, 'WARM');
+              bumpAttitude(g, 'COACHING', 2); // 관찰 후 공감 코칭은 코칭형으로 크게 기울어진다
+              g.actionCounts.REC_GOLD = (g.actionCounts.REC_GOLD ?? 0) + 1;
+              reply = set.gold.reply;
+              if (set.gold.easeSchedule) {
+                // 다음 달 학원 하나를 휴식으로
+                const i = g.monthlySchedule.findIndex((id) => id.startsWith('EDU_'));
+                if (i >= 0) g.monthlySchedule[i] = 'REST_01';
+              }
+            } else {
+              const c = set.others[choice];
+              delta = applyEffect(g, c.fx);
+              const psy = recordStyle(g, c.style);
+              for (const [k, v] of Object.entries(psy)) (delta as Record<string, number>)[k] = ((delta as Record<string, number>)[k] ?? 0) + (v as number);
+              reply = c.reply;
+            }
+            g.acting = null;
+            out = { reply, delta };
+          });
+          return out;
+        },
 
         playContest: (perf) => {
           let out: ContestResult | null = null;
@@ -417,6 +459,7 @@ export const useGameStore = create<GameStore>()(
           void mutate((g) => {
             if (g.gold < 100) return false;
             g.gold -= 100;
+            g.allowanceThisMonth = true;
             g.status.affection = Math.min(100, g.status.affection + 2);
             get().pushToast('💸 용돈 100G! 친밀도 +2');
           }),

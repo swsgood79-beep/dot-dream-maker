@@ -192,6 +192,7 @@ export function sceneFor(w: WeekResult): ActivityScene | null {
 export function sceneLine(w: WeekResult): string {
   if (w.outcome === 'SICK') return '아파서 침대에 누워 있었다. 얼른 나아야지...';
   if (w.outcome === 'NO_GOLD') return '돈이 모자라서 집에서 쉬었다.';
+  if (w.outcome === 'STRIKE') return '"학원 진짜 싫어!!" 가방을 던지고 침대에 누워 버렸다...';
   const sc = sceneFor(w);
   if (!sc) return '';
   return w.outcome === 'GREAT' ? sc.lines.GREAT : w.outcome === 'FAIL' ? sc.lines.FAIL : sc.lines.SUCCESS;
