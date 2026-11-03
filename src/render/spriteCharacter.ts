@@ -168,7 +168,7 @@ export function spriteUrl(name: string): string {
 export const WALK_FRAME_MS = 130;
 const walkCount = new Map<string, number>();
 export function walkFrame(base: string, t: number): string | null {
-  // 걷기 프레임 수(4장 또는 8장)를 세어 순서대로 재생
+  // 걷기 프레임 수(4장 또는 8장)를 세어 같은 간격(130ms)으로 순서대로 재생
   let n = walkCount.get(base);
   if (n === undefined) {
     n = 0;
@@ -176,7 +176,7 @@ export function walkFrame(base: string, t: number): string | null {
     walkCount.set(base, n);
   }
   if (!n) return null;
-  return `${base}_walk${Math.floor(t / (n > 4 ? WALK_FRAME_MS * 0.6 : WALK_FRAME_MS)) % n}`;
+  return `${base}_walk${Math.floor(t / WALK_FRAME_MS) % n}`; // 4장·8장 모두 같은 프레임 간격
 }
 
 export const PARENT_FRAME = 'PARENT_stand';
