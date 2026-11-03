@@ -6,7 +6,7 @@ import type { Gender, GrowthStage } from '../types/game';
  */
 export type Facing = 'L' | 'R';
 /** idle/walk: 서기, read: 독서·공부, cheer: 만세 점프, work: 알바·집안일, sleep: 침대 휴식 */
-export type Pose = 'idle' | 'walk' | 'read' | 'cheer' | 'work' | 'sleep';
+export type Pose = 'idle' | 'walk' | 'read' | 'cheer' | 'work' | 'sleep' | 'desk' | 'pc' | 'music' | 'draw' | 'exercise' | 'tired';
 
 interface Outfit {
   top: string;
@@ -59,6 +59,7 @@ export interface CharacterDrawOpts {
   time: number; // ms
   alpha?: number;
   back?: boolean; // 뒷모습 (방 안쪽으로 걸을 때)
+  tired?: boolean; // 스트레스 높음 → 평소 지친 모습
 }
 
 /** (fx, fy) = 발 중앙 화면 좌표 */

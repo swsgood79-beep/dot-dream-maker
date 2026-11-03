@@ -39,7 +39,7 @@ export function onSheetReady(fn: () => void): () => void {
   };
 }
 
-export function frameName(stage: GrowthStage, gender: Gender, kind: 'stand' | 'read' | 'cheer'): string {
+export function frameName(stage: GrowthStage, gender: Gender, kind: string): string {
   const name = `${stage}_${gender}_${kind}`;
   return FRAMES[name] ? name : `${stage}_${gender}_stand`; // 프레임이 없으면 서기로 대체
 }
@@ -83,9 +83,10 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, fx: number, fy: num
   ctx.fill();
   ctx.restore();
 
-  let kind: 'stand' | 'read' | 'cheer' = 'stand';
+  let kind = 'stand';
   let dy = 0;
   const t = o.time;
+  const has = (k: string) => !!FRAMES[`${o.stage}_${o.gender}_${k}`];
   switch (o.pose) {
     case 'walk': {
       // 걷기 4프레임 사이클 (왼발 → 교차 → 오른발 → 교차). 방 안쪽으로 걸으면 뒷모습 사이클
@@ -93,17 +94,46 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, fx: number, fy: num
       if (walk && drawFrame(ctx, walk, fx, fy, o.facing === 'L', o.alpha ?? 1)) return;
       break;
     }
+    case 'idle':
+      // 스트레스가 높으면 평소에도 지친 모습
+      if (o.tired && has('tired')) kind = 'tired';
+      break;
     case 'read':
-    case 'sleep':
       kind = 'read';
       dy = Math.floor(t / 700) % 2 ? -0.5 : 0;
+      break;
+    case 'sleep':
+      kind = has('sleep') ? 'sleep' : 'read';
+      dy = Math.floor(t / 900) % 2 ? -0.5 : 0; // 숨쉬기
       break;
     case 'cheer':
       kind = 'cheer';
       dy = -Math.abs(Math.sin(t / 160)) * 6; // 만세 점프
       break;
+    case 'desk':
+      kind = has('desk') ? 'desk' : 'read';
+      dy = Math.floor(t / 600) % 2 ? -0.5 : 0; // 끄적끄적
+      break;
+    case 'pc':
+      kind = has('pc') ? 'pc' : 'read';
+      dy = Math.floor(t / 250) % 2 ? -0.5 : 0; // 타닥타닥
+      break;
+    case 'music':
+    case 'draw':
+      kind = has(o.pose) ? o.pose : 'stand';
+      dy = Math.floor(t / 300) % 2 ? -1 : 0;
+      break;
+    case 'exercise':
+      kind = has('exercise') ? 'exercise' : 'stand';
+      dy = -Math.abs(Math.sin(t / 200)) * 2.5; // 덤벨 들기 반동
+      break;
     case 'work':
-      dy = Math.floor(t / 110) % 2 ? -1.5 : 0;
+      if (has('work')) kind = 'work';
+      dy = Math.floor(t / 160) % 2 ? -1.5 : 0;
+      break;
+    case 'tired':
+      kind = has('tired') ? 'tired' : 'stand';
+      dy = Math.floor(t / 1200) % 2 ? 0.5 : 0;
       break;
   }
   const backStand = `${o.stage}_${o.gender}_back_stand`;

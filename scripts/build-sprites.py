@@ -9,7 +9,8 @@ assets-src/character-sheet.png (흰 배경 캐릭터 시트) →
 3) 업스케일된 도트(약 5.67px = 1도트)를 원래 해상도로 축소
 4) 아들/딸은 assets-src/{son,daughter}-walk-sheet.png 의 손그림 걷기 3장(A·B·C → A,B,C,B 사이클) 사용
 5) 뒷모습(방 안쪽으로 걸어갈 때)은 assets-src/{son,daughter}-back-sheet.png
-6) 손그림 걷기가 없는 캐릭터는 '서기' 프레임에서 생성: 다리를 좌우로 나눠 번갈아 들고,
+6) 행동 포즈(책상 공부·운동·그림·노래·컴퓨터·알바·잠자기·지침)는 assets-src/{son,daughter}-pose-sheet.png
+7) 손그림 걷기가 없는 캐릭터는 '서기' 프레임에서 생성: 다리를 좌우로 나눠 번갈아 들고,
    팔을 반대로 흔들고, 발 디딤 순간 몸이 1px 내려앉는 4프레임 사이클 → {이름}_walk0~3
 """
 import json
@@ -280,6 +281,35 @@ for g, path in BACK_SHEETS.items():
         for k in BACK_COLS:
             if k:
                 sprites[f'{st}_{g}_{k}'] = cut(img_b, named[f'{st}_{g}_{k}'], blk)
+
+# 아들/딸 행동 시트: 단계별 [책상 공부, 운동, 그림, 노래, 컴퓨터, 알바, 잠자기, 지침]
+# 크기: 행마다 서 있는 포즈(그림·노래·지침) 키의 중앙값이 그 단계 서기 키와 같아지도록 축소 비율을 정한다.
+POSE_SHEETS = {
+    'SON': 'assets-src/son-pose-sheet.png',
+    'DAUGHTER': 'assets-src/daughter-pose-sheet.png',
+}
+POSE_COLS = ['desk', 'exercise', 'draw', 'music', 'pc', 'work', 'sleep', 'tired']
+# 의상이 틀리게 그려진 칸은 제외 → 게임이 기존 그림(독서/서기)으로 대체
+POSE_EXCLUDE = {
+    'CHILD_SON_tired',        # 반바지 대신 청바지
+    'CHILD_DAUGHTER_sleep',   # 원피스 대신 세일러 교복
+    'CHILD_DAUGHTER_tired',   # 긴 머리 + 카키 바지 (청년 모습)
+}
+for g, path in POSE_SHEETS.items():
+    names_g = [f'{st}_{g}_{k}' for st in STAGES for k in POSE_COLS]
+    img_p = np.asarray(Image.open(path).convert('RGB')).astype(np.int32)
+    Hp = img_p.shape[0]
+    pboxes = components((765 - img_p.sum(axis=2)) > 60)
+    assert len(pboxes) == len(names_g), f'{path}: expected {len(names_g)}, found {len(pboxes)}'
+    pboxes.sort(key=lambda b: (int(((b[1] + b[3]) / 2) // (Hp / 3)), b[0]))
+    named = dict(zip(names_g, pboxes))
+    for st in STAGES:
+        ref_h = np.median([named[f'{st}_{g}_{k}'][3] - named[f'{st}_{g}_{k}'][1] for k in ('draw', 'music', 'tired')])
+        blk = ref_h / sprites[f'{st}_{g}_stand'].shape[0]
+        for k in POSE_COLS:
+            name = f'{st}_{g}_{k}'
+            if name not in POSE_EXCLUDE:
+                sprites[name] = cut(img_p, named[name], blk)
 
 # 손그림 걷기가 없는 캐릭터(딸, 부모님)는 서기 프레임에서 생성
 for name in list(sprites):

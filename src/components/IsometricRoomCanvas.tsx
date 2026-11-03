@@ -53,6 +53,25 @@ function popupColor(p: Popup): string {
   return stat ? STAT_POP_COLOR[stat] : '#ffffff';
 }
 
+const POSE_BUBBLE: Partial<Record<Pose, string>> = {
+  desk: '✏️', read: '📖', pc: '💻', music: '🎵', draw: '🎨', exercise: '💪', work: '📦', sleep: '💤', tired: '😓',
+};
+
+/** 이번 주 행동 → 캐릭터 포즈 (행동 스프라이트) */
+const EDU_POSE: Record<string, Pose> = {
+  EDU_01: 'desk', EDU_02: 'desk', EDU_03: 'desk', EDU_08: 'desk',
+  EDU_04: 'pc', EDU_05: 'music', EDU_06: 'draw', EDU_07: 'exercise',
+};
+function poseFor(w: WeekResult): Pose {
+  if (w.outcome === 'GREAT') return 'cheer';
+  if (w.outcome === 'FAIL') return 'tired';
+  if (w.actionType === 'REST') return w.targetInstanceId ? 'sleep' : 'read';
+  if (w.outcome === 'SICK') return 'tired';
+  if (w.actionType === 'EDUCATION') return EDU_POSE[w.actionId] ?? 'read';
+  if (w.actionType === 'PART_TIME') return w.actionId === 'JOB_03' ? 'read' : 'work';
+  return 'idle';
+}
+
 function popupKind(text: string): Popup['kind'] {
   if (text.startsWith('Combo') || text.includes('Lv.')) return 'combo';
   if (text === '대성공!') return 'great';
@@ -161,8 +180,7 @@ export function IsometricRoomCanvas({
     for (const w of playback.weeks) {
       const outside = w.actionType === 'RUNAWAY' || (!w.targetInstanceId && w.actionType !== 'REST');
       // 공부 → 독서 포즈, 휴식 → 침대 위에서 책 읽기, 대성공 → 만세 점프, 알바 → 바쁘게 움직이기
-      const pose: Pose =
-        w.outcome === 'GREAT' ? 'cheer' : w.actionType === 'EDUCATION' || w.actionType === 'REST' ? (w.targetInstanceId && w.actionType === 'REST' ? 'sleep' : 'read') : 'work';
+      const pose = poseFor(w);
       steps.push({
         kind: 'call',
         fn: () => {
@@ -178,7 +196,7 @@ export function IsometricRoomCanvas({
         steps.push({ kind: 'fade', to: 0, ms: 350 });
         steps.push({ kind: 'wait', ms: 600, pose: 'idle', onStart: () => setBubble(null) });
         steps.push({ kind: 'fade', to: 1, ms: 350 });
-        steps.push({ kind: 'wait', ms: 1300, pose: w.outcome === 'GREAT' ? 'cheer' : w.actionType === 'RUNAWAY' ? 'idle' : 'work', onStart: () => {
+        steps.push({ kind: 'wait', ms: 1300, pose: w.outcome === 'GREAT' ? 'cheer' : w.outcome === 'FAIL' ? 'tired' : w.actionType === 'PART_TIME' ? 'work' : 'idle', onStart: () => {
           haloRef.current = HALO[w.outcome];
           spawnPopups(w.popups.length ? w.popups : [`${w.goldDelta > 0 ? '+' : ''}${w.goldDelta}G`]);
         } });
@@ -203,7 +221,7 @@ export function IsometricRoomCanvas({
             sim.actor.drawAt = { gx: cx, gy: cy, lift: (FURNITURE_BODY[bed.furnitureId]?.h ?? 6) + 2 };
           }
           haloRef.current = HALO[w.outcome];
-          setBubble(w.outcome === 'GREAT' ? '✨' : ACT_BUBBLE[w.actionType]);
+          setBubble(w.outcome === 'GREAT' ? '✨' : POSE_BUBBLE[pose] ?? ACT_BUBBLE[w.actionType]);
           spawnPopups(w.popups);
         } });
       }
@@ -242,6 +260,7 @@ export function IsometricRoomCanvas({
     placingCells,
     actor: { actor: simRef.current.actor, gender: game.gender },
     npc: npcRef.current.actor,
+    tired: game.status.stress >= 80,
     ghost:
       hover && (placingId || movingId)
         ? (() => {
