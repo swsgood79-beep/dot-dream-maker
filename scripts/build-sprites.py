@@ -422,6 +422,35 @@ for name in list(sprites):
             for i, wf in enumerate(walk_frames(sprites[name])):
                 sprites[f'{base}_walk{i}'] = wf
 
+# 뒷모습 색감 보정: Gemini 뒷모습 시트가 앞모습보다 어둡고 빨강이 빠져 녹회색으로 칙칙함.
+# 앞뒤에 공통으로 보이는 머리카락(갈색) 평균색으로 채널별 비율을 구하고,
+# 전체 밝기 차이도 절반만큼 보정해서 뒷모습 그림 전체에 곱한다.
+def opaque_rgb(names_):
+    return np.concatenate([sprites[n][sprites[n][..., 3] > 0][:, :3].astype(float) for n in names_])
+
+
+def hair_mean(p_):
+    sel = (p_[:, 0] > p_[:, 1]) & (p_[:, 1] > p_[:, 2]) & (p_[:, 0] < 170) & (p_[:, 0] > 60)
+    return p_[sel].mean(axis=0)
+
+
+for st in STAGES:
+    for g in ('SON', 'DAUGHTER'):
+        front_names = [f'{st}_{g}_stand'] + [n for n in sprites if n.startswith(f'{st}_{g}_walk')]
+        fr = opaque_rgb(front_names)
+        # 뒤 서기 / 뒤 걷기는 출처 시트가 다를 수 있어 따로 보정
+        for group in ('back_stand', 'back_walk'):
+            back_names = [n for n in sprites if n.startswith(f'{st}_{g}_{group}')]
+            bk = opaque_rgb(back_names)
+            gain = hair_mean(fr) / hair_mean(bk)
+            lum = fr.mean() / (bk * gain).mean()
+            gain *= float(np.clip(lum, 1.0, 1.25)) ** 0.5
+            for n in back_names:
+                spr = sprites[n].astype(float)
+                spr[..., :3] = np.clip(spr[..., :3] * gain, 0, 255)
+                sprites[n] = spr.astype(np.uint8)
+            print(f'  뒷모습 색감 보정: {st}_{g}_{group} R×{gain[0]:.2f} G×{gain[1]:.2f} B×{gain[2]:.2f}')
+
 # 걷기 그림 방향 통일: Gemini가 같은 걷기 동작 안에서도 일부 장을 반대 방향으로 그리는 경우가 있음
 # (예: 딸 유년기 뒷모습 아랫줄 4장, 딸 청년 뒷모습 3번째 장) → 걷는 도중 고개가 휙 돌아가 보임.
 # 첫 장을 기준으로, 각 장의 머리 부분이 '그대로'보다 '좌우 반전'이 더 닮았으면 반전한다.
