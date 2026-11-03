@@ -465,6 +465,39 @@ for st in STAGES:
                 sprites[n] = spr.astype(np.uint8)
             print(f'  뒷모습 색감 보정: {st}_{g}_{group} R×{gain[0]:.2f} G×{gain[1]:.2f} B×{gain[2]:.2f}')
 
+# 직업 의상 시트 (청년, 3행 × 6열): Gemini가 직업마다 비슷한 그림 2장이나 관계없는 그림을 섞어 그려서
+# 직업마다 가장 잘 맞는 칸(행, 열)을 골라 둠 → JOB_END_xx_{SON|DAUGHTER}
+# 붙어 있는 그림이 있어 덩어리 대신 칸 단위로 자른다. 크기는 시트별로 청년 서기 키에 맞춤.
+JOB_SHEETS = {
+    'SON': [
+        ('assets-src/job-son-1.png', {'01': (0, 0), '02': (0, 1), '03': (0, 2), '04': (1, 0), '05': (1, 1), '06': (1, 2), '07': (1, 5), '08': (2, 1), '09': (2, 5)}),
+        ('assets-src/job-son-2.png', {'10': (0, 0), '11': (0, 1), '12': (0, 2), '13': (1, 0), '14': (1, 2), '15': (1, 4), '16': (2, 0), '17': (2, 2), '18': (2, 5)}),
+        ('assets-src/job-son-3.png', {'19': (0, 0), '20': (0, 1), '21': (0, 2), '22': (1, 0), '23': (1, 1), '24': (1, 2), '25': (2, 0), '26': (2, 1), '27': (2, 5)}),
+        ('assets-src/job-son-4.png', {'28': (0, 0), '29': (0, 1), '30': (0, 4), '31': (1, 1), '32': (1, 2), '33': (1, 3), '34': (2, 0), '35': (2, 2), '36': (2, 5)}),
+        ('assets-src/job-son-5.png', {'37': (0, 0), '38': (0, 1), '39': (0, 2), '40': (1, 0), '41': (1, 2), '42': (1, 4), '43': (2, 0), '44': (2, 1), '45': (2, 3)}),
+    ],
+}
+
+
+def cell_box(img_, r, c, rows=3, cols=6):
+    h_, w_ = img_.shape[:2]
+    y0, y1 = int(r * h_ / rows), int((r + 1) * h_ / rows)
+    x0, x1 = int(c * w_ / cols), int((c + 1) * w_ / cols)
+    m = (765 - img_[y0:y1, x0:x1].sum(axis=2)) > 60
+    ys_, xs_ = np.where(m)
+    return (x0 + xs_.min(), y0 + ys_.min(), x0 + xs_.max() + 1, y0 + ys_.max() + 1)
+
+
+for g, sheets_ in JOB_SHEETS.items():
+    target_h = sprites[f'YOUTH_{g}_stand'].shape[0]
+    for path, picks in sheets_:
+        img_j = np.asarray(Image.open(path).convert('RGB')).astype(np.int32)
+        boxes_j = {num: cell_box(img_j, r, c) for num, (r, c) in picks.items()}
+        # 시트 기준 축소 비율: 고른 그림들 키의 중앙값 = 청년 서기 키
+        blk = float(np.median([b[3] - b[1] for b in boxes_j.values()])) / target_h
+        for num, b in boxes_j.items():
+            sprites[f'JOB_END_{num}_{g}'] = defringe(cut(img_j, b, blk))
+
 # 부모님 캐릭터는 게임에서 사용하지 않음 (v0.5.17) → 아틀라스에서 제외
 for n in [n for n in sprites if n.startswith('PARENT')]:
     del sprites[n]

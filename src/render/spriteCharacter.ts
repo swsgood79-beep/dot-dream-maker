@@ -39,6 +39,11 @@ export function onSheetReady(fn: () => void): () => void {
   };
 }
 
+/** 아틀라스에 그 프레임이 있는지 */
+export function hasFrame(name: string): boolean {
+  return !!FRAMES[name];
+}
+
 export function frameName(stage: GrowthStage, gender: Gender, kind: string): string {
   const name = `${stage}_${gender}_${kind}`;
   return FRAMES[name] ? name : `${stage}_${gender}_stand`; // 프레임이 없으면 서기로 대체

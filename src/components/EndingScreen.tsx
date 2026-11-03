@@ -4,7 +4,7 @@ import { CATEGORY_LABEL, ENDINGS } from '../data/endingData';
 import { CATEGORY_COLOR, ENDING_SCENE } from '../data/endingScenes';
 import { growthStage } from '../engine/room';
 import { STAT_KEYS, type GrowthSnapshot } from '../engine/simulation';
-import { frameName } from '../render/spriteCharacter';
+import { frameName, hasFrame } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
 import type { CharacterStats, StatKey } from '../types/game';
 import { Sprite } from './Sprite';
@@ -63,6 +63,7 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
 
   if (!ending || !game) return null;
   const scene = ENDING_SCENE[ending.id] ?? ENDING_SCENE.END_50;
+  const jobFrame = `JOB_${ending.id}_${game.gender}`;
 
   return (
     <div className="relative flex h-full flex-col items-center justify-center gap-3 overflow-hidden bg-gradient-to-b from-[#1b1f3b] to-[#4a3b6b] p-4 text-center text-white">
@@ -161,8 +162,15 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
                 </span>
               ))}
               <div className="relative mb-2 flex items-end">
-                <Sprite name={frameName('YOUTH', game.gender, ending.tier === 'C' ? 'stand' : 'cheer')} scale={1.7} />
-                <span className="-ml-2 mb-6 text-4xl drop-shadow-[2px_2px_0_rgba(0,0,0,.35)]">{scene.prop}</span>
+                {hasFrame(jobFrame) ? (
+                  // 직업 의상 그림이 있으면 그 그림 (소품은 그림에 포함)
+                  <Sprite name={jobFrame} scale={1.9} />
+                ) : (
+                  <>
+                    <Sprite name={frameName('YOUTH', game.gender, ending.tier === 'C' ? 'stand' : 'cheer')} scale={1.7} />
+                    <span className="-ml-2 mb-6 text-4xl drop-shadow-[2px_2px_0_rgba(0,0,0,.35)]">{scene.prop}</span>
+                  </>
+                )}
               </div>
               <span
                 className={`stamp absolute top-3 right-3 rounded border-3 border-ink px-2 py-0.5 text-xl font-bold text-ink ${TIER_COLOR[ending.tier]}`}
