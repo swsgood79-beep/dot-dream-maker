@@ -1,3 +1,4 @@
+import { eventScene } from '../render/eventScenes';
 import { useEffect, useMemo, useState } from 'react';
 import { sfx } from '../audio/sfx';
 import { CUTSCENE_MAP, type CutLine } from '../data/cutsceneData';
@@ -50,6 +51,7 @@ export function CutsceneModal({ id }: { id: string }) {
       ? frameName(morphed ? line.to : line.from, game.gender, 'stand')
       : frameName(stage, game.gender, line.kind === 'child' ? (line.pose ?? 'stand') : 'stand');
   const last = i >= lines.length - 1;
+  const img = eventScene(id, game.gender);
 
   const next = () => {
     if (typed < text.length) {
@@ -73,6 +75,11 @@ export function CutsceneModal({ id }: { id: string }) {
       <h2 className="pop-in text-center text-2xl font-bold text-ink drop-shadow-[2px_2px_0_#fff]">
         {scene.emoji} {scene.title}
       </h2>
+      {img && line.kind !== 'transform' ? (
+        <div className="flex flex-1 items-center justify-center px-3">
+          <img src={img} alt="" className="pop-in aspect-video w-full rounded border-4 border-ink object-cover shadow-[4px_4px_0_rgba(0,0,0,.3)]" />
+        </div>
+      ) : (
       <div className="relative flex flex-1 items-end justify-center pb-4">
         <span className="absolute top-6 left-1/2 -translate-x-1/2 text-[110px] leading-none opacity-30">{scene.emoji}</span>
         {line.kind === 'transform' && morphed && <div className="absolute inset-0 animate-ping bg-white/60" style={{ animationIterationCount: 1 }} />}
@@ -80,6 +87,7 @@ export function CutsceneModal({ id }: { id: string }) {
           <Sprite name={spriteName} scale={2.2} />
         </div>
       </div>
+      )}
       <div className="m-3 min-h-28 rounded-lg border-3 border-ink bg-[#fffaf0] p-3 text-sm text-ink shadow-[4px_4px_0_rgba(0,0,0,.25)]">
         {line.kind === 'child' && <p className="mb-1 text-xs font-bold text-accent">{game.childName}</p>}
         <p className={line.kind === 'child' ? '' : 'italic opacity-80'}>

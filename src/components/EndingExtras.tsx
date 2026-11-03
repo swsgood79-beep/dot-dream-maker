@@ -1,3 +1,4 @@
+import { photoScene } from '../render/eventScenes';
 import { useEffect, useState } from 'react';
 import { sfx } from '../audio/sfx';
 import type { EndingDefinition } from '../types/game';
@@ -38,10 +39,14 @@ export function DiaryRecap({ game, onDone }: { game: SaveState; onDone: () => vo
           </span>
           <span>{p ? `${p.month}월` : ''}</span>
         </p>
-        <div className="room-bg mb-2 flex h-28 items-end justify-center border-2 border-ink">
-          {p && <span className="mr-1 mb-8 text-3xl">{p.emoji}</span>}
-          <Sprite name={frameName(st, game.gender, p?.pose ?? 'stand')} scale={1.2} />
-        </div>
+        {p && photoScene(p.title, game.gender) ? (
+          <img src={photoScene(p.title, game.gender)} alt="" className="mb-2 aspect-video w-full border-2 border-ink object-cover" />
+        ) : (
+          <div className="room-bg mb-2 flex h-28 items-end justify-center border-2 border-ink">
+            {p && <span className="mr-1 mb-8 text-3xl">{p.emoji}</span>}
+            <Sprite name={frameName(st, game.gender, p?.pose ?? 'stand')} scale={1.2} />
+          </div>
+        )}
         <p className={`font-bold ${style.ink} ${style.font}`}>
           {p ? (
             <>

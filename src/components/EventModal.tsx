@@ -1,3 +1,4 @@
+import { eventScene } from '../render/eventScenes';
 import { useState } from 'react';
 import { sfx } from '../audio/sfx';
 import { EVENT_MAP, STYLE_META, eventText, fillName } from '../data/parentingData';
@@ -18,6 +19,7 @@ export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => 
   const ev = EVENT_MAP[id];
   // 손님(첫째)은 선택 뒤에도 계속 보이도록 처음 모습을 기억
   const [visitor] = useState(() => ev?.visitor?.(game) ?? null);
+  const sceneImg = eventScene(id, game.gender);
   if (!ev) return null;
   const stage = growthStage(game.age);
   const moodPose = game.status.stress >= 60 ? 'tired' : 'stand';
@@ -31,10 +33,15 @@ export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => 
         <p className="mb-2 text-center text-lg font-bold">
           {ev.emoji} {ev.title}
         </p>
-        <div className="room-bg mb-2 flex h-28 items-end justify-center gap-2 border-3 border-ink">
-          {visitor && hasFrame(visitor) && <Sprite name={visitor} scale={1.1} />}
-          <Sprite name={frameName(stage, game.gender, result ? (result.out.delta.affection ?? 0) >= 0 ? 'cheer' : 'stand' : moodPose)} scale={1.3} />
-        </div>
+        {sceneImg ? (
+          // 장면 일러스트가 있으면 그림으로 (아이가 그림 속에 있음)
+          <img src={sceneImg} alt="" className="pop-in mb-2 aspect-video w-full border-3 border-ink object-cover" />
+        ) : (
+          <div className="room-bg mb-2 flex h-28 items-end justify-center gap-2 border-3 border-ink">
+            {visitor && hasFrame(visitor) && <Sprite name={visitor} scale={1.1} />}
+            <Sprite name={frameName(stage, game.gender, result ? (result.out.delta.affection ?? 0) >= 0 ? 'cheer' : 'stand' : moodPose)} scale={1.3} />
+          </div>
+        )}
 
         {!result ? (
           <>
