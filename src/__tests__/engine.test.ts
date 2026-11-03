@@ -204,3 +204,27 @@ describe('v0.5 events & ending', () => {
     expect(s.history?.map((h) => h.age)).toEqual([8, 9, 10]);
   });
 });
+
+describe('back view', () => {
+  it('has back stand + 4 back walk frames for every child stage', () => {
+    const names = Object.keys(atlas);
+    for (const st of ['CHILD', 'TEEN', 'YOUTH'])
+      for (const g of ['SON', 'DAUGHTER']) {
+        expect(names).toContain(`${st}_${g}_back_stand`);
+        for (let i = 0; i < 4; i++) expect(names).toContain(`${st}_${g}_back_walk${i}`);
+      }
+  });
+  it('walking toward the back wall switches to back view', () => {
+    const sim = new CharacterSim();
+    sim.actor.gx = 4.5;
+    sim.actor.gy = 4.5;
+    sim.runScript([{ kind: 'goto', resolve: () => ({ x: 0, y: 0 }) }]);
+    sim.update(50, { n: 6, placed: [] });
+    sim.update(50, { n: 6, placed: [] });
+    expect(sim.actor.back).toBe(true);
+    sim.runScript([{ kind: 'goto', resolve: () => ({ x: 5, y: 5 }) }]);
+    sim.update(50, { n: 6, placed: [] });
+    sim.update(50, { n: 6, placed: [] });
+    expect(sim.actor.back).toBe(false);
+  });
+});

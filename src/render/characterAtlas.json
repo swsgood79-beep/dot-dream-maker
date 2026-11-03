@@ -263,26 +263,206 @@
   "w": 33,
   "h": 79
  },
- "PARENT_walk0": {
+ "CHILD_SON_back_stand": {
   "x": 1742,
+  "y": 0,
+  "w": 30,
+  "h": 61
+ },
+ "CHILD_SON_back_walk0": {
+  "x": 1773,
+  "y": 0,
+  "w": 32,
+  "h": 61
+ },
+ "CHILD_SON_back_walk1": {
+  "x": 1806,
+  "y": 0,
+  "w": 31,
+  "h": 63
+ },
+ "CHILD_SON_back_walk2": {
+  "x": 1838,
+  "y": 0,
+  "w": 29,
+  "h": 63
+ },
+ "CHILD_SON_back_walk3": {
+  "x": 1868,
+  "y": 0,
+  "w": 30,
+  "h": 63
+ },
+ "TEEN_SON_back_stand": {
+  "x": 1899,
+  "y": 0,
+  "w": 34,
+  "h": 72
+ },
+ "TEEN_SON_back_walk0": {
+  "x": 1934,
+  "y": 0,
+  "w": 33,
+  "h": 75
+ },
+ "TEEN_SON_back_walk1": {
+  "x": 1968,
+  "y": 0,
+  "w": 32,
+  "h": 75
+ },
+ "TEEN_SON_back_walk2": {
+  "x": 2001,
+  "y": 0,
+  "w": 32,
+  "h": 73
+ },
+ "TEEN_SON_back_walk3": {
+  "x": 2034,
+  "y": 0,
+  "w": 31,
+  "h": 74
+ },
+ "YOUTH_SON_back_stand": {
+  "x": 2066,
+  "y": 0,
+  "w": 37,
+  "h": 81
+ },
+ "YOUTH_SON_back_walk0": {
+  "x": 2104,
+  "y": 0,
+  "w": 35,
+  "h": 80
+ },
+ "YOUTH_SON_back_walk1": {
+  "x": 2140,
+  "y": 0,
+  "w": 33,
+  "h": 79
+ },
+ "YOUTH_SON_back_walk2": {
+  "x": 2174,
+  "y": 0,
+  "w": 34,
+  "h": 77
+ },
+ "YOUTH_SON_back_walk3": {
+  "x": 2209,
+  "y": 0,
+  "w": 33,
+  "h": 77
+ },
+ "CHILD_DAUGHTER_back_stand": {
+  "x": 2243,
+  "y": 0,
+  "w": 32,
+  "h": 62
+ },
+ "CHILD_DAUGHTER_back_walk0": {
+  "x": 2276,
+  "y": 0,
+  "w": 35,
+  "h": 60
+ },
+ "CHILD_DAUGHTER_back_walk1": {
+  "x": 2312,
+  "y": 0,
+  "w": 31,
+  "h": 66
+ },
+ "CHILD_DAUGHTER_back_walk2": {
+  "x": 2344,
+  "y": 0,
+  "w": 33,
+  "h": 58
+ },
+ "CHILD_DAUGHTER_back_walk3": {
+  "x": 2378,
+  "y": 0,
+  "w": 31,
+  "h": 64
+ },
+ "TEEN_DAUGHTER_back_stand": {
+  "x": 2410,
+  "y": 0,
+  "w": 33,
+  "h": 71
+ },
+ "TEEN_DAUGHTER_back_walk0": {
+  "x": 2444,
+  "y": 0,
+  "w": 36,
+  "h": 69
+ },
+ "TEEN_DAUGHTER_back_walk1": {
+  "x": 2481,
+  "y": 0,
+  "w": 32,
+  "h": 72
+ },
+ "TEEN_DAUGHTER_back_walk2": {
+  "x": 2514,
+  "y": 0,
+  "w": 34,
+  "h": 67
+ },
+ "TEEN_DAUGHTER_back_walk3": {
+  "x": 2549,
+  "y": 0,
+  "w": 32,
+  "h": 70
+ },
+ "YOUTH_DAUGHTER_back_stand": {
+  "x": 2582,
+  "y": 0,
+  "w": 32,
+  "h": 78
+ },
+ "YOUTH_DAUGHTER_back_walk0": {
+  "x": 2615,
+  "y": 0,
+  "w": 35,
+  "h": 72
+ },
+ "YOUTH_DAUGHTER_back_walk1": {
+  "x": 2651,
+  "y": 0,
+  "w": 33,
+  "h": 74
+ },
+ "YOUTH_DAUGHTER_back_walk2": {
+  "x": 2685,
+  "y": 0,
+  "w": 34,
+  "h": 70
+ },
+ "YOUTH_DAUGHTER_back_walk3": {
+  "x": 2720,
+  "y": 0,
+  "w": 33,
+  "h": 73
+ },
+ "PARENT_walk0": {
+  "x": 2754,
   "y": 0,
   "w": 34,
   "h": 80
  },
  "PARENT_walk1": {
-  "x": 1777,
+  "x": 2789,
   "y": 0,
   "w": 34,
   "h": 80
  },
  "PARENT_walk2": {
-  "x": 1812,
+  "x": 2824,
   "y": 0,
   "w": 34,
   "h": 80
  },
  "PARENT_walk3": {
-  "x": 1847,
+  "x": 2859,
   "y": 0,
   "w": 34,
   "h": 80

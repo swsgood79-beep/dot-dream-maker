@@ -58,6 +58,7 @@ export interface CharacterDrawOpts {
   pose: Pose;
   time: number; // ms
   alpha?: number;
+  back?: boolean; // 뒷모습 (방 안쪽으로 걸을 때)
 }
 
 /** (fx, fy) = 발 중앙 화면 좌표 */

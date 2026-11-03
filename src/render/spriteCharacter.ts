@@ -88,8 +88,8 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, fx: number, fy: num
   const t = o.time;
   switch (o.pose) {
     case 'walk': {
-      // 걷기 4프레임 사이클 (왼발 → 교차 → 오른발 → 교차)
-      const walk = walkFrame(`${o.stage}_${o.gender}`, t);
+      // 걷기 4프레임 사이클 (왼발 → 교차 → 오른발 → 교차). 방 안쪽으로 걸으면 뒷모습 사이클
+      const walk = (o.back && walkFrame(`${o.stage}_${o.gender}_back`, t)) || walkFrame(`${o.stage}_${o.gender}`, t);
       if (walk && drawFrame(ctx, walk, fx, fy, o.facing === 'L', o.alpha ?? 1)) return;
       break;
     }
@@ -106,7 +106,8 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, fx: number, fy: num
       dy = Math.floor(t / 110) % 2 ? -1.5 : 0;
       break;
   }
-  const name = frameName(o.stage, o.gender, kind);
+  const backStand = `${o.stage}_${o.gender}_back_stand`;
+  const name = o.pose === 'idle' && o.back && FRAMES[backStand] ? backStand : frameName(o.stage, o.gender, kind);
   // 시트 캐릭터는 오른쪽을 보고 있으므로 왼쪽으로 갈 때 좌우 반전
   const ok = drawFrame(ctx, name, fx, fy + dy, o.facing === 'L', o.alpha ?? 1);
   if (!ok) drawCharacterProcedural(ctx, fx, fy, o);

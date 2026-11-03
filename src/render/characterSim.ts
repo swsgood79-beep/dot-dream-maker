@@ -7,6 +7,8 @@ export interface Actor {
   gx: number; // 그리드 좌표 (셀 중심 = 정수 + 0.5)
   gy: number;
   facing: Facing;
+  /** 화면 위쪽(방 안쪽)으로 걸어가는 중이면 뒷모습 */
+  back?: boolean;
   pose: Pose;
   alpha: number;
   /** 가구 위에 올라가 그릴 때 (예: 침대에서 잠자기) */
@@ -160,6 +162,9 @@ export class CharacterSim {
       const sdx = dx - dy; // 화면 x 방향
       if (sdx > 0.01) a.facing = 'R';
       else if (sdx < -0.01) a.facing = 'L';
+      const sdy = dx + dy; // 화면 y 방향 (음수 = 위쪽 = 방 안쪽)
+      if (sdy < -0.01) a.back = true;
+      else if (sdy > 0.01) a.back = false;
       a.pose = 'walk';
       if (dist <= stepLen) {
         a.gx = tx;
@@ -210,6 +215,7 @@ export class CharacterSim {
       }
       if (s.kind === 'wait') {
         a.pose = s.pose;
+        if (s.pose !== 'idle') a.back = false;
         s.onStart?.();
       }
     }

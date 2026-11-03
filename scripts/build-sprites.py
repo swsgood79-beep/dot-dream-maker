@@ -8,7 +8,8 @@ assets-src/character-sheet.png (흰 배경 캐릭터 시트) →
 2) 테두리에서 이어지는 흰색만 배경으로 지움 (흰 티셔츠는 유지)
 3) 업스케일된 도트(약 5.67px = 1도트)를 원래 해상도로 축소
 4) 아들/딸은 assets-src/{son,daughter}-walk-sheet.png 의 손그림 걷기 3장(A·B·C → A,B,C,B 사이클) 사용
-5) 손그림 걷기가 없는 캐릭터는 '서기' 프레임에서 생성: 다리를 좌우로 나눠 번갈아 들고,
+5) 뒷모습(방 안쪽으로 걸어갈 때)은 assets-src/{son,daughter}-back-sheet.png
+6) 손그림 걷기가 없는 캐릭터는 '서기' 프레임에서 생성: 다리를 좌우로 나눠 번갈아 들고,
    팔을 반대로 흔들고, 발 디딤 순간 몸이 1px 내려앉는 4프레임 사이클 → {이름}_walk0~3
 """
 import json
@@ -256,6 +257,29 @@ for g, path in WALK_SHEETS.items():
         a, b, c = (sh[f'{st}_{g}_walk{x}'] for x in 'ABC')
         for i, f in enumerate((a, b, c, b)):  # 4프레임 사이클: 왼발 → 교차 → 오른발 → 교차
             sprites[f'{st}_{g}_walk{i}'] = f
+
+# 아들/딸 뒷모습 시트: 단계별 [뒤 서기, 걷기1, 걷기2, (정면 뒤 걷기, 미사용), 걷기3, 걷기4]
+# 몸이 오른쪽 위를 향한 4장을 back_walk0~3 사이클로 사용. 키는 앞모습 서기 키에 맞춘다.
+BACK_SHEETS = {
+    'SON': 'assets-src/son-back-sheet.png',
+    'DAUGHTER': 'assets-src/daughter-back-sheet.png',
+}
+BACK_COLS = ['back_stand', 'back_walk0', 'back_walk1', None, 'back_walk2', 'back_walk3']
+for g, path in BACK_SHEETS.items():
+    names_g = [f'{st}_{g}_{k or f"unused{i}"}' for st in STAGES for i, k in enumerate(BACK_COLS)]
+    img_b = np.asarray(Image.open(path).convert('RGB')).astype(np.int32)
+    Hb = img_b.shape[0]
+    bboxes = components((765 - img_b.sum(axis=2)) > 60)
+    assert len(bboxes) == len(names_g), f'{path}: expected {len(names_g)}, found {len(bboxes)}'
+    bboxes.sort(key=lambda b: (int(((b[1] + b[3]) / 2) // (Hb / 3)), b[0]))
+    named = dict(zip(names_g, bboxes))
+    for st in STAGES:
+        stand_box = named[f'{st}_{g}_back_stand']
+        target_h = sprites[f'{st}_{g}_stand'].shape[0]
+        blk = (stand_box[3] - stand_box[1]) / target_h  # 뒤 서기 키 = 앞 서기 키
+        for k in BACK_COLS:
+            if k:
+                sprites[f'{st}_{g}_{k}'] = cut(img_b, named[f'{st}_{g}_{k}'], blk)
 
 # 손그림 걷기가 없는 캐릭터(딸, 부모님)는 서기 프레임에서 생성
 for name in list(sprites):
