@@ -9,6 +9,7 @@ import { STYLE_META, type ParentStyle } from '../../data/parentingData';
 import { dominantStyle } from '../../engine/parenting';
 import { CLUES_TO_REVEAL, TEMPERAMENT_MAP } from '../../data/temperamentData';
 import { PhotoAlbum } from '../PhotoAlbum';
+import { ABILITIES, ABILITY_META, describeParent } from '../../data/parentData';
 import { useState } from 'react';
 
 const STAGE_LABEL = { CHILD: '유년기', TEEN: '청소년기', YOUTH: '청년 준비기' };
@@ -107,6 +108,14 @@ export function InfoPanel() {
         const p = game.parenting ?? { WARM: 0, STRICT: 0, FREE: 0 };
         return (
           <div className="mb-3 rounded border-2 border-ink bg-white p-2">
+            {game.parent && (
+              <p className="mb-1 border-b border-dashed border-ink/30 pb-1">
+                🏠 우리 집: <b>{describeParent(game.parent).emoji} {describeParent(game.parent).label}</b>{' '}
+                <span className="text-[10px] opacity-70">
+                  {ABILITIES.map((k) => `${ABILITY_META[k].emoji}${game.parent!.points[k]}`).join(' ')}
+                </span>
+              </p>
+            )}
             <p className="mb-1">
               {dom ? (
                 <>

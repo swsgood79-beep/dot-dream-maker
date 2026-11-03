@@ -519,3 +519,35 @@ describe('contest minigames', () => {
     expect(r.contest?.id).toBe('EXAM');
   });
 });
+
+import { PARENT_JOBS, PARENT_TOTAL, ABILITIES, randomParent, PARENT_JOB_MAP } from '../data/parentData';
+
+describe('parent profile', () => {
+  it('every job preset uses exactly the total points', () => {
+    for (const j of PARENT_JOBS) expect(ABILITIES.reduce((a, k) => a + j.points[k], 0)).toBe(PARENT_TOTAL);
+    for (let i = 0; i < 30; i++) {
+      const r = randomParent();
+      expect(ABILITIES.reduce((a, k) => a + r.points[k], 0)).toBe(PARENT_TOTAL);
+      expect(Math.max(...ABILITIES.map((k) => r.points[k]))).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('wealthy parents give more gold, scholars a smarter start', () => {
+    const doc = newGame_('하나', 'SON', 'INT', [], 0, undefined, false, { job: 'DOCTOR', points: { ...PARENT_JOB_MAP.DOCTOR.points } });
+    const art = newGame_('하나', 'SON', 'INT', [], 0, undefined, false, { job: 'ARTIST', points: { ...PARENT_JOB_MAP.ARTIST.points } });
+    expect(doc.gold).toBeGreaterThan(art.gold);
+    expect(doc.stats.INT).toBeGreaterThan(art.stats.INT);
+    expect(art.stats.ART).toBeGreaterThan(doc.stats.ART);
+    const d2 = runMonth_(doc, () => 0.5).state;
+    const a2 = runMonth_(art, () => 0.5).state;
+    expect(d2.gold - doc.gold).toBeGreaterThan(a2.gold - art.gold);
+  });
+
+  it('parent job situations only appear for that job', () => {
+    const s = newGame_('하나', 'SON', 'INT', [], 0, undefined, false, { job: 'CHEF', points: { ...PARENT_JOB_MAP.CHEF.points } });
+    s.age = 10;
+    const ids = eligibleEvents(s).map((e) => e.id);
+    expect(ids).toContain('P_CHEF');
+    expect(ids).not.toContain('P_DOCTOR');
+  });
+});

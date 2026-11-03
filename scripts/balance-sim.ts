@@ -10,6 +10,15 @@ import { ENDINGS, ENDING_MAP, meetsEnding } from '../src/data/endingData';
 import { FURNITURE } from '../src/data/furnitureData';
 import { canPlace, footprint } from '../src/engine/room';
 import { resolveParentingEvent } from '../src/engine/parenting';
+import { PARENT_JOB_MAP, randomParent, type ParentJobId, type ParentProfile } from '../src/data/parentData';
+
+/** PARENT=DOCTOR 등 직업 ID, 'random', 없으면 부모 영향 없음 */
+function parentFor(rng: () => number): ParentProfile | undefined {
+  const p = process.env.PARENT;
+  if (!p) return undefined;
+  if (p === 'random') return randomParent(rng);
+  return { job: p as ParentJobId, points: { ...PARENT_JOB_MAP[p as ParentJobId].points } };
+}
 import {
   APT_KEYS,
   STAT_KEYS,
@@ -195,7 +204,7 @@ function targetedRun(def: EndingDefinition, seed: number) {
   const rng = mulberry(seed);
   const p = makePlan(def);
   const bonus = (Object.entries(def.minStats).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0]?.[0] ?? 'INT') as StatKey;
-  let s = createNewGame('봇', 'DAUGHTER', bonus);
+  let s = createNewGame('봇', 'DAUGHTER', bonus, [], 0, undefined, false, parentFor(rng));
   let ending: EndingDefinition | undefined;
   let bursts = 0;
   while (!ending) {
@@ -234,7 +243,7 @@ function buyCollect(s: SaveState, fid: string, reserve: number) {
 /* ───────── 캐주얼 봇 ───────── */
 function casualRun(seed: number) {
   const rng = mulberry(seed);
-  let s = createNewGame('봇', rng() < 0.5 ? 'SON' : 'DAUGHTER', STAT_KEYS[Math.floor(rng() * 6)]);
+  let s = createNewGame('봇', rng() < 0.5 ? 'SON' : 'DAUGHTER', STAT_KEYS[Math.floor(rng() * 6)], [], 0, undefined, false, parentFor(rng));
   let ending: EndingDefinition | undefined;
   // 선호 분야 2개를 정해 두고 그쪽 학원을 자주 고름
   const fav = SCHEDULE_ACTIONS.filter((a) => a.type === 'EDUCATION').sort(() => rng() - 0.5).slice(0, 2).map((a) => a.id);

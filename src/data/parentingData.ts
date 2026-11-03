@@ -388,6 +388,88 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
     ],
   },
 
+  // ───────── 부모 직업 (우리 집만의 상황)
+  {
+    id: 'P_DOCTOR', emoji: '🩺', title: '엄마 아빠의 병원', minAge: 9, maxAge: 13, weight: 2,
+    cond: (s) => s.parent?.job === 'DOCTOR',
+    text: '"엄마 아빠 일하는 병원에 따라가 보고 싶어! 청진기 진짜로 해 봐도 돼?"',
+    choices: [
+      { label: '쉬는 날 병원 견학을 시켜 준다', style: 'WARM', fx: { INT: 8, MOR: 6, affection: 5 }, reply: '심장 소리 들었어! 쿵쿵 진짜 빨라!' },
+      { label: '병원은 위험하다며 의학책을 건넨다', style: 'STRICT', fx: { INT: 10, affection: -3 }, reply: '...그림이 좀 무섭긴 한데 재밌다.' },
+      { label: '장난감 청진기로 병원 놀이를 한다', style: 'FREE', fx: { CHA: 5, stress: -6, affection: 4 }, reply: '환자분~ 어디가 아프세요? 사탕 처방이에요!' },
+    ],
+  },
+  {
+    id: 'P_PROFESSOR', emoji: '🎓', title: '연구실 구경', minAge: 10, maxAge: 15, weight: 2,
+    cond: (s) => s.parent?.job === 'PROFESSOR',
+    text: '"엄마 아빠 대학교 연구실에 가 보고 싶어. 대학생 언니 오빠들은 뭐 해?"',
+    choices: [
+      { label: '강의를 맨 뒷자리에서 듣게 해 준다', style: 'WARM', fx: { INT: 10, CHA: 3, affection: 5 }, reply: '하나도 못 알아들었는데... 멋있었어!' },
+      { label: '대학은 공부를 열심히 해야 갈 수 있다고 한다', style: 'STRICT', fx: { INT: 8, MOR: 3, stress: 5 }, reply: '...그럼 오늘부터 열심히 해 볼게.' },
+      { label: '캠퍼스 잔디밭에서 같이 도시락을 먹는다', style: 'FREE', fx: { stress: -8, affection: 6 }, reply: '대학교는 공원 같다! 나중에 꼭 다닐래.' },
+    ],
+  },
+  {
+    id: 'P_ARTIST', emoji: '🎨', title: '"그림으론 돈 못 번대"', minAge: 8, maxAge: 12, weight: 2,
+    cond: (s) => s.parent?.job === 'ARTIST',
+    text: '{name이} 시무룩해요. "친구가 그러는데... 엄마 아빠처럼 그림 그리면 돈 못 번대."',
+    choices: [
+      { label: '좋아하는 일을 하는 행복을 이야기해 준다', style: 'WARM', fx: { ART: 6, affection: 8, stress: -5 }, reply: '...그럼 우리 집은 행복 부자네!' },
+      { label: '현실도 중요하다고 솔직하게 말한다', style: 'STRICT', fx: { INT: 6, MOR: 5, affection: -2 }, reply: '그래서 엄마 아빠가 밤늦게까지 일하는 거구나.' },
+      { label: '작업실에서 같이 그림을 그린다', style: 'FREE', fx: { ART: 12, stress: -4 }, reply: '내 그림이 엄마 아빠 그림 옆에 걸렸어!' },
+    ],
+  },
+  {
+    id: 'P_COACH', emoji: '🏃', title: '새벽 6시 조깅', minAge: 8, maxAge: 12, weight: 2,
+    cond: (s) => s.parent?.job === 'COACH',
+    text: '주말 아침 6시. 운동화를 신고 {name}의 방문을 열었어요. "조깅 가자!" "...으으응..."',
+    choices: [
+      { label: '천천히 걸으면서 이야기만 하자고 한다', style: 'WARM', fx: { STR: 6, affection: 6, stress: -4 }, reply: '해 뜨는 거 처음 봤어. 예쁘다...' },
+      { label: '이불을 걷고 끌고 나간다', style: 'STRICT', fx: { STR: 12, MOR: 3, stress: 8, affection: -4 }, reply: '(헉헉) ...다음 주에도 가는 거야...?' },
+      { label: '오늘은 푹 자게 둔다', style: 'FREE', fx: { stress: -10, affection: 3 }, reply: '(쿨쿨) ...음냐... 다음 주에 갈게...' },
+    ],
+  },
+  {
+    id: 'P_CHEF', emoji: '🍳', title: '나도 요리할래!', minAge: 9, maxAge: 14, weight: 2,
+    cond: (s) => s.parent?.job === 'CHEF',
+    text: '"나도 엄마 아빠처럼 요리하고 싶어! 칼 써 봐도 돼?"',
+    choices: [
+      { label: '옆에서 손을 잡고 같이 한다', style: 'WARM', fx: { TEC: 8, affection: 6 }, reply: '내가 썬 당근 들어간 카레! 세상에서 제일 맛있어!' },
+      { label: '칼질 기본기부터 연습시킨다', style: 'STRICT', fx: { TEC: 12, MOR: 3, stress: 5 }, reply: '감자 열 개 깎았어... 손목 아파...' },
+      { label: '마음대로 해 보라고 부엌을 내준다', style: 'FREE', fx: { TEC: 6, ART: 6, stress: -5 }, reply: '(부엌 엉망) ...맛은 있지? 그치?' },
+    ],
+  },
+  {
+    id: 'P_DEVELOPER', emoji: '💻', title: '엄마 아빠는 무슨 일 해?', minAge: 10, maxAge: 15, weight: 2,
+    cond: (s) => s.parent?.job === 'DEVELOPER',
+    text: '"엄마 아빠는 컴퓨터로 맨날 뭐 해? 게임 만드는 거야?"',
+    choices: [
+      { label: '간단한 코딩을 같이 해 본다', style: 'WARM', fx: { TEC: 10, INT: 4, affection: 5 }, reply: '내가 쓴 글자가 화면에서 움직여! 마법 같아!' },
+      { label: '수학을 잘해야 한다고 알려 준다', style: 'STRICT', fx: { INT: 10, stress: 5 }, reply: '수학이랑 컴퓨터가 친구였구나...' },
+      { label: '옛날 컴퓨터를 분해하게 해 준다', style: 'FREE', fx: { TEC: 12, stress: -3 }, reply: '나사가 47개 나왔어! ...다시 조립은 못 하겠어.' },
+    ],
+  },
+  {
+    id: 'P_OFFICE', emoji: '🌙', title: '왜 맨날 늦게 와?', minAge: 8, maxAge: 12, weight: 2,
+    cond: (s) => s.parent?.job === 'OFFICE',
+    text: '야근하고 밤늦게 들어오자, 아직 안 잔 {name이} 물어요. "엄마 아빠는 왜 맨날 늦게 와?"',
+    choices: [
+      { label: '미안하다며 이번 주말은 꼭 함께 보내자고 한다', style: 'WARM', fx: { affection: 8, stress: -6 }, reply: '약속! 새끼손가락 걸어!' },
+      { label: '우리 가족을 위해 일하는 거라고 설명한다', style: 'STRICT', fx: { MOR: 8, affection: -2 }, reply: '...알아. 그래도 보고 싶었어.' },
+      { label: '내일부터 점심시간에 영상 통화하자고 한다', style: 'FREE', fx: { affection: 5, CHA: 4 }, reply: '내일 12시! 알람 맞춰 놨어!' },
+    ],
+  },
+  {
+    id: 'P_SHOP', emoji: '🏪', title: '가게 일 도울래!', minAge: 8, maxAge: 13, weight: 2,
+    cond: (s) => s.parent?.job === 'SHOP',
+    text: '"나도 가게에서 손님한테 인사하고 계산해 볼래!"',
+    choices: [
+      { label: '앞치마를 입혀 같이 가게를 본다', style: 'WARM', fx: { CHA: 8, MOR: 4, affection: 5 }, reply: '단골 할머니가 사탕 주셨어!' },
+      { label: '거스름돈 계산부터 정확히 하게 한다', style: 'STRICT', fx: { INT: 8, TEC: 4, stress: 4 }, reply: '3천 원 내셨으니까... 1,200원! 맞지?' },
+      { label: '하고 싶은 만큼만 하라고 한다', style: 'FREE', fx: { CHA: 6, gold: 50, stress: -3 }, reply: '용돈 벌었다! 오늘 장사 잘됐어!' },
+    ],
+  },
+
   // ───────── 단짝 친구
   {
     id: 'F_SLEEPOVER', emoji: '🛌', title: '단짝네서 자고 올래', minAge: 9, maxAge: 12, weight: 1.5,

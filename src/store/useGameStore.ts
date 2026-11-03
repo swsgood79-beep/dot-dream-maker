@@ -6,6 +6,7 @@ import { ACTION_MAP } from '../data/scheduleData';
 import { ENDING_MAP } from '../data/endingData';
 import type { EndingDefinition, Gender, StatKey } from '../types/game';
 import { TEMPERAMENTS, type TemperamentId } from '../data/temperamentData';
+import { DEFAULT_PARENT, parentTalkBonus, type ParentProfile } from '../data/parentData';
 import { canPlace, findFreeSpot } from '../engine/room';
 import { resolveParentingEvent, type EventOutcome } from '../engine/parenting';
 import { resolveReport } from '../engine/school';
@@ -36,7 +37,7 @@ interface GameStore {
   toasts: Toast[];
 
   /** temperament: 'RANDOM'이면 랜덤으로 정하고 숨김, 직접 고르면 처음부터 공개 */
-  newGame: (name: string, gender: Gender, bonus: StatKey, temperament?: TemperamentId | 'RANDOM') => void;
+  newGame: (name: string, gender: Gender, bonus: StatKey, temperament?: TemperamentId | 'RANDOM', parent?: ParentProfile) => void;
   setScheduleSlot: (slot: number, actionId: string) => void;
   runMonth: () => void;
   dismissResult: () => void;
@@ -122,12 +123,12 @@ export const useGameStore = create<GameStore>()(
         toasts: [],
         endPlayback: () => set({ playing: false }),
 
-        newGame: (name, gender, bonus, temperament = 'RANDOM') => {
+        newGame: (name, gender, bonus, temperament = 'RANDOM', parent = DEFAULT_PARENT) => {
           const { unlockedEndings, carryIdea } = get();
           const random = temperament === 'RANDOM';
           const t = random ? TEMPERAMENTS[Math.floor(Math.random() * TEMPERAMENTS.length)].id : temperament;
           set({
-            game: createNewGame(name, gender, bonus, [...unlockedEndings], carryIdea, t, !random),
+            game: createNewGame(name, gender, bonus, [...unlockedEndings], carryIdea, t, !random, parent),
             lastResult: null,
             ending: null,
             carryIdea: 0,
@@ -218,16 +219,17 @@ export const useGameStore = create<GameStore>()(
             g.talkKind = kind;
             const st = g.status;
             g.parenting = { WARM: 0, STRICT: 0, FREE: 0, ...g.parenting };
+            const hb = parentTalkBonus(g.parent?.points); // 인품 높은 부모는 대화가 더 따뜻하다
             if (kind === 'talk') {
-              st.affection = Math.min(100, st.affection + 3);
+              st.affection = Math.min(100, st.affection + 3 + hb);
               st.stress = Math.max(0, st.stress - 3);
-              get().pushToast('💬 즐거운 대화! 친밀도 +3, 스트레스 -3');
+              get().pushToast(`💬 즐거운 대화! 친밀도 +${3 + hb}, 스트레스 -3`);
             } else if (kind === 'praise') {
-              st.affection = Math.min(100, st.affection + 4);
+              st.affection = Math.min(100, st.affection + 4 + hb);
               st.stress = Math.max(0, st.stress - 2);
               g.stats.CHA = Math.min(999, g.stats.CHA + 3);
               g.parenting.WARM += 1;
-              get().pushToast('👏 칭찬해 줬어요! 친밀도 +4, 매력 +3');
+              get().pushToast(`👏 칭찬해 줬어요! 친밀도 +${4 + hb}, 매력 +3`);
             } else {
               st.delinquency = Math.max(0, st.delinquency - 6);
               st.affection = Math.max(0, st.affection - 3);

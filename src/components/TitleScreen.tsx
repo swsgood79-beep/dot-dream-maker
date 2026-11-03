@@ -7,6 +7,8 @@ import { PixelButton, STAT_META } from './ui';
 import { Icon } from './Icon';
 import { EncyclopediaPanel } from './panels/EncyclopediaPanel';
 import { TEMPERAMENTS, type TemperamentId } from '../data/temperamentData';
+import { DEFAULT_PARENT, PARENT_TOTAL, ABILITIES, type ParentProfile } from '../data/parentData';
+import { ParentPicker } from './ParentPicker';
 
 const WISHES: { stat: StatKey; text: string }[] = [
   { stat: 'INT', text: '똑똑한 아이로' },
@@ -19,7 +21,9 @@ const WISHES: { stat: StatKey; text: string }[] = [
 
 export function TitleScreen({ onStart }: { onStart: () => void }) {
   const { game, newGame, unlockedEndings, carryIdea, playthrough } = useGameStore();
-  const [mode, setMode] = useState<'menu' | 'create' | 'book'>('menu');
+  const [mode, setMode] = useState<'menu' | 'family' | 'create' | 'book'>('menu');
+  const [parent, setParent] = useState<ParentProfile>(DEFAULT_PARENT);
+  const parentReady = ABILITIES.reduce((a, k) => a + parent.points[k], 0) === PARENT_TOTAL;
   const [name, setName] = useState('');
   const [gender, setGender] = useState<Gender>('DAUGHTER');
   const [bonus, setBonus] = useState<StatKey>('INT');
@@ -58,18 +62,32 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
               ▶ 이어하기 ({game.childName}, {game.age}세 {game.month}월)
             </PixelButton>
           )}
-          <PixelButton onClick={() => setMode('create')}>
+          <PixelButton onClick={() => setMode('family')}>
             ✦ 새로 키우기 {playthrough > 1 && `(${playthrough}회차)`}
           </PixelButton>
           <PixelButton color="bg-sky" onClick={() => setMode('book')}>
             👑 엔딩 도감 ({unlockedEndings.length}/{ENDINGS.length})
           </PixelButton>
-          <p className="mt-2 text-[10px] text-white/60">v0.12.0 · 배경음악</p>
+          <p className="mt-2 text-[10px] text-white/60">v0.13.0 · 우리 집 설정</p>
+        </div>
+      )}
+
+      {mode === 'family' && (
+        <div className="pixel-box max-h-[72%] w-full max-w-xs overflow-y-auto p-3 text-left text-sm">
+          <p className="mb-1 font-bold">🏠 우리 집은 어떤 집?</p>
+          <p className="mb-2 text-[10px] opacity-70">부모의 직업을 고르거나 능력치를 직접 나눠 주세요. 주사위로 정할 수도 있어요.</p>
+          <ParentPicker value={parent} onChange={setParent} />
+          <div className="mt-3 flex gap-2">
+            <PixelButton color="bg-white" onClick={() => setMode('menu')}>취소</PixelButton>
+            <PixelButton className="flex-1" color="bg-mint" disabled={!parentReady} onClick={() => setMode('create')}>
+              {parentReady ? '다음: 아이 정하기 ▶' : '포인트를 모두 나눠 주세요'}
+            </PixelButton>
+          </div>
         </div>
       )}
 
       {mode === 'create' && (
-        <div className="pixel-box w-full max-w-xs p-4 text-left text-sm">
+        <div className="pixel-box max-h-[72%] w-full max-w-xs overflow-y-auto p-4 text-left text-sm">
           <p className="mb-2 font-bold">아이의 성별</p>
           <div className="mb-4 grid grid-cols-2 gap-2">
             {(['SON', 'DAUGHTER'] as Gender[]).map((g) => (
@@ -133,13 +151,13 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
           )}
           {carryIdea > 0 && <p className="mb-3 text-xs text-wood">💡 이전 회차에서 영감 포인트 {carryIdea} 인계!</p>}
           <div className="flex gap-2">
-            <PixelButton color="bg-white" onClick={() => setMode('menu')}>취소</PixelButton>
+            <PixelButton color="bg-white" onClick={() => setMode('family')}>◀ 이전</PixelButton>
             <PixelButton
               className="flex-1"
               color="bg-mint"
               disabled={!name.trim()}
               onClick={() => {
-                newGame(name.trim(), gender, bonus, canPickTemper ? temper : 'RANDOM');
+                newGame(name.trim(), gender, bonus, canPickTemper ? temper : 'RANDOM', parent);
                 onStart();
               }}
             >

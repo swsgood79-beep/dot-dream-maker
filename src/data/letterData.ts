@@ -3,6 +3,7 @@ import type { SaveState } from '../engine/simulation';
 import { dominantStyle } from '../engine/parenting';
 import { TEMPERAMENT_MAP } from './temperamentData';
 import { fillName } from './parentingData';
+import { PARENT_JOB_MAP } from './parentData';
 
 /** 예전 선택(이벤트ID:스타일)이 편지 속 한 문장이 된다 */
 export const MEMORY_LINES: Record<string, string> = {
@@ -80,6 +81,14 @@ export function buildLetter(s: SaveState, ending: EndingDefinition): { greeting:
   const style = dominantStyle(s);
   if (style) body.push(STYLE_LINE[style]);
   if (s.burstCount >= 2) body.push('힘들어서 많이 아팠던 날들도 있었지만, 그때마다 곁에 있어 줘서 버틸 수 있었어요.');
+
+  const pr = s.parent;
+  if (pr) {
+    const job = pr.job !== 'CUSTOM' ? PARENT_JOB_MAP[pr.job] : null;
+    if (job && job.likeParent.includes(ending.id)) body.push(`어릴 때부터 ${job.label}인 엄마 아빠를 보고 자라서일까요? 저도 비슷한 길을 걷게 됐어요.`);
+    else if (pr.points.WEALTH <= 1) body.push('넉넉하지 않은 살림에도 하고 싶은 걸 하게 해 주려고 애쓰신 거, 다 알아요.');
+    else if (pr.points.WEALTH >= 4) body.push('부족한 것 없이 키워 주셔서 감사해요. 이제 제가 갚을 차례예요.');
+  }
 
   if (ending.id === 'END_50') body.push('아직 뭘 해야 할지 모르겠지만... 천천히, 제 길을 찾아볼게요. 조금만 더 기다려 주세요.');
   else body.push(`이제 저는 '${ending.title}'(으)로 첫걸음을 내디뎌요. 지켜봐 주세요.`);

@@ -17,6 +17,14 @@ import { rollParentingEvent, updateWish } from './parenting';
 import type { ParentStyle } from '../data/parentingData';
 import { TEMPERAMENT_MAP, type TemperamentId } from '../data/temperamentData';
 import { CUTSCENES, pickFriend } from '../data/cutsceneData';
+import {
+  parentAllowanceMul,
+  parentDelinquencyMul,
+  parentStartBonus,
+  parentStartGold,
+  parentStatMul,
+  type ParentProfile,
+} from '../data/parentData';
 
 export const STAT_KEYS: StatKey[] = ['INT', 'STR', 'ART', 'CHA', 'MOR', 'TEC'];
 export const APT_KEYS: AptitudeKey[] = ['APT_MED', 'APT_LAW', 'APT_IT', 'APT_ENT', 'APT_BIZ', 'APT_ADV'];
@@ -63,6 +71,7 @@ export interface SaveState extends GameState {
   seenCutscenes?: string[];
   pendingReport?: boolean; // 이번 달 성적표 확인 대기
   pendingContest?: { id: ContestId; age: number } | null; // v0.11 미니게임 대기 중인 대회 (열린 해의 나이)
+  parent?: ParentProfile; // v0.13 부모 직업·능력치
 }
 
 export interface Photo {
@@ -150,16 +159,18 @@ export function createNewGame(
   carryIdea = 0,
   temperament?: TemperamentId,
   temperRevealed = false,
+  parent?: ParentProfile,
 ): SaveState {
   const stats: CharacterStats = { INT: 20, STR: 20, ART: 20, CHA: 20, MOR: 40, TEC: 15 };
   stats[bonusStat] += 30;
+  if (parent) for (const [k, v] of Object.entries(parentStartBonus(parent.points)) as [StatKey, number][]) stats[k] += v;
   const status: CharacterStatus = { stress: 0, affection: 50, fame: 0, delinquency: 0 };
   return {
     childName,
     gender,
     age: 8,
     month: 1,
-    gold: 1500,
+    gold: parentStartGold(parent?.points),
     ideaPoints: 10 + carryIdea,
     stats,
     status,
@@ -196,6 +207,7 @@ export function createNewGame(
     pendingCutscene: null,
     seenCutscenes: [],
     pendingReport: false,
+    parent,
   };
 }
 
@@ -332,7 +344,7 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
       else {
         const m = comboMult(k);
         maxMult = Math.max(maxMult, m);
-        const tm = temper?.statMul[k] ?? 1;
+        const tm = (temper?.statMul[k] ?? 1) * parentStatMul(s.parent?.points, k);
         gain = Math.round((base + auraV) * GAIN_SCALE * growthCurve(s.stats[k]) * m * conditionFactor * tm);
       }
     }
@@ -373,7 +385,8 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
   if (action.statusGains && !isFail) {
     const g = action.statusGains;
     if (g.affection) s.status.affection = clamp(s.status.affection + g.affection, 0, 100);
-    if (g.delinquency) s.status.delinquency = clamp(s.status.delinquency + g.delinquency, 0, 100);
+    if (g.delinquency)
+      s.status.delinquency = clamp(s.status.delinquency + Math.max(1, Math.round(g.delinquency * parentDelinquencyMul(s.parent?.points))), 0, 100);
     if (g.fame) {
       const fb = usedCombos.includes('CMB_09') ? 1.25 : 1;
       s.status.fame = clamp(s.status.fame + Math.round(g.fame * fb), 0, 500);
@@ -540,7 +553,7 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
   const contestResult = monthEvents(s, rng, events, !!opts.interactiveContest);
 
   // STEP 5. 재화 정산 (부모 월급)
-  const allowance = monthlyAllowance(s.age);
+  const allowance = Math.round(monthlyAllowance(s.age) * parentAllowanceMul(s.parent?.points));
   s.gold += allowance;
   events.push(`💰 부모님 지원금 +${allowance}G`);
 
