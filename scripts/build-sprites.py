@@ -259,28 +259,49 @@ for g, path in WALK_SHEETS.items():
         for i, f in enumerate((a, b, c, b)):  # 4프레임 사이클: 왼발 → 교차 → 오른발 → 교차
             sprites[f'{st}_{g}_walk{i}'] = f
 
-# 아들/딸 뒷모습 시트: 단계별 [뒤 서기, 걷기1, 걷기2, (정면 뒤 걷기, 미사용), 걷기3, 걷기4]
-# 몸이 오른쪽 위를 향한 4장을 back_walk0~3 사이클로 사용. 키는 앞모습 서기 키에 맞춘다.
+# 아들/딸 뒷모습 시트: 단계별 [뒤 서기, 걷기 5장]
+# 걷기 5장 중 행마다 자동 선택: 발 간격이 가장 좁은 그림 = 다리 모음(교차),
+# 발 간격이 넓고 뒤쪽 발 방향이 서로 반대인 두 장 = 왼발/오른발 보폭 → [보폭A, 교차, 보폭B, 교차]
+# 키는 앞모습 서기 키에 맞춘다.
 BACK_SHEETS = {
     'SON': 'assets-src/son-back-sheet.png',
     'DAUGHTER': 'assets-src/daughter-back-sheet.png',
 }
-BACK_COLS = ['back_stand', 'back_walk0', 'back_walk1', None, 'back_walk2', 'back_walk3']
+
+
+def gait_features(img, box):
+    """(발 간격 비율, 가장 아래 발의 상체 대비 좌우 위치)"""
+    crop = img[box[1]:box[3], box[0]:box[2]]
+    m = (765 - crop.sum(axis=2)) > 60
+    h, w = m.shape
+    _, xs = np.where(m[: int(h * 0.6)])
+    torso = xs.mean()
+    yb, xb = np.where(m[int(h * 0.9):])
+    low = xb[yb >= yb.max() - 3].mean()
+    return (xb.max() - xb.min()) / w, (low - torso) / w
+
+
 for g, path in BACK_SHEETS.items():
-    names_g = [f'{st}_{g}_{k or f"unused{i}"}' for st in STAGES for i, k in enumerate(BACK_COLS)]
     img_b = np.asarray(Image.open(path).convert('RGB')).astype(np.int32)
     Hb = img_b.shape[0]
     bboxes = components((765 - img_b.sum(axis=2)) > 60)
-    assert len(bboxes) == len(names_g), f'{path}: expected {len(names_g)}, found {len(bboxes)}'
+    assert len(bboxes) == 18, f'{path}: expected 18, found {len(bboxes)}'
     bboxes.sort(key=lambda b: (int(((b[1] + b[3]) / 2) // (Hb / 3)), b[0]))
-    named = dict(zip(names_g, bboxes))
-    for st in STAGES:
-        stand_box = named[f'{st}_{g}_back_stand']
+    for r, st in enumerate(STAGES):
+        row = bboxes[r * 6:(r + 1) * 6]
+        stand_box, walks = row[0], row[1:]
+        feats = [gait_features(img_b, b) for b in walks]
+        pass_i = min(range(5), key=lambda i: feats[i][0])
+        rest = sorted((i for i in range(5) if i != pass_i), key=lambda i: -feats[i][0])
+        a_i = rest[0]
+        # 보폭B: 뒤쪽 발이 보폭A와 반대쪽에 있을수록, 다리를 벌릴수록 좋음
+        b_i = max(rest[1:], key=lambda i: abs(feats[i][1] - feats[a_i][1]) + 0.3 * feats[i][0])
+        print(f'  {g} {st} 뒷모습 걷기: 보폭 {a_i + 2}번 → 교차 {pass_i + 2}번 → 보폭 {b_i + 2}번')
         target_h = sprites[f'{st}_{g}_stand'].shape[0]
         blk = (stand_box[3] - stand_box[1]) / target_h  # 뒤 서기 키 = 앞 서기 키
-        for k in BACK_COLS:
-            if k:
-                sprites[f'{st}_{g}_{k}'] = cut(img_b, named[f'{st}_{g}_{k}'], blk)
+        sprites[f'{st}_{g}_back_stand'] = cut(img_b, stand_box, blk)
+        for k, i in zip(('back_walk0', 'back_walk1', 'back_walk2', 'back_walk3'), (a_i, pass_i, b_i, pass_i)):
+            sprites[f'{st}_{g}_{k}'] = cut(img_b, walks[i], blk)
 
 # 아들/딸 행동 시트: 단계별 [책상 공부, 운동, 그림, 노래, 컴퓨터, 알바, 잠자기, 지침]
 # 크기: 행마다 서 있는 포즈(그림·노래·지침) 키의 중앙값이 그 단계 서기 키와 같아지도록 축소 비율을 정한다.
@@ -330,7 +351,9 @@ x = 0
 for name, f in zip(names, frames):
     h, w, _ = f.shape
     atlas[0:h, x : x + w] = f
-    meta[name] = {'x': x, 'y': 0, 'w': w, 'h': h}
+    # 상체(위 60%) 중심 = 그리는 기준점. 보폭이 넓은 걷기 그림에서 몸이 좌우로 흔들리지 않게 한다
+    _, oxs = np.where(f[: int(h * 0.6), :, 3] > 0)
+    meta[name] = {'x': x, 'y': 0, 'w': w, 'h': h, 'ax': round(float(oxs.mean()) + 0.5, 1)}
     x += w + gap
 Image.fromarray(atlas).save(OUT_PNG, optimize=True)
 json.dump(meta, open(OUT_JSON, 'w'), indent=1)

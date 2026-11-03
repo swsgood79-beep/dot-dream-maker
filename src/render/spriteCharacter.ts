@@ -10,7 +10,7 @@ import { drawCharacterProcedural, proceduralHeight, type CharacterDrawOpts } fro
  */
 export const RES = 2;
 
-type Frame = { x: number; y: number; w: number; h: number };
+type Frame = { x: number; y: number; w: number; h: number; ax?: number };
 const FRAMES = atlas as Record<string, Frame>;
 
 let img: HTMLImageElement | null = null;
@@ -60,7 +60,9 @@ export function drawFrame(ctx: CanvasRenderingContext2D, name: string, fx: numbe
   ctx.globalAlpha = alpha;
   ctx.imageSmoothingEnabled = false;
   // 백버퍼 픽셀 격자에 맞춰 반올림 → 도트가 흐려지지 않음
-  const x = Math.round((fx - w / 2) * RES) / RES;
+  // 기준점: 상체 중심(ax). 좌우 반전 시 반대쪽에서 잰다
+  const ax = (f.ax ?? f.w / 2) / RES;
+  const x = Math.round((fx - (flip ? w - ax : ax)) * RES) / RES;
   const y = Math.round((fy - h) * RES) / RES;
   if (flip) {
     ctx.translate(x + w, y);

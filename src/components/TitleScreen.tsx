@@ -59,7 +59,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
           <PixelButton color="bg-sky" onClick={() => setMode('book')}>
             👑 엔딩 도감 ({unlockedEndings.length}/{ENDINGS.length})
           </PixelButton>
-          <p className="mt-2 text-[10px] text-white/60">v0.5.4 · 행동 포즈</p>
+          <p className="mt-2 text-[10px] text-white/60">v0.5.5 · 뒷모습 걸음 개선</p>
         </div>
       )}
 
