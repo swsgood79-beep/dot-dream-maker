@@ -3,6 +3,7 @@ import { sfx } from '../audio/sfx';
 import type { Effect } from '../data/parentingData';
 import { fillName } from '../data/parentingData';
 import { CAUGHT_CHOICES, caughtChance, type DiaryEntry } from '../engine/diary';
+import { FirstTip } from './FirstTip';
 import { useGameStore } from '../store/useGameStore';
 import { EffectChips, PixelButton } from './ui';
 
@@ -39,6 +40,7 @@ export function DiaryModal({ onClose }: { onClose: () => void }) {
       <div className="pixel-box pop-in max-h-full w-full overflow-y-auto p-3 text-xs">
         {phase === 'ask' && (
           <div className="flex flex-col items-center gap-2 text-center">
+            <FirstTip id="diary" text="일기에는 아이가 말하지 않는 속마음이 적혀 있어요. 읽으면 도움이 되지만, 들키면 아이가 크게 서운해해요." />
             <p className="text-4xl">📔</p>
             <p className="text-sm font-bold">책상 위에 {game.childName}의 일기장이 펼쳐져 있어요</p>
             <p className="opacity-70">몰래 읽으면 아이의 속마음을 알 수 있지만, 들키면 크게 서운해할 거예요.</p>

@@ -4,6 +4,7 @@ import { GIFT_PRICE, giftOptions } from '../data/birthdayData';
 import type { Effect } from '../data/parentingData';
 import { growthStage } from '../engine/room';
 import { frameName } from '../render/spriteCharacter';
+import { FirstTip } from './FirstTip';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
 import { EffectChips, PixelButton } from './ui';
@@ -34,6 +35,7 @@ export function BirthdayModal({ onPick, onClose }: { onPick: () => void; onClose
         </div>
         {!res ? (
           <>
+            <FirstTip id="birthday" text="아이가 원하던 선물을 맞히면 크게 기뻐해요. 생일 전 달에 방에서 아이를 눌러 보거나 일기장을 보면 힌트가 있어요." />
             <p className="mb-1 text-center font-bold">어떤 선물을 줄까요? (각 {GIFT_PRICE[stage]}G)</p>
             <p className="mb-2 text-center text-[10px] opacity-70">💡 아이가 요즘 뭘 갖고 싶어 했는지 떠올려 보세요 (방에서 말을 걸거나 일기장을 보면 힌트가 있어요)</p>
             <div className="grid grid-cols-3 gap-1.5">

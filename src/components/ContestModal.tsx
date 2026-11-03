@@ -1,3 +1,4 @@
+import { FirstTip } from './FirstTip';
 import { useEffect, useRef, useState } from 'react';
 import { sfx } from '../audio/sfx';
 import type { ContestResult } from '../engine/simulation';
@@ -54,6 +55,7 @@ export function ContestModal({ id, gender, age, onClose }: { id: ContestId; gend
                 {game.childName}의 {STAT_META[def.stat].label} {game.stats[def.stat]} · 우승 기준 {contestThreshold(age)}
               </p>
               <p className="mb-2 text-center text-[10px] opacity-70">{GAME_HELP[id]}</p>
+              <FirstTip id="contest" text="1년에 세 번 대회가 열려요. 직접 미니게임을 하면 실력만큼 점수가 올라가요. 자신 없으면 응원만 해도 돼요." />
               <div className="grid grid-cols-2 gap-2">
                 <PixelButton color="bg-gold" onClick={() => setPhase('play')}>
                   🎮 직접 도전

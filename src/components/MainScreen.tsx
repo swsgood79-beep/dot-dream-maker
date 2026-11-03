@@ -12,6 +12,7 @@ import { ReportCardModal } from './ReportCardModal';
 import { DiaryModal } from './DiaryModal';
 import { BirthdayModal } from './BirthdayModal';
 import { SeasonFx } from './SeasonFx';
+import { Tutorial } from './Tutorial';
 import { WISH_MAP } from '../data/parentingData';
 import { sfx } from '../audio/sfx';
 import type { ContestId, MonthResult } from '../engine/simulation';
@@ -58,6 +59,10 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const [reportShown, setReportShown] = useState(false);
   const [bdayShown, setBdayShown] = useState(false);
   const [diaryOpen, setDiaryOpen] = useState(false);
+  const tutorialDone = useGameStore((s) => s.tutorialDone);
+  const setTutorialDone = useGameStore((s) => s.setTutorialDone);
+  // 첫 판의 첫 달에만 튜토리얼 (옛 저장으로 이어하는 중이면 보이지 않음)
+  const showTutorial = !tutorialDone && game.age === 8 && game.month === 1 && !lastResult && !playing;
   // 대회 미니게임: 판정 후 결과 연출이 끝날 때까지 유지
   const [contestShown, setContestShown] = useState<{ id: ContestId; age: number } | null>(null);
   const contestOpen = playing ? null : (contestShown ?? game.pendingContest ?? null);
@@ -65,7 +70,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
     if (!playing && game.pendingContest && !contestShown) setContestShown(game.pendingContest);
   }, [playing, game.pendingContest, contestShown]);
   // 새 달 시작 순서: 월간 결과 → 성장 컷신 → 성적표 → 육아 상황
-  const idle = !lastResult && !playing && !contestOpen;
+  const idle = !lastResult && !playing && !contestOpen && !showTutorial;
   const openCut = idle && !eventShown && !reportShown ? (game.pendingCutscene ?? null) : null;
   const openReport = idle && !openCut && !eventShown && !bdayShown && (reportShown || !!game.pendingReport);
   const openBday = idle && !openCut && !openReport && !eventShown && (bdayShown || !!game.pendingBirthday);
@@ -76,7 +81,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const stressColor = stress >= 80 ? '#e5484d' : stress >= 50 ? '#ff9f43' : '#5bd6a8';
 
   return (
-    <div className="room-bg relative flex h-full flex-col">
+    <div className="room-bg relative flex h-full flex-col" data-tut-root>
       {/* 상단 HUD — 나무 프레임 */}
       <header className="wood-frame relative z-10 shrink-0 p-1.5 text-xs">
         <div className="flex gap-1.5">
@@ -96,13 +101,13 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
                 </span>
                 <Icon name={season(game.month)} size={20} title={STAGE_ICON[growthStage(game.age)]} />
               </div>
-              <div className="hud-slot flex items-center gap-1 rounded px-2 py-1 font-bold">
+              <div className="hud-slot flex items-center gap-1 rounded px-2 py-1 font-bold" data-tut="gold">
                 <Icon name="GOLD" size={18} />
                 <span className="text-gold tabular-nums">{game.gold.toLocaleString()}</span>
               </div>
             </div>
             <div className="flex gap-1">
-              <div className="hud-slot flex min-w-0 flex-1 items-center gap-1.5 rounded px-2 py-1">
+              <div className="hud-slot flex min-w-0 flex-1 items-center gap-1.5 rounded px-2 py-1" data-tut="stress">
                 <Icon name="STRESS" size={16} />
                 <span className="shrink-0 text-[11px]">스트레스</span>
                 <div className="h-2.5 min-w-0 flex-1 border-2 border-ink bg-[#1b1f3b]">
@@ -126,7 +131,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
             </div>
           </div>
         </div>
-        <button onClick={() => setTab('info')} className="mt-1 grid w-full grid-cols-6 gap-1 text-[10px]">
+        <button onClick={() => setTab('info')} className="mt-1 grid w-full grid-cols-6 gap-1 text-[10px]" data-tut="stats">
           {STAT_KEYS.map((k) => (
             <span
               key={k}
@@ -160,7 +165,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
       </header>
 
       {/* 중앙 룸 (64%) */}
-      <main className="relative min-h-0 flex-1">
+      <main className="relative min-h-0 flex-1" data-tut="canvas">
         <IsometricRoomCanvas
           placingId={placingId}
           onPlaced={() => setPlacingId(null)}
@@ -204,6 +209,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
               sfx('page');
               setTab(t.id);
             }}
+            data-tut={t.id}
             className="dock-btn flex flex-col items-center py-1.5 text-[10px] font-bold" style={{ background: t.color }}>
             <Icon name={t.icon} size={30} className="drop-shadow-[1px_1px_0_#1b1f3b]" />
             {t.label}
@@ -271,6 +277,15 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
         />
       )}
       {lastResult && !playing && !showContest && !contestOpen && <MonthResultModal result={lastResult} onClose={dismissResult} />}
+      {showTutorial && (
+        <Tutorial
+          name={game.childName}
+          onDone={() => {
+            setTutorialDone(true);
+            setTab('schedule');
+          }}
+        />
+      )}
       {diaryOpen && <DiaryModal onClose={() => setDiaryOpen(false)} />}
       {openCut && <CutsceneModal key={openCut} id={openCut} />}
       {openReport && <ReportCardModal onPick={() => setReportShown(true)} onClose={() => setReportShown(false)} />}

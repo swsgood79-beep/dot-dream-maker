@@ -5,13 +5,16 @@ import { useGameStore } from './store/useGameStore';
 import { TitleScreen } from './components/TitleScreen';
 import { MainScreen } from './components/MainScreen';
 import { EndingScreen } from './components/EndingScreen';
+import { OpeningScreen, SplashScreen } from './components/IntroScreens';
 
 export default function App() {
   const game = useGameStore((s) => s.game);
   const ending = useGameStore((s) => s.ending);
   const lastResult = useGameStore((s) => s.lastResult);
   const toasts = useGameStore((s) => s.toasts);
-  const [screen, setScreen] = useState<'title' | 'game'>('title');
+  const [screen, setScreen] = useState<'splash' | 'opening' | 'title' | 'game'>('splash');
+  const introSeen = useGameStore((s) => s.introSeen);
+  const setIntroSeen = useGameStore((s) => s.setIntroSeen);
 
   // 엔딩은 월간 결과 모달을 닫은 뒤에 표시
   const showEnding = ending && !lastResult;
@@ -45,12 +48,21 @@ export default function App() {
     <div className="flex h-full items-center justify-center">
       {/* 9:16 세로형 모바일 프레임 */}
       <div className="relative h-full max-h-[932px] w-full max-w-[430px] overflow-hidden sm:rounded-lg sm:border-4 sm:border-black" style={{ aspectRatio: '9 / 16' }}>
-        {showEnding ? (
+        {screen === 'splash' ? (
+          <SplashScreen onStart={() => setScreen(introSeen ? 'title' : 'opening')} />
+        ) : screen === 'opening' ? (
+          <OpeningScreen
+            onDone={() => {
+              setIntroSeen(true);
+              setScreen('title');
+            }}
+          />
+        ) : showEnding ? (
           <EndingScreen onDone={() => setScreen('title')} />
         ) : screen === 'game' && game ? (
           <MainScreen onTitle={() => setScreen('title')} />
         ) : (
-          <TitleScreen onStart={() => setScreen('game')} />
+          <TitleScreen onStart={() => setScreen('game')} onOpening={() => setScreen('opening')} />
         )}
         <div className="pointer-events-none absolute inset-x-0 top-24 z-50 flex flex-col items-center gap-1">
           {toasts.map((t) => (

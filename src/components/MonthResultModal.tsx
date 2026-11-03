@@ -1,3 +1,4 @@
+import { FirstTip } from './FirstTip';
 import { useEffect, useState } from 'react';
 import { COMBO_MAP } from '../data/furnitureData';
 import type { MonthResult } from '../engine/simulation';
@@ -34,6 +35,7 @@ export function MonthResultModal({ result, onClose }: { result: MonthResult; onC
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-3">
       <div className="pixel-box pop-in max-h-full w-full overflow-y-auto p-3 text-xs">
         <p className="mb-2 text-center text-sm font-bold">📅 이번 달 결과</p>
+        <FirstTip id="result" text="한 달 동안 오른 능력치와 스트레스가 정리돼요. '대성공'은 스트레스가 낮을 때 더 자주 나와요." />
         <div className="grid grid-cols-1 gap-1">
           {result.weeks.slice(0, shown).map((w) => (
             <div key={w.week} className="pop-in relative border-2 border-ink bg-white p-2">

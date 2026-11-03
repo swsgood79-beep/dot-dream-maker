@@ -1,3 +1,4 @@
+import { FirstTip } from '../FirstTip';
 import { useGameStore } from '../../store/useGameStore';
 import { Sprite } from '../Sprite';
 import { frameName } from '../../render/spriteCharacter';
@@ -33,6 +34,7 @@ export function TalkPanel() {
         <div className="pixel-box flex-1 self-center p-2 text-xs">“{childLine(stage, stress, affection, delinquency)}”</div>
       </div>
 
+      {wish && <FirstTip id="wish" text="아이의 부탁은 3달 안에 들어줘야 해요. 적힌 방법대로 스케줄을 넣거나 가구를 놓으면 돼요. 자꾸 무시하면 마음을 닫아요." />}
       {wish && (
         <div className="mb-3 rounded border-2 border-ink bg-[#fff1c2] p-2 text-xs">
           <p className="font-bold">

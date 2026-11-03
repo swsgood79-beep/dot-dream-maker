@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { sfx } from '../audio/sfx';
 import type { Effect } from '../data/parentingData';
 import { computeReport, REPORT_REACTIONS } from '../engine/school';
+import { FirstTip } from './FirstTip';
 import { useGameStore } from '../store/useGameStore';
 import { EffectChips, PixelButton } from './ui';
 
@@ -37,6 +38,7 @@ export function ReportCardModal({ onPick, onClose }: { onPick: () => void; onClo
             {game.childName} 학생은 {card.comments.join(' ')}
           </p>
         </div>
+        <FirstTip id="report" text="매년 7월과 2월에 성적표가 와요. 등급은 나이에 맞는 기대치와 비교한 거예요. 어떻게 반응하느냐에 따라 아이 마음이 달라져요." />
         {!res ? (
           <>
             <p className="mb-1 text-[11px] font-bold text-wood">성적표를 본 아이가 눈치를 살펴요. 뭐라고 할까요?</p>

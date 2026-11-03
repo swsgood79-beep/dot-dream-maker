@@ -33,6 +33,18 @@ interface GameStore {
   achievements: string[];
   /** 이번 엔딩에서 새로 달성한 업적 */
   newAchievements: string[];
+  /** 오프닝을 봤는지 / 튜토리얼을 마쳤는지 / 처음 보는 창 도움말 */
+  introSeen: boolean;
+  tutorialDone: boolean;
+  tipsSeen: string[];
+  setIntroSeen: (v: boolean) => void;
+  setTutorialDone: (v: boolean) => void;
+  seeTip: (id: string) => void;
+  /** 저장 백업: 코드로 내보내기 / 불러오기 */
+  exportSave: () => string;
+  importSave: (code: string) => boolean;
+  /** 모든 기록 초기화 */
+  resetAll: () => void;
   /** 월간 스케줄 실행 연출 재생 중 */
   playing: boolean;
   /** 효과음 끄기 */
@@ -127,6 +139,62 @@ export const useGameStore = create<GameStore>()(
         hallOfFame: [],
         achievements: [],
         newAchievements: [],
+        introSeen: false,
+        tutorialDone: false,
+        tipsSeen: [],
+        setIntroSeen: (v) => set({ introSeen: v }),
+        setTutorialDone: (v) => set({ tutorialDone: v }),
+        seeTip: (id) => {
+          const t = get().tipsSeen ?? [];
+          if (!t.includes(id)) set({ tipsSeen: [...t, id] });
+        },
+        exportSave: () => {
+          const st = get();
+          const data = {
+            v: 1,
+            game: st.game,
+            unlockedEndings: st.unlockedEndings,
+            carryIdea: st.carryIdea,
+            playthrough: st.playthrough,
+            hallOfFame: st.hallOfFame,
+            achievements: st.achievements,
+          };
+          return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+        },
+        importSave: (code) => {
+          try {
+            const data = JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+            if (!data || data.v !== 1 || !Array.isArray(data.unlockedEndings)) return false;
+            set({
+              game: data.game ?? null,
+              unlockedEndings: data.unlockedEndings,
+              carryIdea: data.carryIdea ?? 0,
+              playthrough: data.playthrough ?? 1,
+              hallOfFame: data.hallOfFame ?? [],
+              achievements: data.achievements ?? [],
+              ending: null,
+              lastResult: null,
+            });
+            return true;
+          } catch {
+            return false;
+          }
+        },
+        resetAll: () =>
+          set({
+            game: null,
+            unlockedEndings: [],
+            carryIdea: 0,
+            playthrough: 1,
+            hallOfFame: [],
+            achievements: [],
+            newAchievements: [],
+            ending: null,
+            lastResult: null,
+            introSeen: false,
+            tutorialDone: false,
+            tipsSeen: [],
+          }),
         playing: false,
         muted: false,
         toggleMute: () => {
@@ -150,7 +218,6 @@ export const useGameStore = create<GameStore>()(
           const prev = (get().hallOfFame ?? []).slice(-1)[0];
           if (prev) g.prevChild = { name: prev.name, gender: prev.gender, endingId: prev.endingId };
           g.birthMonth = birthMonth ?? 1 + Math.floor(Math.random() * 12);
-          if (g.birthMonth === 1) g.pendingBirthday = true; // 1월생은 시작하자마자 생일
           set({
             game: g,
             lastResult: null,
@@ -389,6 +456,9 @@ export const useGameStore = create<GameStore>()(
         hallOfFame: st.hallOfFame,
         achievements: st.achievements,
         newAchievements: st.newAchievements,
+        introSeen: st.introSeen,
+        tutorialDone: st.tutorialDone,
+        tipsSeen: st.tipsSeen,
       }),
     },
   ),

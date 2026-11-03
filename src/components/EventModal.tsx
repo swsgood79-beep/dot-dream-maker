@@ -4,6 +4,7 @@ import { EVENT_MAP, STYLE_META, eventText, fillName } from '../data/parentingDat
 import { growthStage } from '../engine/room';
 import type { EventOutcome } from '../engine/parenting';
 import { frameName, hasFrame } from '../render/spriteCharacter';
+import { FirstTip } from './FirstTip';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
 import { EffectChips, PixelButton } from './ui';
@@ -38,6 +39,7 @@ export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => 
         {!result ? (
           <>
             <p className="mb-3 rounded border-2 border-ink bg-white p-2 text-xs leading-relaxed">{fillName(eventText(ev, game), game.childName, game.friend)}</p>
+            <FirstTip id="event" text="가끔 이렇게 육아 상황이 생겨요. 정답은 없고, 고르기 전엔 결과를 몰라요. 아이 반응을 보며 어떤 아이인지 알아가 보세요." />
             <p className="mb-1 text-[11px] font-bold text-wood">어떻게 할까요?</p>
             <div className="grid grid-cols-1 gap-1.5">
               {ev.choices.map((c, i) => (
