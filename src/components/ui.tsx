@@ -78,7 +78,20 @@ export function Bar({ value, max, color, height = 'h-3' }: { value: number; max:
   );
 }
 
-export function Sheet({ title, icon, onClose, children }: { title: string; icon?: string; onClose: () => void; children: ReactNode }) {
+export function Sheet({
+  title,
+  icon,
+  onClose,
+  children,
+  footer,
+}: {
+  title: string;
+  icon?: string;
+  onClose: () => void;
+  children: ReactNode;
+  /** 스크롤 영역 밖 맨 아래에 고정되는 버튼 줄 (목록을 가리지 않음) */
+  footer?: ReactNode;
+}) {
   return (
     <div className="absolute inset-0 z-30 flex flex-col justify-end bg-black/50" onClick={onClose}>
       <div className="pixel-box pop-in flex max-h-[78%] flex-col" onClick={(e) => e.stopPropagation()}>
@@ -89,7 +102,8 @@ export function Sheet({ title, icon, onClose, children }: { title: string; icon?
           </span>
           <button onClick={onClose} className="text-lg leading-none">✕</button>
         </div>
-        <div className="overflow-y-auto p-3">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">{children}</div>
+        {footer && <div className="shrink-0 border-t-3 border-ink bg-panel-dark p-2">{footer}</div>}
       </div>
     </div>
   );

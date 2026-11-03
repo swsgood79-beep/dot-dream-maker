@@ -13,7 +13,7 @@ import { WISH_MAP } from '../data/parentingData';
 import { sfx } from '../audio/sfx';
 import type { ContestId, MonthResult } from '../engine/simulation';
 import { IsometricRoomCanvas } from './IsometricRoomCanvas';
-import { Sheet, STAT_META } from './ui';
+import { PixelButton, Sheet, STAT_META } from './ui';
 import { SchedulePanel } from './panels/SchedulePanel';
 import { ShopPanel } from './panels/ShopPanel';
 import { TalkPanel } from './panels/TalkPanel';
@@ -194,13 +194,24 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
       </nav>
 
       {tab === 'schedule' && (
-        <Sheet icon="NAV_SCHEDULE" title={`${game.month}월 스케줄 편성`} onClose={() => setTab(null)}>
-          <SchedulePanel
-            onRun={() => {
-              setTab(null);
-              runMonth();
-            }}
-          />
+        <Sheet
+          icon="NAV_SCHEDULE"
+          title={`${game.month}월 스케줄 편성`}
+          onClose={() => setTab(null)}
+          footer={
+            <PixelButton
+              className="w-full"
+              color="bg-accent !text-white"
+              onClick={() => {
+                setTab(null);
+                runMonth();
+              }}
+            >
+              ▶ 이번 달 진행하기
+            </PixelButton>
+          }
+        >
+          <SchedulePanel />
         </Sheet>
       )}
       {tab === 'room' && (

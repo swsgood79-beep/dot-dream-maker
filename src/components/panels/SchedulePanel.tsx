@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ACTION_TYPE_LABEL, SCHEDULE_ACTIONS } from '../../data/scheduleData';
 import { useGameStore } from '../../store/useGameStore';
 import type { ScheduleAction } from '../../types/game';
-import { PixelButton, StatChip } from '../ui';
+import { StatChip } from '../ui';
 import { WISH_MAP } from '../../data/parentingData';
 
 function actionSummary(a: ScheduleAction) {
@@ -19,7 +19,7 @@ function actionSummary(a: ScheduleAction) {
   );
 }
 
-export function SchedulePanel({ onRun }: { onRun: () => void }) {
+export function SchedulePanel() {
   const game = useGameStore((s) => s.game)!;
   const setSlot = useGameStore((s) => s.setScheduleSlot);
   const [slot, setSlot_] = useState(0);
@@ -34,7 +34,9 @@ export function SchedulePanel({ onRun }: { onRun: () => void }) {
 
   return (
     <div className="text-xs">
-      <div className="mb-3 grid grid-cols-4 gap-1">
+      {/* 주차 칸은 목록을 내려도 위에 고정 → 지금 몇 주차를 고르는지 항상 보임 */}
+      <div className="sticky -top-3 z-10 -mx-3 -mt-3 mb-2 border-b-2 border-ink/20 bg-panel px-3 pt-3 pb-2">
+      <div className="mb-2 grid grid-cols-4 gap-1">
         {game.monthlySchedule.map((id, i) => {
           const a = SCHEDULE_ACTIONS.find((x) => x.id === id)!;
           return (
@@ -50,14 +52,15 @@ export function SchedulePanel({ onRun }: { onRun: () => void }) {
           );
         })}
       </div>
-      <div className="mb-3 flex justify-between border-2 border-ink bg-white px-2 py-1">
+      <div className="flex justify-between border-2 border-ink bg-white px-2 py-1">
         <span>예상 골드 {monthCost >= 0 ? '+' : ''}{monthCost}G</span>
         <span>예상 스트레스 {stressSum >= 0 ? '+' : ''}{stressSum}</span>
+      </div>
+      <p className="mt-1 text-center text-[11px] font-bold text-wood">▼ {slot + 1}주차에 할 일을 고르세요</p>
       </div>
       {game.forcedRestWeeks > 0 && <p className="mb-2 text-accent">🤒 이번 달 {game.forcedRestWeeks}주는 강제 요양</p>}
       {game.runawayWeeks > 0 && <p className="mb-2 text-accent">🏃 이번 달 {game.runawayWeeks}주는 가출로 취소</p>}
 
-      <p className="mb-1 font-bold">{slot + 1}주차 행동 선택</p>
       {types.map((t) => (
         <div key={t} className="mb-2">
           <p className="mb-1 text-[11px] font-bold text-wood">{ACTION_TYPE_LABEL[t]}</p>
@@ -97,9 +100,6 @@ export function SchedulePanel({ onRun }: { onRun: () => void }) {
           </div>
         </div>
       ))}
-      <PixelButton className="sticky bottom-0 mt-2 w-full" color="bg-accent !text-white" onClick={onRun}>
-        ▶ 이번 달 진행하기
-      </PixelButton>
     </div>
   );
 }
