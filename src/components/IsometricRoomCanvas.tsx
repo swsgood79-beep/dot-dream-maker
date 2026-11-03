@@ -196,7 +196,8 @@ export function IsometricRoomCanvas({
         steps.push({ kind: 'fade', to: 0, ms: 350 });
         steps.push({ kind: 'wait', ms: 600, pose: 'idle', onStart: () => setBubble(null) });
         steps.push({ kind: 'fade', to: 1, ms: 350 });
-        steps.push({ kind: 'wait', ms: 1300, pose: w.outcome === 'GREAT' ? 'cheer' : w.outcome === 'FAIL' ? 'tired' : w.actionType === 'PART_TIME' ? 'work' : 'idle', onStart: () => {
+        // 밖에서 돌아올 때는 평소 모습 (앞치마 알바 포즈는 집 안에서 하는 일에만)
+        steps.push({ kind: 'wait', ms: 1300, pose: w.outcome === 'GREAT' ? 'cheer' : w.outcome === 'FAIL' ? 'tired' : 'idle', onStart: () => {
           haloRef.current = HALO[w.outcome];
           spawnPopups(w.popups.length ? w.popups : [`${w.goldDelta > 0 ? '+' : ''}${w.goldDelta}G`]);
         } });

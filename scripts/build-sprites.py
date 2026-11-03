@@ -362,7 +362,13 @@ for g, path in POSE_SHEETS.items():
         blk = float(np.median([fit_cut(img_p, named[f'{st}_{g}_{k}'], target_h)[1] for k in ('draw', 'music', 'tired')]))
         for k in POSE_COLS:
             name = f'{st}_{g}_{k}'
-            if name not in POSE_EXCLUDE:
+            if name in POSE_EXCLUDE:
+                continue
+            if k == 'sleep':
+                # 누운 그림은 Gemini가 단계마다 크기를 제각각 그림 → 누운 길이(가로) = 서 있을 때 키의 90%
+                spr = cut(img_p, named[name], blk)
+                sprites[name] = cut(img_p, named[name], blk * spr.shape[1] / (target_h * 0.9))
+            else:
                 sprites[name] = cut(img_p, named[name], blk)
 
 # 손그림 걷기가 없는 캐릭터(딸, 부모님)는 서기 프레임에서 생성
