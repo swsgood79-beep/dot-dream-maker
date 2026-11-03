@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { playBgm, SEASON_TRACK, type TrackId } from './audio/bgm';
+import { getAudio } from './audio/sfx';
 import { useGameStore } from './store/useGameStore';
 import { TitleScreen } from './components/TitleScreen';
 import { MainScreen } from './components/MainScreen';
@@ -13,6 +15,31 @@ export default function App() {
 
   // 엔딩은 월간 결과 모달을 닫은 뒤에 표시
   const showEnding = ending && !lastResult;
+  const muted = useGameStore((s) => s.muted);
+  const musicOn = useGameStore((s) => s.musicOn);
+  const month = game?.month ?? 1;
+  const [touched, setTouched] = useState(false);
+
+  // 브라우저는 첫 터치 전에는 소리를 낼 수 없다
+  useEffect(() => {
+    const on = () => {
+      getAudio();
+      setTouched(true);
+    };
+    window.addEventListener('pointerdown', on, { once: true });
+    return () => window.removeEventListener('pointerdown', on);
+  }, []);
+
+  // 화면·계절에 맞는 배경음악
+  const track: TrackId | null =
+    !touched || muted || !musicOn ? null : showEnding ? 'ENDING' : screen === 'game' && game ? SEASON_TRACK(month) : 'TITLE';
+  useEffect(() => {
+    try {
+      playBgm(track);
+    } catch {
+      /* 오디오 불가 환경 */
+    }
+  }, [track]);
 
   return (
     <div className="flex h-full items-center justify-center">

@@ -28,6 +28,9 @@ interface GameStore {
   /** 효과음 끄기 */
   muted: boolean;
   toggleMute: () => void;
+  /** 배경음악 켜기/끄기 (효과음과 별개) */
+  musicOn: boolean;
+  toggleMusic: () => void;
   endPlayback: () => void;
   ending: EndingDefinition | null;
   toasts: Toast[];
@@ -113,6 +116,8 @@ export const useGameStore = create<GameStore>()(
           set({ muted: m });
           if (!m) sfx('click');
         },
+        musicOn: true,
+        toggleMusic: () => set({ musicOn: !get().musicOn }),
         ending: null,
         toasts: [],
         endPlayback: () => set({ playing: false }),
@@ -305,6 +310,7 @@ export const useGameStore = create<GameStore>()(
       },
       partialize: (st) => ({
         muted: st.muted,
+        musicOn: st.musicOn,
         game: st.game,
         unlockedEndings: st.unlockedEndings,
         carryIdea: st.carryIdea,

@@ -21,6 +21,9 @@ export function CutsceneModal({ id }: { id: string }) {
   const text = line ? fillName(line.text, game.childName, game.friend) : '';
 
   useEffect(() => {
+    sfx('chime');
+  }, []);
+  useEffect(() => {
     setTyped(0);
     setMorphed(false);
     if (line?.kind === 'transform') {

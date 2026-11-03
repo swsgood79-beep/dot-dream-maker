@@ -45,7 +45,8 @@ export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => 
                     onPick();
                     const out = resolve(i);
                     if (!out) return;
-                    sfx((out.delta.affection ?? 0) >= 0 ? 'stat' : 'fail');
+                    sfx((out.delta.affection ?? 0) >= 0 ? 'happy' : 'sad');
+                    if (out.revealed) setTimeout(() => sfx('chime'), 450);
                     setResult({ out, style: c.style });
                   }}
                 >

@@ -64,7 +64,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
           <PixelButton color="bg-sky" onClick={() => setMode('book')}>
             👑 엔딩 도감 ({unlockedEndings.length}/{ENDINGS.length})
           </PixelButton>
-          <p className="mt-2 text-[10px] text-white/60">v0.11.0 · 대회 미니게임</p>
+          <p className="mt-2 text-[10px] text-white/60">v0.12.0 · 배경음악</p>
         </div>
       )}
 

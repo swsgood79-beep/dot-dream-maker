@@ -49,7 +49,7 @@ export function ReportCardModal({ onPick, onClose }: { onPick: () => void; onClo
                     onPick();
                     const out = react(r.style);
                     if (!out) return;
-                    sfx((out.delta.affection ?? 0) >= 0 ? 'stat' : 'fail');
+                    sfx((out.delta.affection ?? 0) >= 0 ? 'happy' : 'sad');
                     setRes(out);
                   }}
                 >

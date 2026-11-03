@@ -48,6 +48,8 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const [contestSeen, setContestSeen] = useState<MonthResult | null>(null);
   const muted = useGameStore((s) => s.muted);
   const toggleMute = useGameStore((s) => s.toggleMute);
+  const musicOn = useGameStore((s) => s.musicOn);
+  const toggleMusic = useGameStore((s) => s.toggleMusic);
   // 선택 후 아이 반응을 보여 주는 동안 모달을 유지하기 위해 표시 중인 상황 ID를 따로 보관
   const [eventShown, setEventShown] = useState<string | null>(null);
   const [reportShown, setReportShown] = useState(false);
@@ -108,6 +110,9 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
               </div>
               <button onClick={toggleMute} className="hud-slot rounded px-1" title={muted ? '소리 켜기' : '소리 끄기'}>
                 <Icon name={muted ? 'SOUND_OFF' : 'SOUND_ON'} size={18} />
+              </button>
+              <button onClick={toggleMusic} className="hud-slot rounded px-1 text-[13px] leading-none" title={musicOn ? '배경음악 끄기' : '배경음악 켜기'}>
+                <span className={musicOn ? '' : 'opacity-35 grayscale'}>🎵</span>
               </button>
               <button onClick={onTitle} className="hud-slot rounded px-1" title="타이틀로">
                 <Icon name="HOME" size={18} />

@@ -15,7 +15,10 @@ export type SfxName =
   | 'lose'
   | 'ending'
   | 'door'
-  | 'page';
+  | 'page'
+  | 'happy'
+  | 'sad'
+  | 'chime';
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -42,6 +45,12 @@ function ac(): AudioContext | null {
   }
   if (ctx.state === 'suspended') void ctx.resume().catch(() => {});
   return ctx;
+}
+
+/** 배경음악 등에서 같은 오디오 출력을 쓰기 위해 */
+export function getAudio(): { c: AudioContext; master: GainNode } | null {
+  const c = ac();
+  return c && master ? { c, master } : null;
 }
 
 interface Tone {
@@ -124,6 +133,16 @@ const SOUNDS: Record<SfxName, () => void> = {
     tone({ f: C6, d: 0.5, at: 0.74, v: 0.45 });
     tone({ f: C5, d: 0.5, at: 0.74, type: 'triangle', v: 0.35 });
   },
+  // 아이 반응: 기뻐서 "헤헤↗" / 시무룩 "으응↘" / 무언가 알게 됐을 때 "띠링"
+  happy: () => {
+    tone({ f: 784, to: 1175, d: 0.09, type: 'square', v: 0.28 });
+    tone({ f: 988, to: 1568, d: 0.12, at: 0.1, type: 'square', v: 0.28 });
+  },
+  sad: () => {
+    tone({ f: 523, to: 440, d: 0.18, type: 'triangle', v: 0.35 });
+    tone({ f: 440, to: 330, d: 0.3, at: 0.18, type: 'triangle', v: 0.35 });
+  },
+  chime: () => arp([E6, C6, G5, C6 * 2], 0.08, 'triangle', 0.4, 0.5),
   lose: () => arp([G4, E4, C4], 0.18, 'triangle', 0.4, 0.45),
   ending: () => {
     const mel = [C5, E5, G5, C6, A5, G5, E5, G5, C6, D5 * 2, E6];

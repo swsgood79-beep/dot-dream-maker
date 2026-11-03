@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { COMBO_MAP } from '../data/furnitureData';
 import type { MonthResult } from '../engine/simulation';
 import { PixelButton, ko } from './ui';
+import { sfx } from '../audio/sfx';
 
 const OUTCOME_LABEL = {
   GREAT: { text: '대성공!', cls: 'bg-gold' },
@@ -22,6 +23,12 @@ export function MonthResultModal({ result, onClose }: { result: MonthResult; onC
     return () => clearTimeout(t);
   }, [shown, result.weeks.length]);
   const done = shown >= result.weeks.length;
+  // 부탁을 들어줬거나 못 들어줬을 때 아이 반응 소리
+  useEffect(() => {
+    if (!done) return;
+    if (result.events.some((e) => e.startsWith('💝'))) sfx('chime');
+    else if (result.events.some((e) => e.startsWith('💔'))) sfx('sad');
+  }, [done, result.events]);
 
   return (
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-3">
