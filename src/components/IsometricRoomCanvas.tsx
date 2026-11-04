@@ -223,11 +223,17 @@ export function IsometricRoomCanvas({
           haloRef.current = null;
         },
       });
+      // 집 안에서 하는 일(집안일 돕기): 문으로 나가지 않고, 돌아와서 "다녀왔어요"도 하지 않음
+      const atHome = w.actionId === 'JOB_01';
       if (outside) {
-        steps.push({ kind: 'goto', resolve: (wd) => doorCell(wd.n) });
-        steps.push({ kind: 'call', fn: () => setBubble(ACT_BUBBLE[w.actionType]) });
-        steps.push({ kind: 'call', fn: () => sfx('door') });
-        steps.push({ kind: 'fade', to: 0, ms: 350 });
+        if (!atHome) {
+          steps.push({ kind: 'goto', resolve: (wd) => doorCell(wd.n) });
+          steps.push({ kind: 'call', fn: () => setBubble(ACT_BUBBLE[w.actionType]) });
+          steps.push({ kind: 'call', fn: () => sfx('door') });
+          steps.push({ kind: 'fade', to: 0, ms: 350 });
+        } else {
+          steps.push({ kind: 'wait', ms: 500, pose: 'idle', onStart: () => setBubble('🧹 청소 시작!') });
+        }
         if (sceneFor(w)) {
           // 밖에 있는 동안 그 장소 장면: 도착 → 활동 → 결과 도장 (ActivitySceneView가 단계별로 보여 줌)
           steps.push({ kind: 'wait', ms: 250, pose: 'idle', onStart: () => setBubble(null) });
@@ -247,8 +253,10 @@ export function IsometricRoomCanvas({
             },
           });
           // 매주 집으로 돌아옴: 문으로 들어와 "다녀왔어요!" + 그 주 결과 표정, 방 안으로 몇 걸음
-          steps.push({ kind: 'call', fn: () => sfx('door') });
-          steps.push({ kind: 'fade', to: 1, ms: 350 });
+          if (!atHome) {
+            steps.push({ kind: 'call', fn: () => sfx('door') });
+            steps.push({ kind: 'fade', to: 1, ms: 350 });
+          }
           steps.push({
             kind: 'wait',
             ms: 1100,
@@ -256,11 +264,13 @@ export function IsometricRoomCanvas({
             onStart: () => {
               haloRef.current = HALO[w.outcome];
               setBubble(
-                w.outcome === 'GREAT' ? '✨ 다녀왔어요! 오늘 최고!' : w.outcome === 'FAIL' ? '😓 다녀왔어요...' : w.outcome === 'RUNAWAY' ? '...' : '🏠 다녀왔어요!',
+                atHome
+                  ? w.outcome === 'GREAT' ? '✨ 집이 반짝반짝!' : w.outcome === 'FAIL' ? '😓 청소 너무 힘들다...' : '🧹 청소 끝!'
+                  : w.outcome === 'GREAT' ? '✨ 다녀왔어요! 오늘 최고!' : w.outcome === 'FAIL' ? '😓 다녀왔어요...' : w.outcome === 'RUNAWAY' ? '...' : '🏠 다녀왔어요!',
               );
             },
           });
-          steps.push({ kind: 'goto', resolve: (wd) => nearestFreeCell(wd.n, wd.placed, { x: 1, y: wd.n - 2 }, new Set()) });
+          if (!atHome) steps.push({ kind: 'goto', resolve: (wd) => nearestFreeCell(wd.n, wd.placed, { x: 1, y: wd.n - 2 }, new Set()) });
           steps.push({ kind: 'call', fn: () => setBubble(null) });
         } else {
           steps.push({ kind: 'wait', ms: 600, pose: 'idle', onStart: () => setBubble(null) });

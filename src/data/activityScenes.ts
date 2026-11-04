@@ -208,6 +208,7 @@ const MIDDLE: Record<string, string[]> = {
   REST: ['느긋하게 쉬는 중...', '오랜만에 아무 생각 없이 쉬었다.', '맛있는 것도 먹고 뒹굴뒹굴.'],
   RUNAWAY: ['어디로 가야 할지 모르겠다...', '빗소리만 들린다. 집 생각이 난다.'],
 };
+const HOME_MIDDLE = ['걸레질 쓱싹쓱싹, 구석구석 깨끗하게!', '빨래를 개다 보니 양말 짝이 안 맞는다ㅋㅋ', '창문까지 반짝반짝 닦았다.', '분리수거도 척척!'];
 const MIDDLE_FAIL = ['어쩐지 오늘은 잘 안 풀린다...', '자꾸 딴생각이 난다...', '몸이 무겁다. 힘이 안 난다...'];
 
 /** 바깥 활동 장면에서 차례로 보여 줄 세 문장 */
@@ -215,8 +216,9 @@ export function sceneBeats(w: WeekResult): string[] {
   const sc = sceneFor(w);
   if (!sc) return [sceneLine(w)];
   const pick = (a: string[]) => a[(w.week + w.actionId.length) % a.length];
-  const arrive = w.outcome === 'RUNAWAY' ? '...결국 집을 나와 버렸다.' : `📍 ${sc.place}에 도착!`;
-  const mid = w.outcome === 'FAIL' ? pick(MIDDLE_FAIL) : pick(MIDDLE[w.actionType] ?? MIDDLE.OUTING);
+  const home = w.actionId === 'JOB_01'; // 집 안에서 하는 일
+  const arrive = w.outcome === 'RUNAWAY' ? '...결국 집을 나와 버렸다.' : home ? '🧹 오늘은 우리 집 대청소 날!' : `📍 ${sc.place}에 도착!`;
+  const mid = w.outcome === 'FAIL' ? pick(MIDDLE_FAIL) : home ? pick(HOME_MIDDLE) : pick(MIDDLE[w.actionType] ?? MIDDLE.OUTING);
   return [arrive, mid, sceneLine(w)];
 }
 
