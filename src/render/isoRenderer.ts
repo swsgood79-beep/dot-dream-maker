@@ -145,9 +145,11 @@ function drawFurniture(
   ctx: CanvasRenderingContext2D,
   n: number,
   p: Pick<PlacedFurniture, 'furnitureId' | 'gridX' | 'gridY' | 'rotation'>,
-  opts: { selected?: boolean; alpha?: number; tint?: string; time?: number } = {},
+  opts: { selected?: boolean; alpha?: number; tint?: string; time?: number; emptyCushion?: boolean } = {},
 ) {
-  if (drawFurnitureSprite(ctx, (x, y) => project(n, x, y), p, opts.alpha ?? 1)) return;
+  // 반려묘 쿠션 그림에는 고양이가 그려져 있음 → 고양이가 밖에 나와 있으면 빈 쿠션으로
+  const skipSprite = opts.emptyCushion && p.furnitureId === 'cat_cushion';
+  if (!skipSprite && drawFurnitureSprite(ctx, (x, y) => project(n, x, y), p, opts.alpha ?? 1)) return;
   ctx.save();
   ctx.globalAlpha = opts.alpha ?? 1;
   const drawn = drawFurnitureModel(ctx, (x, y) => project(n, x, y), p, opts.time ?? 0);
@@ -612,7 +614,7 @@ export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
   type Drawable = { key: number; draw: () => void };
   const list: Drawable[] = depthSorted(v.placed).map((p, i) => {
     const r = footprintRect(p);
-    return { key: r.x1 + r.y1 + i * 1e-4, draw: () => drawFurniture(ctx, n, p, { selected: p.instanceId === v.selectedId, time: v.time }) };
+    return { key: r.x1 + r.y1 + i * 1e-4, draw: () => drawFurniture(ctx, n, p, { selected: p.instanceId === v.selectedId, time: v.time, emptyCushion: !!v.cat }) };
   });
   if (v.actor) {
     const { actor, gender } = v.actor;

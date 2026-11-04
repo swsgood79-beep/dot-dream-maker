@@ -1,7 +1,7 @@
 import type { Cell } from '../engine/room';
 import type { PlacedFurniture } from '../types/game';
 import type { Facing } from './character';
-import { blockedSet, lookDirection, nearestFreeCell, occupiedCells, pathToward } from './characterSim';
+import { besideCells, blockedSet, lookDirection, nearestFreeCell, occupiedCells, pathToward } from './characterSim';
 
 /** 반려묘 행동: 걷기 → 멈춰서 앉기/그루밍/기지개/식빵/잠 → 다시 걷기 */
 export type CatPose = 'walk' | 'sit' | 'groom' | 'stretch' | 'loaf' | 'sleep';
@@ -27,6 +27,10 @@ export class CatSim {
   actor: CatActor = { gx: 5.5, gy: 1.5, facing: 'L', pose: 'loaf' };
   private path: Cell[] = [];
   private timer = 3000;
+  /** 반려묘 쿠션에 들어가 자는 중 (그동안 고양이는 쿠션 그림 속에) */
+  inCushion = false;
+  private cushionLeft = 0;
+  private goingCushion = false;
 
   private rng: () => number;
 
@@ -51,6 +55,7 @@ export class CatSim {
 
   /** 누르면 멈춰서 기지개를 켜거나 그루밍 */
   poke() {
+    if (this.inCushion) return;
     this.path = [];
     this.actor.pose = this.rng() < 0.5 ? 'stretch' : 'groom';
     this.timer = 2200;
@@ -59,6 +64,24 @@ export class CatSim {
   /** avoid: 아이·부모님이 서 있거나 지나갈 칸 (고양이가 양보) */
   update(dt: number, n: number, placed: PlacedFurniture[], avoid: Set<string> = new Set()) {
     const a = this.actor;
+    const cushion = placed.find((p) => p.furnitureId === 'cat_cushion');
+    // 쿠션 속에서 낮잠 → 시간이 지나면 기지개 켜며 나옴
+    if (this.inCushion) {
+      if (!cushion) this.inCushion = false;
+      else {
+        this.cushionLeft -= dt;
+        if (this.cushionLeft > 0) return;
+        this.inCushion = false;
+        const out = besideCells(n, placed, cushion).find((c) => !avoid.has(`${c.x},${c.y}`));
+        if (out) {
+          a.gx = out.x + 0.5;
+          a.gy = out.y + 0.5;
+        }
+        a.pose = 'stretch';
+        this.timer = 1600;
+        return;
+      }
+    }
     const blocked = blockedSet(placed);
     const cx = Math.floor(a.gx);
     const cy = Math.floor(a.gy);
@@ -107,7 +130,13 @@ export class CatSim {
         a.gx = next.x + 0.5;
         a.gy = next.y + 0.5;
         this.path.shift();
-        if (!this.path.length) {
+        if (!this.path.length && this.goingCushion && cushion) {
+          // 쿠션 옆에 도착 → 쏙 들어가 낮잠
+          this.goingCushion = false;
+          this.inCushion = true;
+          this.cushionLeft = 9000 + this.rng() * 9000;
+        } else if (!this.path.length) {
+          this.goingCushion = false;
           // 도착 → 쉬는 동작 하나
           const rest = this.pickRest();
           a.pose = rest.pose;
@@ -122,6 +151,20 @@ export class CatSim {
 
     this.timer -= dt;
     if (this.timer <= 0) {
+      // 가끔 쿠션으로 낮잠 자러 감
+      if (cushion && this.rng() < 0.3) {
+        const goals = besideCells(n, placed, cushion);
+        this.path = pathToward(n, placed, { x: cx, y: cy }, goals, avoid);
+        if (this.path.length) {
+          this.goingCushion = true;
+          return;
+        }
+        if (goals.some((g) => g.x === cx && g.y === cy)) {
+          this.inCushion = true;
+          this.cushionLeft = 9000 + this.rng() * 9000;
+          return;
+        }
+      }
       // 근처(3칸 이내) 아무 곳으로 산책
       const goal = {
         x: Math.max(0, Math.min(n - 1, cx + Math.round((this.rng() - 0.5) * 6))),

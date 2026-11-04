@@ -7,6 +7,7 @@ import { FURNITURE_BODY, pixelIconUrl } from '../render/sprites';
 import { furnitureFlipped, hasFurnitureSprite } from '../render/furnitureSprites';
 import { characterHeight, hasFrame, RES } from '../render/spriteCharacter';
 import { WISH_MAP } from '../data/parentingData';
+import { findBed } from '../engine/simulation';
 import { besideCells, CharacterSim, doorCell, nearestFreeCell, type Step } from '../render/characterSim';
 import { FURNITURE_HOBBY, IDLE_THOUGHTS } from '../render/hobby';
 import { isColdRoom } from '../engine/psyche';
@@ -121,7 +122,7 @@ export function IsometricRoomCanvas({
   // 스케줄 연출: 바깥 활동 장면 · 이번 주 한 줄 · 집 안 활동 효과
   const [scene, setScene] = useState<WeekResult | null>(null);
   // 한 주 = 하루: 아침(출발) → 낮(활동) → 저녁(귀가) 방 조명
-  const [dayTime, setDayTime] = useState<'morning' | 'day' | 'evening' | null>(null);
+  const [dayTime, setDayTime] = useState<'morning' | 'day' | 'evening' | 'night' | null>(null);
   const [caption, setCaption] = useState<string | null>(null);
   const [fx, setFx] = useState<string[] | null>(null);
   const fxRef = useRef<HTMLDivElement>(null);
@@ -208,7 +209,6 @@ export function IsometricRoomCanvas({
       w.actionType === 'RUNAWAY' || (!HOME_ACTIONS.has(w.actionId) && w.outcome !== 'STRIKE' && w.outcome !== 'SICK' && w.outcome !== 'NO_GOLD' && !!sceneFor(w));
     playback.weeks.forEach((w, wi) => {
       const outside = isOut(w);
-      void wi;
       // 공부 → 독서 포즈, 휴식 → 침대 위에서 책 읽기, 대성공 → 만세 점프, 알바 → 바쁘게 움직이기
       const pose = poseFor(w);
       steps.push({
@@ -219,7 +219,7 @@ export function IsometricRoomCanvas({
           sim.actor.act = null;
           setCaption(null);
           setFx(null);
-          setBubble(null);
+          setBubble(wi > 0 ? '☀️ 하암~ 좋은 아침!' : null);
           haloRef.current = null;
         },
       });
@@ -270,7 +270,7 @@ export function IsometricRoomCanvas({
               );
             },
           });
-          if (!atHome) steps.push({ kind: 'goto', resolve: (wd) => nearestFreeCell(wd.n, wd.placed, { x: 1, y: wd.n - 2 }, new Set()) });
+          if (!atHome && wi === playback.weeks.length - 1) steps.push({ kind: 'goto', resolve: (wd) => nearestFreeCell(wd.n, wd.placed, { x: 1, y: wd.n - 2 }, new Set()) });
           steps.push({ kind: 'call', fn: () => setBubble(null) });
         } else {
           steps.push({ kind: 'wait', ms: 600, pose: 'idle', onStart: () => setBubble(null) });
@@ -317,6 +317,43 @@ export function IsometricRoomCanvas({
           setFx(w.outcome === 'FAIL' ? ['💦', '😵'] : sc ? (w.outcome === 'GREAT' ? [...sc.fx, '✨'] : sc.fx) : null);
           spawnPopups(w.popups);
         } });
+      }
+      // 하루의 끝: 밤이 되면 침대로 가서 잠깐 잠 → 다음 주는 아침에 일어나 출발
+      if (wi < playback.weeks.length - 1) {
+        steps.push({
+          kind: 'call',
+          fn: () => {
+            setCaption(null);
+            setFx(null);
+            haloRef.current = null;
+            sim.actor.act = null;
+          },
+        });
+        steps.push({
+          kind: 'goto',
+          resolve: (wd) => {
+            const bed = findBed(wd.placed);
+            return bed ? besideCells(wd.n, wd.placed, bed)[0] ?? null : null;
+          },
+        });
+        steps.push({
+          kind: 'wait',
+          ms: 1200,
+          pose: 'sleep',
+          onStart: () => {
+            setDayTime('night');
+            setBubble('💤');
+            const bed = findBed(viewRef.current!.placed);
+            if (bed) {
+              const fp = footprint(bed);
+              const cx = fp.reduce((a, c) => a + c.x, 0) / fp.length + 0.5;
+              const cy = fp.reduce((a, c) => a + c.y, 0) / fp.length + 0.5;
+              sim.actor.drawAt = { gx: cx, gy: cy, lift: hasFurnitureSprite(bed.furnitureId) ? -2 : (FURNITURE_BODY[bed.furnitureId]?.h ?? 6) - 2 };
+              sim.actor.facing = furnitureFlipped(bed) ? 'L' : 'R';
+            }
+          },
+        });
+        steps.push({ kind: 'call', fn: () => setBubble(null) });
       }
     });
     steps.push({
@@ -437,7 +474,8 @@ export function IsometricRoomCanvas({
     // 스케줄 연출 중에는 그 주 활동 모습, 평소엔 지금 기분에 맞는 모습
     mood: playback || scene ? null : moodPose(game),
     // 반려묘 쿠션이 있으면 고양이는 쿠션 그림 속에서 잠 (쿠션 그림에 고양이가 그려져 있음)
-    cat: game.placedFurniture.some((p) => p.furnitureId === 'cat_cushion') ? null : catRef.current.actor,
+    // 고양이는 늘 돌아다니고, 가끔 쿠션에 쏙 들어가 낮잠 (그동안은 쿠션 그림 속 고양이)
+    cat: catRef.current.inCushion ? null : catRef.current.actor,
     ghost:
       hover && (placingId || movingId)
         ? (() => {
@@ -463,13 +501,14 @@ export function IsometricRoomCanvas({
         // 서로 겹치지 않기: 아이가 우선, 고양이가 양보
         const child = simRef.current;
         const cat = catRef.current;
-        const catOn = !!v.cat;
+        // 고양이는 늘 움직임 계산 (쿠션 속 낮잠 중엔 그리지 않음 → 쿠션 그림 속 고양이)
+        const catOn = !cat.inCushion;
         const union = (...sets: Set<string>[]) => new Set(sets.flatMap((x) => [...x]));
         const here = (gx: number, gy: number) => new Set([`${Math.floor(gx)},${Math.floor(gy)}`]);
         child.actor.slow = !!v.mood?.mope;
         child.update(dt, { n: v.n, placed: v.placed, avoid: catOn ? here(cat.actor.gx, cat.actor.gy) : new Set() });
-        if (catOn) cat.update(dt, v.n, v.placed, union(child.occupied()));
-        renderRoom(ctx, { ...v, time: t, actorHalo: haloRef.current });
+        cat.update(dt, v.n, v.placed, union(child.occupied()));
+        renderRoom(ctx, { ...v, cat: cat.inCushion ? null : cat.actor, time: t, actorHalo: haloRef.current });
         // 말풍선이 캐릭터 머리 위를 따라다니도록 DOM 위치 갱신
         const b = bubbleRef.current;
         if (b) {
@@ -542,7 +581,7 @@ export function IsometricRoomCanvas({
       return;
     }
     const catA = catRef.current.actor;
-    const catShown = !game.placedFurniture.some((p) => p.furnitureId === 'cat_cushion');
+    const catShown = !catRef.current.inCushion;
     if (!sel && catShown && onActor(catA.gx, catA.gy, 18, 24)) {
       catRef.current.poke();
       setCatBubble(catTapLine());
@@ -659,7 +698,9 @@ export function IsometricRoomCanvas({
                 ? 'linear-gradient(160deg, rgba(255,226,160,.28), rgba(255,246,220,.06) 60%)'
                 : dayTime === 'evening'
                   ? 'linear-gradient(160deg, rgba(255,140,70,.30), rgba(120,60,140,.18))'
-                  : 'transparent',
+                  : dayTime === 'night'
+                    ? 'linear-gradient(160deg, rgba(20,24,70,.55), rgba(40,30,90,.45))'
+                    : 'transparent',
           }}
         />
         {/* 바깥 활동: 방 위에 엽서처럼 (부모는 집에서 아이의 하루를 본다) */}

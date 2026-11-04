@@ -186,6 +186,12 @@ export function monthlyAllowance(age: number): number {
   return 250;
 }
 
+/** 침대 가구 (낡은 침대·푹신한 침대·무중력 캡슐 침대) */
+export const isBed = (id: string) => id.endsWith('_bed');
+export function findBed(placed: PlacedFurniture[]) {
+  return placed.find((p) => isBed(p.furnitureId));
+}
+
 export function createNewGame(
   childName: string,
   gender: Gender,
@@ -348,7 +354,7 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
     return {
       week, actionId: action.id, actionName: `${action.name} (거부)`, emoji: '💢', outcome: 'STRIKE', statDelta: {}, stressDelta: -6,
       goldDelta: action.weeklyGoldDelta, comboMultiplier: 1, usedCombos: [], popups: ['파업!'], notes: ['학원 가기를 거부하고 침대에 누워 버렸다'],
-      actionType: action.type, targetInstanceId: s.placedFurniture.find((p) => FURNITURE_MAP[p.furnitureId].category === 'REST')?.instanceId,
+      actionType: action.type, targetInstanceId: findBed(s.placedFurniture)?.instanceId,
     };
   }
   const temper = s.temperament ? TEMPERAMENT_MAP[s.temperament] : null;
@@ -487,7 +493,8 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
   return {
     week, actionId: action.id, actionName: action.name, emoji: action.emoji, outcome, statDelta, stressDelta, goldDelta,
     comboMultiplier: maxMult, usedCombos, popups, notes,
-    actionType: action.type, targetInstanceId: aura.target?.instanceId,
+    // 휴식은 (오라가 더 센 쿠션·디퓨저가 있어도) 침대에서 — 오라 효과는 그대로
+    actionType: action.type, targetInstanceId: action.type === 'REST' && aura.target && !isBed(aura.target.furnitureId) ? findBed(s.placedFurniture)?.instanceId ?? aura.target.instanceId : aura.target?.instanceId,
   };
 }
 
