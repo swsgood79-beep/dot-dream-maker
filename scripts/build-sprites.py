@@ -111,6 +111,39 @@ def drop_specks(rgba, ratio=0.05):
     return rgba
 
 
+def clean_edges(rgba, passes):
+    """흰 배경 번짐(누끼 흰 테두리) 제거.
+    1) 투명한 곳에 닿은 밝고 무채색인 픽셀을 passes번 벗겨 낸다 (도트 그림은 진한 외곽선이 있어 거기서 멈춤)
+    2) 남은 테두리 중 회색빛(흰색+외곽선이 섞인 색) 픽셀은 주변에서 가장 진한 색으로 바꿔 외곽선을 또렷하게"""
+    def edge_of(a):
+        pad = np.pad(~a, 1, constant_values=True)
+        e = np.zeros_like(a)
+        for dy, dx in ((0, 1), (2, 1), (1, 0), (1, 2)):
+            e |= pad[dy : dy + a.shape[0], dx : dx + a.shape[1]]
+        return a & e
+    for _ in range(passes):
+        a = rgba[..., 3] > 0
+        rgb = rgba[..., :3].astype(int)
+        lum, sat = rgb.mean(axis=2), rgb.max(axis=2) - rgb.min(axis=2)
+        halo = edge_of(a) & (lum > 150) & (sat < 70)
+        if not halo.any():
+            break
+        rgba[halo] = 0
+    a = rgba[..., 3] > 0
+    rgb = rgba[..., :3].astype(int)
+    lum, sat = rgb.mean(axis=2), rgb.max(axis=2) - rgb.min(axis=2)
+    grey = edge_of(a) & (lum > 95) & (sat < 50)
+    H, W = a.shape
+    big = np.where(a, lum, 999)
+    for y, x in zip(*np.where(grey)):
+        y0, y1, x0, x1 = max(0, y - 1), min(H, y + 2), max(0, x - 1), min(W, x + 2)
+        win = big[y0:y1, x0:x1]
+        k = np.unravel_index(np.argmin(win), win.shape)
+        if win[k] < lum[y, x] - 30:
+            rgba[y, x, :3] = rgba[y0 + k[0], x0 + k[1], :3]
+    return rgba
+
+
 def cut(img, box, block=BLOCK):
     H, W, _ = img.shape
     x0, y0, x1, y1 = box
@@ -148,6 +181,7 @@ def cut(img, box, block=BLOCK):
     alpha = (cov_s > 0.45) * 255
     out = np.dstack([np.clip(rgb, 0, 255), alpha]).astype(np.uint8)
     out = drop_specks(out)
+    out = clean_edges(out, max(1, round(3 / block)))
     # 투명 여백 잘라내기
     ys, xs = np.where(out[..., 3] > 0)
     return out[ys.min() : ys.max() + 1, xs.min() : xs.max() + 1]

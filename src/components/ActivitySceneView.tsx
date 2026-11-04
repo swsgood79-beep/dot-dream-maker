@@ -87,7 +87,7 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
             style={{ bottom: -7, width: '78%', height: 16, borderRadius: '50%', background: `radial-gradient(closest-side, ${light?.shadow ?? 'rgba(0,0,0,.45)'}, transparent)` }}
           />
         )}
-        <div className={great ? 'scene-hop' : fail ? 'scene-wobble' : ''} style={bg && light ? { filter: `drop-shadow(0 0 3px ${light.glow})` } : undefined}>
+        <div className={great ? 'scene-hop' : fail ? 'scene-wobble' : ''}>
           <Sprite name={frameName(stage, gender, pose)} scale={2.1} light={bg ? light : null} hiSrc={HI[frameName(stage, gender, pose)]} />
         </div>
         {(fail ? ['💦', '😵'] : sc.fx).concat(great ? ['✨', '⭐'] : []).map((e, i) => (
