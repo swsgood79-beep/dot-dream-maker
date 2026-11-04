@@ -646,8 +646,8 @@ for st, g in (('TEEN', 'DAUGHTER'), ('YOUTH', 'SON'), ('YOUTH', 'DAUGHTER')):
     m = (765 - img_s.sum(axis=2)) > 60
     comps = components(m, f=2, min_cells=150)
     b = tight_box(img_s, max(comps, key=lambda c: (c[2] - c[0]) * (c[3] - c[1])))
-    # 크기: 앉은 키 = 그 단계 서기 키의 78% (어린이 책상 공부 그림 비율)
-    want = sprites[f'{st}_{g}_stand'].shape[0] * 0.78
+    # 크기: 의자 포함 앉은 키 = 그 단계 서기 키의 88% (어린이 책상 공부 그림과 비슷하게)
+    want = sprites[f'{st}_{g}_stand'].shape[0] * 0.88
     sprites[f'{st}_{g}_desk'] = defringe(cut(img_s, b, (b[3] - b[1]) / want))
     DESK_IN_SPRITE.discard(f'{st}_{g}_desk')
     print(f'  의자에 앉은 공부 그림: {path}')

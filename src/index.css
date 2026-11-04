@@ -377,3 +377,7 @@ button {
 .float-dot { animation: float-dot 4s ease-in-out infinite; }
 .menu-glass { background: rgba(20, 22, 52, .62); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 @media (prefers-reduced-motion: reduce) { .kenburns, .logo-shine, .logo-rise, .shooting, .window-glow, .float-dot { animation: none !important; } }
+/* 주차 시작 카드 */
+@keyframes week-card { 0% { transform: scale(.4); opacity: 0; } 18% { transform: scale(1.08); opacity: 1; } 28% { transform: scale(1); } 85% { transform: scale(1); opacity: 1; } 100% { transform: scale(.9) translateY(-10px); opacity: 0; } }
+.week-card { animation: week-card 1.4s ease-out both; }
+@media (prefers-reduced-motion: reduce) { .week-card { animation: none; } }

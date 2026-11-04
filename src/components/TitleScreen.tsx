@@ -114,7 +114,7 @@ export function TitleScreen({ onStart, onOpening }: { onStart: () => void; onOpe
               </button>
             ))}
           </div>
-          <p className="mt-1 text-[10px] font-bold text-white/45">v0.36.0 · 새 오프닝</p>
+          <p className="mt-1 text-[10px] font-bold text-white/45">v0.36.1 · 주차 카드</p>
         </div>
       )}
       {settings && <SettingsModal onClose={() => setSettings(false)} onOpening={onOpening} />}

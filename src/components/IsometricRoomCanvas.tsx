@@ -149,6 +149,8 @@ export function IsometricRoomCanvas({
   const catRef = useRef(new CatSim());
   const [popups, setPopups] = useState<Popup[]>([]);
   const [banner, setBanner] = useState<string | null>(null);
+  // 주차 시작 카드 (화면 가운데 크게)
+  const [weekCard, setWeekCard] = useState<{ n: number; emoji: string; name: string } | null>(null);
   const [bubble, setBubble] = useState<string | null>(null);
   const haloRef = useRef<string | null>(null);
   const bubbleRef = useRef<HTMLDivElement>(null);
@@ -255,8 +257,13 @@ export function IsometricRoomCanvas({
           setFx(null);
           setBubble(wi > 0 ? '☀️ 하암~ 좋은 아침!' : null);
           haloRef.current = null;
+          setWeekCard({ n: w.week + 1, emoji: w.emoji, name: w.actionName });
+          sfx('page');
         },
       });
+      // 주차 카드를 먼저 보여 주고 나서 그 주 활동 시작
+      steps.push({ kind: 'wait', ms: 1400, pose: 'idle' });
+      steps.push({ kind: 'call', fn: () => setWeekCard(null) });
       // 집 안에서 하는 일(집안일 돕기): 문으로 나가지 않고, 돌아와서 "다녀왔어요"도 하지 않음
       const atHome = w.actionId === 'JOB_01';
       if (outside) {
@@ -399,6 +406,7 @@ export function IsometricRoomCanvas({
       kind: 'call',
       fn: () => {
         setBanner(null);
+        setWeekCard(null);
         setBubble(null);
         setScene(null);
         setDayTime(null);
@@ -771,7 +779,22 @@ export function IsometricRoomCanvas({
             </div>
           </>
         )}
-        {banner && (
+        {weekCard && (
+          <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center bg-[#1b1f3b]/35">
+            <div key={weekCard.n} className="week-card flex flex-col items-center rounded-xl border-4 border-ink bg-[#fffaf0] px-7 py-3 shadow-[6px_6px_0_rgba(0,0,0,.4)]">
+              <div className="mb-1 flex gap-1.5">
+                {[1, 2, 3, 4].map((k) => (
+                  <span key={k} className={`h-2.5 w-2.5 rounded-full border-2 border-ink ${k < weekCard.n ? 'bg-[#5bd6a8]' : k === weekCard.n ? 'bg-gold' : 'bg-white'}`} />
+                ))}
+              </div>
+              <p className="text-4xl leading-none font-bold text-ink">{weekCard.n}주차</p>
+              <p className="mt-2 rounded-full bg-[#ffe9a8] px-3 py-0.5 text-sm font-bold whitespace-nowrap text-ink">
+                {weekCard.emoji} {weekCard.name}
+              </p>
+            </div>
+          </div>
+        )}
+        {banner && !weekCard && (
           <div className="pop-in pointer-events-none absolute top-2 left-1/2 z-30 -translate-x-1/2 border-3 border-ink bg-gold px-3 py-1 text-xs font-bold whitespace-nowrap shadow-[3px_3px_0_#000]">
             {banner}
           </div>
