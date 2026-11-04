@@ -43,7 +43,7 @@ export function ActingAlertModal({ onWatch, onLater }: { onWatch: () => void; on
             <Sprite name={frameName(stage, game.gender, pose)} scale={1.7} />
           </div>
         </div>
-        <p className="mb-2 rounded border-2 border-ink bg-white p-2 text-xs leading-relaxed">{info.story.replaceAll('{name}', name)}</p>
+        <p className="mb-2 rounded border-2 border-ink bg-white p-2 text-xs leading-relaxed">{info.story.split('{name}').join(name)}</p>
         <div className="mb-2 grid gap-1.5 text-[11px] leading-snug">
           <p className="rounded border-2 border-ink bg-[#fff1c2] px-2 py-1">
             <b>🤔 왜 그럴까요?</b> {info.cause(game)}
