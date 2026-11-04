@@ -585,7 +585,7 @@ for g, sheets_ in JOB_SHEETS.items():
         for num, b in boxes_j.items():
             sprites[f'JOB_END_{num}_{g}'] = defringe(cut(img_j, b, blk))
 
-# 엔딩 44번 설정 변경(v0.28.1: 황금 로봇 슈트 → 고양이 탈 마스코트): 예전 그림은 빼고, 새 그림이 오면 아래 줄을 지운다
+# 엔딩 44번(도트 마스코트)은 v0.29.4에 삭제 → 직업 의상 그림도 아틀라스에서 뺀다
 for g in ('SON', 'DAUGHTER'):
     sprites.pop(f'JOB_END_44_{g}', None)
 

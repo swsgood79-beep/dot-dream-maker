@@ -173,7 +173,7 @@ JOBS = [('01','천재 외과의사','surgeon in scrubs and cap'),('02','대법�
         ('46','미스터리 탐정','detective with deerstalker hat and magnifying glass'),('47','세기의 괴도','phantom thief with a cape, mask and a jewel'),('48','지하세계 보스','mafia boss in a black suit and fedora'),('49','자유로운 세계여행가','traveler with a big backpack and map'),('50','방구석 한량 (백수)','lazy young adult in pajamas holding popcorn')]
 for g, gk, gen_en in GEN:
     for s in range(6):
-        chunk = JOBS[s*9:(s+1)*9]
+        chunk = [j for j in JOBS[s*9:(s+1)*9] if j[0] != '44']  # 44번 엔딩 삭제 (v0.29.4)
         rows = (len(chunk)+2)//3
         items = []
         for i,(num,name,en) in enumerate(chunk):

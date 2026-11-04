@@ -17,7 +17,7 @@ const e = (d: EndingInput): EndingDefinition => ({
   ...d,
 });
 
-/** 기획서 6.2장 카테고리별 50종 직업 엔딩 조건 마스터 테이블 */
+/** 기획서 6.2장 카테고리별 직업 엔딩 조건 마스터 테이블 (49종: 44번 삭제) */
 export const ENDINGS: EndingDefinition[] = [
   // ── [A] 엘리트 전문직 & 학술 계열 (10종)
   e({ id: 'END_01', title: '천재 외과의사', tier: 'S', category: 'ELITE', minStats: { INT: 800, TEC: 750, MOR: 600 }, minAptitudes: { APT_MED: 8 }, minFame: 150, conditionText: 'INT≥800, TEC≥750, MOR≥600 / APT_MED≥8, 명성≥150', epilogueText: '대학병원 수술실에서 생명을 구하는 명의가 되었다.' }),
@@ -73,7 +73,6 @@ export const ENDINGS: EndingDefinition[] = [
   e({ id: 'END_41', title: '전설의 용사', tier: 'SS', category: 'HIDDEN', minStats: { STR: 850, MOR: 680, INT: 650 }, minAptitudes: { APT_ADV: 9 }, requiredComboId: 'CMB_12', requiredFlag: 'FLAG_HERO_SWORD', conditionText: 'STR≥850, MOR≥680, INT≥650 / APT_ADV≥9, CMB_12 + 성검 플래그', epilogueText: '성검을 뽑아 마왕을 물리치고 세계의 평화를 지킨 전설!' }),
   e({ id: 'END_42', title: '마법소녀 / 대마법사', tier: 'SS', category: 'HIDDEN', minStats: { ART: 800, INT: 800, MOR: 620 }, minAptitudes: { APT_ADV: 8 }, requiredFlag: 'FLAG_MAGIC_BOOK', conditionText: 'ART≥800, INT≥800, MOR≥620 / APT_ADV≥8, 마법서 플래그', epilogueText: '별빛 요술봉을 들고 하늘을 날며 도시를 수호하는 신비 엔딩.' }),
   e({ id: 'END_43', title: '왕실 공주 / 왕자 배우자', tier: 'SS', category: 'HIDDEN', minStats: { CHA: 850, INT: 650, ART: 650, MOR: 550 }, minFame: 350, requiredFlag: 'FLAG_ROYAL_BALL', conditionText: 'CHA≥850, INT≥650, ART≥650, MOR≥550 / 명성≥350, 왕실 무도회 플래그', epilogueText: '무도회에서 만난 왕족과 결혼하는 로열 엔딩.' }),
-  e({ id: 'END_44', title: '도트 드림 마스코트', tier: 'SS', category: 'HIDDEN', minStats: { INT: 520, STR: 520, ART: 520, CHA: 520, MOR: 520, TEC: 520 }, minFurnitureCollectionRate: 0.8, conditionText: '전 스탯≥520 / 가구 도감 80% 이상 수집', epilogueText: '우리 집 고양이를 닮은 "드림냥" 탈을 쓰고, 황금 스케치북으로 전 세계 아이들의 꿈을 그려 주는 꿈의 마스코트가 된 진엔딩.' }),
   e({ id: 'END_45', title: '고고학자 (보물 사냥꾼)', tier: 'A', category: 'HIDDEN', minStats: { INT: 650, STR: 650 }, minAptitudes: { APT_ADV: 7 }, requiredActionCounts: { OUT_RUINS: 5 }, conditionText: 'INT≥650, STR≥650 / APT_ADV≥7, 고대 유적 외출 5회↑', epilogueText: '중절모와 채찍을 들고 피라미드 황금 유물을 발굴하는 모험가.' }),
   e({ id: 'END_46', title: '미스터리 탐정', tier: 'A', category: 'HIDDEN', minStats: { INT: 750, TEC: 600, CHA: 500 }, minAptitudes: { APT_LAW: 6, APT_ADV: 6 }, conditionText: 'INT≥750, TEC≥600, CHA≥500 / APT_LAW≥6, APT_ADV≥6', epilogueText: '트렌치코트와 돋보기를 들고 미제 사건의 진범을 지목!' }),
 
@@ -84,7 +83,12 @@ export const ENDINGS: EndingDefinition[] = [
   e({ id: 'END_50', title: '방구석 한량 (백수)', tier: 'C', category: 'DARK', minStats: {}, conditionText: '모든 상위 엔딩 조건 미달 시 기본 발령', epilogueText: '스무 살이 되었지만 아직 부모님 방에서 뒹굴거리며 진로를 고민 중!' }),
 ];
 
-export const ENDING_MAP: Record<string, EndingDefinition> = Object.fromEntries(ENDINGS.map((x) => [x.id, x]));
+/** 없앤 엔딩 (v0.29.4: 44번 도트 마스코트 — 현실성이 떨어져 삭제). 예전 저장의 명예의 전당·방문 이벤트에서만 이름을 찾는 용도 */
+export const RETIRED_ENDINGS: EndingDefinition[] = [
+  e({ id: 'END_44', title: '도트 마스코트 (사라진 엔딩)', tier: 'SS', category: 'HIDDEN', minStats: { INT: 520, STR: 520, ART: 520, CHA: 520, MOR: 520, TEC: 520 }, minFurnitureCollectionRate: 0.8, conditionText: '전 스탯≥520 / 가구 도감 80% 이상 수집', epilogueText: '우리 집 고양이를 닮은 "드림냥" 탈을 쓰고, 황금 스케치북으로 전 세계 아이들의 꿈을 그려 주는 꿈의 마스코트가 된 진엔딩.' }),
+];
+export const ENDING_MAP: Record<string, EndingDefinition> = Object.fromEntries([...ENDINGS, ...RETIRED_ENDINGS].map((x) => [x.id, x]));
+export const ENDING_IDS = new Set(ENDINGS.map((x) => x.id));
 
 export const CATEGORY_LABEL: Record<EndingCategory, string> = {
   ELITE: '엘리트 전문직 & 학술',

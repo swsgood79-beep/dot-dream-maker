@@ -364,7 +364,7 @@ console.log('티어:', Object.entries(tiers).map(([k, v]) => `${k} ${pct(v, CASU
 console.log(`평균 최종 스탯 합 ${Math.round(statSum / CASUAL)}, 평균 남은 골드 ${Math.round(goldEnd / CASUAL)}G`);
 console.log('한량 엔딩 아이들의 스탯 (상위 5명):');
 for (const x of idle.slice(0, 5)) console.log('  ', JSON.stringify(x.st), x.apt, JSON.stringify(x.cnt));
-console.log(`나온 엔딩 종류 ${Object.keys(dist).length}/50`);
+console.log(`나온 엔딩 종류 ${Object.keys(dist).length}/${ENDINGS.length}`);
 for (const [id, n] of Object.entries(dist).sort((a, b) => b[1] - a[1]).slice(0, 15))
   console.log(`  ${id} ${ENDING_MAP[id].title.padEnd(20)} ${pct(n, CASUAL)}`);
 void APT_KEYS;

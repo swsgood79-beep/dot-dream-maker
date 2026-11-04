@@ -16,9 +16,10 @@ function mulberry32(seed: number) {
 }
 
 describe('master data', () => {
-  it('has 50 endings with unique ids', () => {
-    expect(ENDINGS).toHaveLength(50);
-    expect(new Set(ENDINGS.map((e) => e.id)).size).toBe(50);
+  it('has 49 endings with unique ids (44 removed)', () => {
+    expect(ENDINGS).toHaveLength(49);
+    expect(ENDINGS.some((e) => e.id === 'END_44')).toBe(false);
+    expect(new Set(ENDINGS.map((e) => e.id)).size).toBe(49);
   });
   it('has 12 combos whose furniture all exist', () => {
     expect(COMBOS).toHaveLength(12);
@@ -319,14 +320,12 @@ describe('korean labels & icons', () => {
   });
 });
 
-// 엔딩 44(도트 드림 마스코트)는 v0.28.1에 설정이 바뀌어 새 그림을 기다리는 중 → 기본 장면으로 대신
-const PENDING_COSTUME = new Set([44]);
 describe('job costumes', () => {
-  it('son has costume sprites for all 50 endings', () => {
-    for (let i = 1; i <= 50; i++) if (!PENDING_COSTUME.has(i)) expect(Object.keys(atlas)).toContain(`JOB_END_${String(i).padStart(2, '0')}_SON`);
+  it('son has costume sprites for all endings', () => {
+    for (const e of ENDINGS) expect(Object.keys(atlas)).toContain(`JOB_${e.id}_SON`);
   });
-  it('daughter has costume sprites for all 50 endings', () => {
-    for (let i = 1; i <= 50; i++) if (!PENDING_COSTUME.has(i)) expect(Object.keys(atlas)).toContain(`JOB_END_${String(i).padStart(2, '0')}_DAUGHTER`);
+  it('daughter has costume sprites for all endings', () => {
+    for (const e of ENDINGS) expect(Object.keys(atlas)).toContain(`JOB_${e.id}_DAUGHTER`);
   });
 });
 

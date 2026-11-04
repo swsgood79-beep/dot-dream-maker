@@ -3,7 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { setMuted, sfx } from '../audio/sfx';
 import { FURNITURE_MAP, COMBO_MAP } from '../data/furnitureData';
 import { ACTION_MAP } from '../data/scheduleData';
-import { ENDING_MAP } from '../data/endingData';
+import { ENDING_IDS, ENDING_MAP } from '../data/endingData';
 import type { EndingDefinition, Gender, StatKey } from '../types/game';
 import { TEMPERAMENTS, type TemperamentId } from '../data/temperamentData';
 import { DEFAULT_PARENT, parentTalkBonus, type ParentProfile } from '../data/parentData';
@@ -494,6 +494,16 @@ export const useGameStore = create<GameStore>()(
       storage: safeStorage,
       onRehydrateStorage: () => (st) => {
         if (st) setMuted(st.muted);
+        // 없앤 엔딩(44번)은 도감 기록에서 빼서 "n / 49"가 넘치지 않게
+        if (st && st.unlockedEndings?.some((id) => !ENDING_IDS.has(id))) {
+          const keep = (ids: string[]) => ids.filter((id) => ENDING_IDS.has(id));
+          setTimeout(() =>
+            useGameStore.setState((cur) => ({
+              unlockedEndings: keep(cur.unlockedEndings),
+              game: cur.game ? { ...cur.game, unlockedEndings: keep(cur.game.unlockedEndings ?? []) } : cur.game,
+            })),
+          );
+        }
       },
       partialize: (st) => ({
         muted: st.muted,
