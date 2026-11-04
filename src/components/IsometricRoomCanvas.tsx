@@ -21,7 +21,7 @@ import { sceneFor, sceneLine } from '../data/activityScenes';
 import { ActivitySceneView } from './ActivitySceneView';
 
 /**
- * 카이로소프트풍 2D 아이소메트릭 도트 방 (HTML5 Canvas)
+ * 아늑한 2D 아이소메트릭 도트 방 (HTML5 Canvas)
  * - 가구 탭 → 선택(회전/보관), 빈 바닥 탭 → 선택 가구 이동
  * - placingId가 있으면 창고 가구 배치 모드 (가능한 칸이 초록색)
  */

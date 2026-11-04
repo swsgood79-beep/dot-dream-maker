@@ -48,7 +48,7 @@ export const ENDING_SCENE: Record<string, { bg: string; prop: string; sky: [stri
   END_41: { bg: '🏰', prop: '⚔️', sky: ['#3a2a5c', '#ffd84d'] },
   END_42: { bg: '🌙', prop: '🪄', sky: ['#1b0f3b', '#ff8fc0'] },
   END_43: { bg: '🏰', prop: '👑', sky: ['#ffb3d1', '#fff59d'] },
-  END_44: { bg: '🤖', prop: '🌟', sky: ['#ffd84d', '#ff6fae'] },
+  END_44: { bg: '🎡', prop: '🐱', sky: ['#ffd84d', '#ff6fae'] },
   END_45: { bg: '🏜️', prop: '🗿', sky: ['#ffb36b', '#ffe0a8'] },
   END_46: { bg: '🕵️', prop: '🔎', sky: ['#2b1f14', '#8a5a35'] },
   END_47: { bg: '🌕', prop: '💎', sky: ['#05051a', '#3a2a5c'] },

@@ -44,7 +44,7 @@ const DIMS: Record<GrowthStage, { body: number; legs: number }> = {
   YOUTH: { body: 8, legs: 7 },
 };
 
-/** 도트 1칸 = 2px (논리 해상도) — 타일 대비 카이로소프트풍 큼직한 캐릭터 */
+/** 도트 1칸 = 2px (논리 해상도) — 타일 대비 큼직한 캐릭터 */
 export const CHAR_SCALE = 2;
 
 export function proceduralHeight(stage: GrowthStage) {

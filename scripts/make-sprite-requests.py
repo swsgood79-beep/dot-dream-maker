@@ -17,7 +17,7 @@ BOX = Border(left=thin, right=thin, top=thin, bottom=thin)
 INPUT_FILL = PatternFill('solid', fgColor='FFF59D')
 PRI_FILL = {1: 'FFD6D6', 2: 'FFE8C8', 3: 'FFF6D6', 4: 'E6F0DC', 5: 'DCEBF7', 6: 'EDE3F7', 7: 'FDE2F0'}
 
-STYLE = ("Cute 16-bit pixel art in the style of cozy Japanese management sim games (Kairosoft-like). "
+STYLE = ("Cute 16-bit pixel art with an original, cozy look of its own (do not imitate any specific existing game, studio, character or logo). "
          "Clean dark outlines, soft warm palette, crisp pixels with no anti-aliasing blur, no dithering noise. "
          "Pure solid white (#FFFFFF) background. No floor, no cast shadows, no text, no labels, no numbers, no watermark, no signature. "
          "Every sprite is fully separated from the others with large even gaps (at least half a sprite width); nothing overlaps or touches. "
@@ -169,7 +169,7 @@ JOBS = [('01','천재 외과의사','surgeon in scrubs and cap'),('02','대법�
         ('10','초등학교 교사','elementary teacher with an apple and pointer'),('11','전설의 게임 개발자','game developer holding a golden trophy'),('12','AI 로봇공학자','robotics engineer with a small robot'),('13','화이트 해커','white-hat hacker with headset and laptop'),('14','우주비행사','astronaut in a spacesuit holding the helmet'),('15','건축가','architect with a hard hat and blueprint'),('16','풀스택 웹 개발자','developer with a hoodie and coffee mug'),('17','프로게이머','esports pro in team jersey with headset'),('18','글로벌 팝 아이돌','pop idol in a sparkling stage outfit with mic'),
         ('19','칸 영화제 명감독','film director with beret and megaphone'),('20','인기 웹툰 작가','webtoon artist with a drawing tablet'),('21','세계적 피아니스트','pianist in a tailcoat/gown bowing'),('22','천만 영화배우','movie star in sunglasses on a red carpet pose'),('23','메가 인플루언서','influencer holding a gold play button'),('24','패션 디자이너','fashion designer with measuring tape'),('25','메인 뉴스 아나운서','news anchor in a suit holding papers'),('26','거리의 인디 뮤지션','street musician with an acoustic guitar'),('27','글로벌 유니콘 CEO','CEO in a sharp suit with a briefcase'),
         ('28','미슐랭 3스타 셰프','chef in white uniform and tall hat'),('29','월스트리트 펀드매니저','fund manager in a vest with a tablet'),('30','외교관','diplomat in a formal suit with a flag pin'),('31','파티시에','pastry chef holding a cake'),('32','플로리스트','florist holding a bouquet'),('33','호텔 지배인','hotel manager in a uniform with a bell'),('34','대기업 사원','new office worker with an ID badge'),('35','올림픽 금메달리스트','athlete in tracksuit biting a gold medal'),('36','프로 스포츠 슈퍼스타','pro athlete in a team uniform with a ball'),
-        ('37','특수부대 장교','special forces officer in uniform saluting'),('38','열혈 형사','detective in a trench coat with a badge'),('39','119 구조대원','firefighter in gear with a helmet'),('40','항공기 기장','airline pilot in uniform with sunglasses'),('41','전설의 용사','legendary hero with a holy sword and armor'),('42','마법소녀 / 대마법사','magical girl / wizard with a star wand'),('43','왕실 공주 / 왕자 배우자','royal princess / prince in a gown or royal suit with crown'),('44','마스코트 계승자','wearing a shiny golden robot suit'),('45','고고학자','archaeologist with fedora and whip'),
+        ('37','특수부대 장교','special forces officer in uniform saluting'),('38','열혈 형사','detective in a trench coat with a badge'),('39','119 구조대원','firefighter in gear with a helmet'),('40','항공기 기장','airline pilot in uniform with sunglasses'),('41','전설의 용사','legendary hero with a holy sword and armor'),('42','마법소녀 / 대마법사','magical girl / wizard with a star wand'),('43','왕실 공주 / 왕자 배우자','royal princess / prince in a gown or royal suit with crown'),('44','도트 드림 마스코트','wearing a fluffy orange-and-white cat mascot costume (like the family cat) with the hood down, holding a golden sketchbook'),('45','고고학자','archaeologist with fedora and whip'),
         ('46','미스터리 탐정','detective with deerstalker hat and magnifying glass'),('47','세기의 괴도','phantom thief with a cape, mask and a jewel'),('48','지하세계 보스','mafia boss in a black suit and fedora'),('49','자유로운 세계여행가','traveler with a big backpack and map'),('50','방구석 한량 (백수)','lazy young adult in pajamas holding popcorn')]
 for g, gk, gen_en in GEN:
     for s in range(6):
@@ -185,7 +185,7 @@ for g, gk, gen_en in GEN:
 
 # ── 7순위: 스케줄 연출 (v0.19) ──────────────────────────────
 # 장소 배경: 세로 3:4 패널 4장씩. 칠판·화면 글씨와 아이 캐릭터는 게임이 위에 그리므로 비워 둔다.
-BG_STYLE = ("Cute 16-bit pixel art in the cozy style of Japanese management sim games (Kairosoft-like): crisp pixels, no blur, "
+BG_STYLE = ("Cute 16-bit pixel art with an original, cozy look of its own (do not imitate any specific existing game, studio, character or logo): crisp pixels, no blur, "
             "clean dark outlines, soft warm palette.\n"
             "LAYOUT: exactly 2 rows x 2 columns = 4 separate scene panels. Every panel is a PORTRAIT rectangle with a 3:4 ratio "
             "(taller than wide) and a thin dark outline. Panels are separated by wide pure white (#FFFFFF) gaps, and the whole "

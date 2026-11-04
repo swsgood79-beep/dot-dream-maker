@@ -107,7 +107,7 @@ assert len(S) == 81, len(S)
 missing = [k for k in events if k not in {x[0] for x in S}]
 assert not missing, missing
 
-STYLE = ("Cute 16-bit pixel art in the cozy style of Japanese management sim games (Kairosoft-like): crisp pixels, clean dark outlines, soft warm palette.\n"
+STYLE = ("Cute 16-bit pixel art with an original, cozy look of its own (do not imitate any specific existing game, studio, character or logo): crisp pixels, clean dark outlines, soft warm palette.\n"
          "LAYOUT: exactly 2 rows x 2 columns = 4 separate scene panels. Every panel is a WIDE 16:9 rectangle with a thin dark outline, "
          "separated by wide pure white (#FFFFFF) gaps; everything outside the panels is pure white. Image size 2752x1536.\n"
          "COMPOSITION: each panel is a still-life story scene that tells what happened through OBJECTS and the PLACE. "

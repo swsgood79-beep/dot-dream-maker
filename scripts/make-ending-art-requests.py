@@ -40,7 +40,7 @@ LOOK = {
     'SON': 'the same boy from the reference, now a young man (age 20-25): side-swept brown hair, big brown eyes',
     'DAUGHTER': 'the same girl from the reference, now a young woman (age 20-25): long wavy brown hair, teal eyes, rosy cheeks',
 }
-STYLE = ("Cute 16-bit pixel art in the cozy style of Japanese management sim games (Kairosoft-like): crisp pixels, clean dark outlines, soft palette.\n"
+STYLE = ("Cute 16-bit pixel art with an original, cozy look of its own (do not imitate any specific existing game, studio, character or logo): crisp pixels, clean dark outlines, soft palette.\n"
          "LAYOUT: exactly 2 rows x 2 columns = 4 separate illustration panels. Every panel is a 4:3 landscape rectangle with a thin dark outline, "
          "separated by wide pure white (#FFFFFF) gaps; everything outside the panels is pure white. Image size 2048x1536.\n"
          "Each panel shows ONE grown-up character from the waist up (or full body), face clearly visible, in their workplace. "

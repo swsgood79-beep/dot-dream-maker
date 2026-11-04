@@ -585,6 +585,10 @@ for g, sheets_ in JOB_SHEETS.items():
         for num, b in boxes_j.items():
             sprites[f'JOB_END_{num}_{g}'] = defringe(cut(img_j, b, blk))
 
+# 엔딩 44번 설정 변경(v0.28.1: 황금 로봇 슈트 → 고양이 탈 마스코트): 예전 그림은 빼고, 새 그림이 오면 아래 줄을 지운다
+for g in ('SON', 'DAUGHTER'):
+    sprites.pop(f'JOB_END_44_{g}', None)
+
 # 활동 포즈 (v0.21): 나이대·성별마다 3×4 = 12동작 → {STAGE}_{G}_{동작}
 # 스케줄 바깥 활동 장면에서 그 장소에 맞는 동작으로 쓴다 (빵 쟁반, 빗자루, 기타, 발차기 …)
 ACT_KEYS = ['bake', 'sweep', 'guitar', 'dance', 'kick', 'experiment', 'pet', 'shopping', 'camp', 'arcade', 'explore', 'raise']

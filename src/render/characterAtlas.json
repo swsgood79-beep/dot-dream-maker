@@ -1203,1408 +1203,1394 @@
   "h": 91,
   "ax": 23.5
  },
- "JOB_END_44_SON": {
-  "x": 7499,
-  "y": 0,
-  "w": 36,
-  "h": 86,
-  "ax": 18.6
- },
  "JOB_END_45_SON": {
-  "x": 7536,
+  "x": 7499,
   "y": 0,
   "w": 40,
   "h": 84,
   "ax": 19.3
  },
  "JOB_END_46_SON": {
-  "x": 7577,
+  "x": 7540,
   "y": 0,
   "w": 50,
   "h": 80,
   "ax": 22.8
  },
  "JOB_END_47_SON": {
-  "x": 7628,
+  "x": 7591,
   "y": 0,
   "w": 53,
   "h": 84,
   "ax": 26.8
  },
  "JOB_END_48_SON": {
-  "x": 7682,
+  "x": 7645,
   "y": 0,
   "w": 48,
   "h": 77,
   "ax": 21.0
  },
  "JOB_END_49_SON": {
-  "x": 7731,
+  "x": 7694,
   "y": 0,
   "w": 55,
   "h": 87,
   "ax": 25.7
  },
  "JOB_END_50_SON": {
-  "x": 7787,
+  "x": 7750,
   "y": 0,
   "w": 45,
   "h": 84,
   "ax": 21.2
  },
  "JOB_END_01_DAUGHTER": {
-  "x": 7833,
+  "x": 7796,
   "y": 0,
   "w": 43,
   "h": 80,
   "ax": 18.8
  },
  "JOB_END_02_DAUGHTER": {
-  "x": 7877,
+  "x": 7840,
   "y": 0,
   "w": 57,
   "h": 81,
   "ax": 24.2
  },
  "JOB_END_03_DAUGHTER": {
-  "x": 7935,
+  "x": 7898,
   "y": 0,
   "w": 56,
   "h": 78,
   "ax": 22.1
  },
  "JOB_END_04_DAUGHTER": {
-  "x": 7992,
+  "x": 7955,
   "y": 0,
   "w": 51,
   "h": 82,
   "ax": 22.8
  },
  "JOB_END_05_DAUGHTER": {
-  "x": 8044,
+  "x": 8007,
   "y": 0,
   "w": 43,
   "h": 78,
   "ax": 19.7
  },
  "JOB_END_06_DAUGHTER": {
-  "x": 8088,
+  "x": 8051,
   "y": 0,
   "w": 49,
   "h": 80,
   "ax": 21.4
  },
  "JOB_END_07_DAUGHTER": {
-  "x": 8138,
+  "x": 8101,
   "y": 0,
   "w": 52,
   "h": 90,
   "ax": 21.4
  },
  "JOB_END_08_DAUGHTER": {
-  "x": 8191,
+  "x": 8154,
   "y": 0,
   "w": 46,
   "h": 87,
   "ax": 20.9
  },
  "JOB_END_09_DAUGHTER": {
-  "x": 8238,
+  "x": 8201,
   "y": 0,
   "w": 43,
   "h": 86,
   "ax": 23.4
  },
  "JOB_END_10_DAUGHTER": {
-  "x": 8282,
+  "x": 8245,
   "y": 0,
   "w": 59,
   "h": 79,
   "ax": 22.5
  },
  "JOB_END_11_DAUGHTER": {
-  "x": 8342,
+  "x": 8305,
   "y": 0,
   "w": 59,
   "h": 79,
   "ax": 26.1
  },
  "JOB_END_12_DAUGHTER": {
-  "x": 8402,
+  "x": 8365,
   "y": 0,
   "w": 56,
   "h": 79,
   "ax": 25.4
  },
  "JOB_END_13_DAUGHTER": {
-  "x": 8459,
+  "x": 8422,
   "y": 0,
   "w": 53,
   "h": 80,
   "ax": 22.6
  },
  "JOB_END_14_DAUGHTER": {
-  "x": 8513,
+  "x": 8476,
   "y": 0,
   "w": 53,
   "h": 81,
   "ax": 23.3
  },
  "JOB_END_15_DAUGHTER": {
-  "x": 8567,
+  "x": 8530,
   "y": 0,
   "w": 47,
   "h": 83,
   "ax": 21.1
  },
  "JOB_END_16_DAUGHTER": {
-  "x": 8615,
+  "x": 8578,
   "y": 0,
   "w": 57,
   "h": 86,
   "ax": 23.3
  },
  "JOB_END_17_DAUGHTER": {
-  "x": 8673,
+  "x": 8636,
   "y": 0,
   "w": 47,
   "h": 85,
   "ax": 21.2
  },
  "JOB_END_18_DAUGHTER": {
-  "x": 8721,
+  "x": 8684,
   "y": 0,
   "w": 49,
   "h": 84,
   "ax": 21.5
  },
  "JOB_END_19_DAUGHTER": {
-  "x": 8771,
+  "x": 8734,
   "y": 0,
   "w": 59,
   "h": 84,
   "ax": 24.9
  },
  "JOB_END_20_DAUGHTER": {
-  "x": 8831,
+  "x": 8794,
   "y": 0,
   "w": 47,
   "h": 80,
   "ax": 21.5
  },
  "JOB_END_21_DAUGHTER": {
-  "x": 8879,
+  "x": 8842,
   "y": 0,
   "w": 44,
   "h": 80,
   "ax": 21.5
  },
  "JOB_END_22_DAUGHTER": {
-  "x": 8924,
+  "x": 8887,
   "y": 0,
   "w": 37,
   "h": 81,
   "ax": 19.0
  },
  "JOB_END_23_DAUGHTER": {
-  "x": 8962,
+  "x": 8925,
   "y": 0,
   "w": 56,
   "h": 81,
   "ax": 24.6
  },
  "JOB_END_24_DAUGHTER": {
-  "x": 9019,
+  "x": 8982,
   "y": 0,
   "w": 44,
   "h": 80,
   "ax": 20.0
  },
  "JOB_END_25_DAUGHTER": {
-  "x": 9064,
+  "x": 9027,
   "y": 0,
   "w": 41,
   "h": 85,
   "ax": 19.7
  },
  "JOB_END_26_DAUGHTER": {
-  "x": 9106,
+  "x": 9069,
   "y": 0,
   "w": 60,
   "h": 86,
   "ax": 23.2
  },
  "JOB_END_27_DAUGHTER": {
-  "x": 9167,
+  "x": 9130,
   "y": 0,
   "w": 39,
   "h": 85,
   "ax": 21.9
  },
  "JOB_END_28_DAUGHTER": {
-  "x": 9207,
+  "x": 9170,
   "y": 0,
   "w": 53,
   "h": 82,
   "ax": 23.5
  },
  "JOB_END_29_DAUGHTER": {
-  "x": 9261,
+  "x": 9224,
   "y": 0,
   "w": 51,
   "h": 77,
   "ax": 22.1
  },
  "JOB_END_30_DAUGHTER": {
-  "x": 9313,
+  "x": 9276,
   "y": 0,
   "w": 35,
   "h": 77,
   "ax": 18.0
  },
  "JOB_END_31_DAUGHTER": {
-  "x": 9349,
+  "x": 9312,
   "y": 0,
   "w": 54,
   "h": 82,
   "ax": 22.8
  },
  "JOB_END_32_DAUGHTER": {
-  "x": 9404,
+  "x": 9367,
   "y": 0,
   "w": 50,
   "h": 79,
   "ax": 22.1
  },
  "JOB_END_33_DAUGHTER": {
-  "x": 9455,
+  "x": 9418,
   "y": 0,
   "w": 51,
   "h": 79,
   "ax": 21.5
  },
  "JOB_END_34_DAUGHTER": {
-  "x": 9507,
+  "x": 9470,
   "y": 0,
   "w": 36,
   "h": 85,
   "ax": 19.4
  },
  "JOB_END_35_DAUGHTER": {
-  "x": 9544,
+  "x": 9507,
   "y": 0,
   "w": 43,
   "h": 84,
   "ax": 20.0
  },
  "JOB_END_36_DAUGHTER": {
-  "x": 9588,
+  "x": 9551,
   "y": 0,
   "w": 40,
   "h": 81,
   "ax": 22.3
  },
  "JOB_END_37_DAUGHTER": {
-  "x": 9629,
+  "x": 9592,
   "y": 0,
   "w": 44,
   "h": 78,
   "ax": 19.7
  },
  "JOB_END_38_DAUGHTER": {
-  "x": 9674,
+  "x": 9637,
   "y": 0,
   "w": 51,
   "h": 77,
   "ax": 21.7
  },
  "JOB_END_39_DAUGHTER": {
-  "x": 9726,
+  "x": 9689,
   "y": 0,
   "w": 59,
   "h": 82,
   "ax": 23.7
  },
  "JOB_END_40_DAUGHTER": {
-  "x": 9786,
+  "x": 9749,
   "y": 0,
   "w": 35,
   "h": 80,
   "ax": 17.9
  },
  "JOB_END_41_DAUGHTER": {
-  "x": 9822,
+  "x": 9785,
   "y": 0,
   "w": 65,
   "h": 78,
   "ax": 25.1
  },
  "JOB_END_42_DAUGHTER": {
-  "x": 9888,
+  "x": 9851,
   "y": 0,
   "w": 56,
   "h": 83,
   "ax": 24.9
  },
  "JOB_END_43_DAUGHTER": {
-  "x": 9945,
+  "x": 9908,
   "y": 0,
   "w": 50,
   "h": 86,
   "ax": 24.7
  },
- "JOB_END_44_DAUGHTER": {
-  "x": 9996,
-  "y": 0,
-  "w": 39,
-  "h": 84,
-  "ax": 18.7
- },
  "JOB_END_45_DAUGHTER": {
-  "x": 10036,
+  "x": 9959,
   "y": 0,
   "w": 48,
   "h": 81,
   "ax": 22.4
  },
  "JOB_END_46_DAUGHTER": {
-  "x": 10085,
+  "x": 10008,
   "y": 0,
   "w": 50,
   "h": 82,
   "ax": 21.3
  },
  "JOB_END_47_DAUGHTER": {
-  "x": 10136,
+  "x": 10059,
   "y": 0,
   "w": 49,
   "h": 78,
   "ax": 22.8
  },
  "JOB_END_48_DAUGHTER": {
-  "x": 10186,
+  "x": 10109,
   "y": 0,
   "w": 36,
   "h": 81,
   "ax": 17.2
  },
  "JOB_END_49_DAUGHTER": {
-  "x": 10223,
+  "x": 10146,
   "y": 0,
   "w": 57,
   "h": 81,
   "ax": 27.3
  },
  "JOB_END_50_DAUGHTER": {
-  "x": 10281,
+  "x": 10204,
   "y": 0,
   "w": 42,
   "h": 81,
   "ax": 18.6
  },
  "CHILD_SON_bake": {
-  "x": 10324,
+  "x": 10247,
   "y": 0,
   "w": 48,
   "h": 67,
   "ax": 17.1
  },
  "CHILD_SON_sweep": {
-  "x": 10373,
+  "x": 10296,
   "y": 0,
   "w": 50,
   "h": 66,
   "ax": 20.7
  },
  "CHILD_SON_guitar": {
-  "x": 10424,
+  "x": 10347,
   "y": 0,
   "w": 47,
   "h": 67,
   "ax": 18.4
  },
  "CHILD_SON_dance": {
-  "x": 10472,
+  "x": 10395,
   "y": 0,
   "w": 43,
   "h": 67,
   "ax": 20.0
  },
  "CHILD_SON_kick": {
-  "x": 10516,
+  "x": 10439,
   "y": 0,
   "w": 51,
   "h": 67,
   "ax": 21.1
  },
  "CHILD_SON_experiment": {
-  "x": 10568,
+  "x": 10491,
   "y": 0,
   "w": 40,
   "h": 65,
   "ax": 18.0
  },
  "CHILD_SON_pet": {
-  "x": 10609,
+  "x": 10532,
   "y": 0,
   "w": 47,
   "h": 65,
   "ax": 18.8
  },
  "CHILD_SON_shopping": {
-  "x": 10657,
+  "x": 10580,
   "y": 0,
   "w": 62,
   "h": 66,
   "ax": 31.9
  },
  "CHILD_SON_camp": {
-  "x": 10720,
+  "x": 10643,
   "y": 0,
   "w": 56,
   "h": 66,
   "ax": 21.7
  },
  "CHILD_SON_arcade": {
-  "x": 10777,
+  "x": 10700,
   "y": 0,
   "w": 48,
   "h": 63,
   "ax": 24.9
  },
  "CHILD_SON_explore": {
-  "x": 10826,
+  "x": 10749,
   "y": 0,
   "w": 49,
   "h": 65,
   "ax": 23.6
  },
  "CHILD_SON_raise": {
-  "x": 10876,
+  "x": 10799,
   "y": 0,
   "w": 39,
   "h": 67,
   "ax": 18.7
  },
  "TEEN_SON_bake": {
-  "x": 10916,
+  "x": 10839,
   "y": 0,
   "w": 48,
   "h": 77,
   "ax": 18.6
  },
  "TEEN_SON_sweep": {
-  "x": 10965,
+  "x": 10888,
   "y": 0,
   "w": 56,
   "h": 77,
   "ax": 19.6
  },
  "TEEN_SON_guitar": {
-  "x": 11022,
+  "x": 10945,
   "y": 0,
   "w": 56,
   "h": 77,
   "ax": 21.8
  },
  "TEEN_SON_dance": {
-  "x": 11079,
+  "x": 11002,
   "y": 0,
   "w": 46,
   "h": 77,
   "ax": 21.4
  },
  "TEEN_SON_kick": {
-  "x": 11126,
+  "x": 11049,
   "y": 0,
   "w": 59,
   "h": 76,
   "ax": 23.9
  },
  "TEEN_SON_experiment": {
-  "x": 11186,
+  "x": 11109,
   "y": 0,
   "w": 45,
   "h": 76,
   "ax": 20.8
  },
  "TEEN_SON_pet": {
-  "x": 11232,
+  "x": 11155,
   "y": 0,
   "w": 45,
   "h": 76,
   "ax": 18.9
  },
  "TEEN_SON_shopping": {
-  "x": 11278,
+  "x": 11201,
   "y": 0,
   "w": 71,
   "h": 76,
   "ax": 35.0
  },
  "TEEN_SON_camp": {
-  "x": 11350,
+  "x": 11273,
   "y": 0,
   "w": 61,
   "h": 76,
   "ax": 21.4
  },
  "TEEN_SON_arcade": {
-  "x": 11412,
+  "x": 11335,
   "y": 0,
   "w": 38,
   "h": 75,
   "ax": 16.1
  },
  "TEEN_SON_explore": {
-  "x": 11451,
+  "x": 11374,
   "y": 0,
   "w": 53,
   "h": 76,
   "ax": 20.5
  },
  "TEEN_SON_raise": {
-  "x": 11505,
+  "x": 11428,
   "y": 0,
   "w": 43,
   "h": 76,
   "ax": 20.3
  },
  "YOUTH_SON_bake": {
-  "x": 11549,
+  "x": 11472,
   "y": 0,
   "w": 65,
   "h": 85,
   "ax": 24.7
  },
  "YOUTH_SON_sweep": {
-  "x": 11615,
+  "x": 11538,
   "y": 0,
   "w": 58,
   "h": 84,
   "ax": 17.9
  },
  "YOUTH_SON_guitar": {
-  "x": 11674,
+  "x": 11597,
   "y": 0,
   "w": 65,
   "h": 86,
   "ax": 26.1
  },
  "YOUTH_SON_dance": {
-  "x": 11740,
+  "x": 11663,
   "y": 0,
   "w": 53,
   "h": 82,
   "ax": 26.2
  },
  "YOUTH_SON_kick": {
-  "x": 11794,
+  "x": 11717,
   "y": 0,
   "w": 65,
   "h": 83,
   "ax": 25.8
  },
  "YOUTH_SON_experiment": {
-  "x": 11860,
+  "x": 11783,
   "y": 0,
   "w": 50,
   "h": 83,
   "ax": 22.9
  },
  "YOUTH_SON_pet": {
-  "x": 11911,
+  "x": 11834,
   "y": 0,
   "w": 54,
   "h": 83,
   "ax": 21.0
  },
  "YOUTH_SON_shopping": {
-  "x": 11966,
+  "x": 11889,
   "y": 0,
   "w": 82,
   "h": 84,
   "ax": 42.3
  },
  "YOUTH_SON_camp": {
-  "x": 12049,
+  "x": 11972,
   "y": 0,
   "w": 67,
   "h": 84,
   "ax": 24.8
  },
  "YOUTH_SON_arcade": {
-  "x": 12117,
+  "x": 12040,
   "y": 0,
   "w": 61,
   "h": 80,
   "ax": 30.6
  },
  "YOUTH_SON_explore": {
-  "x": 12179,
+  "x": 12102,
   "y": 0,
   "w": 69,
   "h": 83,
   "ax": 30.2
  },
  "YOUTH_SON_raise": {
-  "x": 12249,
+  "x": 12172,
   "y": 0,
   "w": 47,
   "h": 86,
   "ax": 21.7
  },
  "CHILD_DAUGHTER_bake": {
-  "x": 12297,
+  "x": 12220,
   "y": 0,
   "w": 53,
   "h": 68,
   "ax": 19.9
  },
  "CHILD_DAUGHTER_sweep": {
-  "x": 12351,
+  "x": 12274,
   "y": 0,
   "w": 44,
   "h": 68,
   "ax": 21.9
  },
  "CHILD_DAUGHTER_guitar": {
-  "x": 12396,
+  "x": 12319,
   "y": 0,
   "w": 52,
   "h": 68,
   "ax": 21.4
  },
  "CHILD_DAUGHTER_dance": {
-  "x": 12449,
+  "x": 12372,
   "y": 0,
   "w": 46,
   "h": 68,
   "ax": 21.0
  },
  "CHILD_DAUGHTER_kick": {
-  "x": 12496,
+  "x": 12419,
   "y": 0,
   "w": 55,
   "h": 67,
   "ax": 23.8
  },
  "CHILD_DAUGHTER_experiment": {
-  "x": 12552,
+  "x": 12475,
   "y": 0,
   "w": 46,
   "h": 67,
   "ax": 21.5
  },
  "CHILD_DAUGHTER_pet": {
-  "x": 12599,
+  "x": 12522,
   "y": 0,
   "w": 49,
   "h": 67,
   "ax": 21.0
  },
  "CHILD_DAUGHTER_shopping": {
-  "x": 12649,
+  "x": 12572,
   "y": 0,
   "w": 66,
   "h": 66,
   "ax": 31.0
  },
  "CHILD_DAUGHTER_camp": {
-  "x": 12716,
+  "x": 12639,
   "y": 0,
   "w": 64,
   "h": 66,
   "ax": 23.1
  },
  "CHILD_DAUGHTER_arcade": {
-  "x": 12781,
+  "x": 12704,
   "y": 0,
   "w": 53,
   "h": 66,
   "ax": 21.0
  },
  "CHILD_DAUGHTER_explore": {
-  "x": 12835,
+  "x": 12758,
   "y": 0,
   "w": 61,
   "h": 67,
   "ax": 21.5
  },
  "CHILD_DAUGHTER_raise": {
-  "x": 12897,
+  "x": 12820,
   "y": 0,
   "w": 46,
   "h": 68,
   "ax": 20.9
  },
  "TEEN_DAUGHTER_bake": {
-  "x": 12944,
+  "x": 12867,
   "y": 0,
   "w": 53,
   "h": 76,
   "ax": 19.1
  },
  "TEEN_DAUGHTER_sweep": {
-  "x": 12998,
+  "x": 12921,
   "y": 0,
   "w": 54,
   "h": 80,
   "ax": 29.6
  },
  "TEEN_DAUGHTER_guitar": {
-  "x": 13053,
+  "x": 12976,
   "y": 0,
   "w": 53,
   "h": 76,
   "ax": 20.3
  },
  "TEEN_DAUGHTER_dance": {
-  "x": 13107,
+  "x": 13030,
   "y": 0,
   "w": 43,
   "h": 76,
   "ax": 18.7
  },
  "TEEN_DAUGHTER_kick": {
-  "x": 13151,
+  "x": 13074,
   "y": 0,
   "w": 54,
   "h": 75,
   "ax": 21.4
  },
  "TEEN_DAUGHTER_experiment": {
-  "x": 13206,
+  "x": 13129,
   "y": 0,
   "w": 43,
   "h": 74,
   "ax": 19.0
  },
  "TEEN_DAUGHTER_pet": {
-  "x": 13250,
+  "x": 13173,
   "y": 0,
   "w": 42,
   "h": 75,
   "ax": 20.2
  },
  "TEEN_DAUGHTER_shopping": {
-  "x": 13293,
+  "x": 13216,
   "y": 0,
   "w": 69,
   "h": 75,
   "ax": 33.8
  },
  "TEEN_DAUGHTER_camp": {
-  "x": 13363,
+  "x": 13286,
   "y": 0,
   "w": 59,
   "h": 74,
   "ax": 20.7
  },
  "TEEN_DAUGHTER_arcade": {
-  "x": 13423,
+  "x": 13346,
   "y": 0,
   "w": 54,
   "h": 74,
   "ax": 21.4
  },
  "TEEN_DAUGHTER_explore": {
-  "x": 13478,
+  "x": 13401,
   "y": 0,
   "w": 56,
   "h": 74,
   "ax": 25.7
  },
  "TEEN_DAUGHTER_raise": {
-  "x": 13535,
+  "x": 13458,
   "y": 0,
   "w": 46,
   "h": 74,
   "ax": 20.8
  },
  "YOUTH_DAUGHTER_bake": {
-  "x": 13582,
+  "x": 13505,
   "y": 0,
   "w": 61,
   "h": 82,
   "ax": 22.7
  },
  "YOUTH_DAUGHTER_sweep": {
-  "x": 13644,
+  "x": 13567,
   "y": 0,
   "w": 59,
   "h": 82,
   "ax": 21.7
  },
  "YOUTH_DAUGHTER_guitar": {
-  "x": 13704,
+  "x": 13627,
   "y": 0,
   "w": 57,
   "h": 83,
   "ax": 22.8
  },
  "YOUTH_DAUGHTER_dance": {
-  "x": 13762,
+  "x": 13685,
   "y": 0,
   "w": 48,
   "h": 81,
   "ax": 23.9
  },
  "YOUTH_DAUGHTER_kick": {
-  "x": 13811,
+  "x": 13734,
   "y": 0,
   "w": 62,
   "h": 80,
   "ax": 25.0
  },
  "YOUTH_DAUGHTER_experiment": {
-  "x": 13874,
+  "x": 13797,
   "y": 0,
   "w": 46,
   "h": 81,
   "ax": 20.3
  },
  "YOUTH_DAUGHTER_pet": {
-  "x": 13921,
+  "x": 13844,
   "y": 0,
   "w": 47,
   "h": 81,
   "ax": 21.0
  },
  "YOUTH_DAUGHTER_shopping": {
-  "x": 13969,
+  "x": 13892,
   "y": 0,
   "w": 69,
   "h": 81,
   "ax": 35.0
  },
  "YOUTH_DAUGHTER_camp": {
-  "x": 14039,
+  "x": 13962,
   "y": 0,
   "w": 66,
   "h": 81,
   "ax": 22.1
  },
  "YOUTH_DAUGHTER_arcade": {
-  "x": 14106,
+  "x": 14029,
   "y": 0,
   "w": 56,
   "h": 73,
   "ax": 20.5
  },
  "YOUTH_DAUGHTER_explore": {
-  "x": 14163,
+  "x": 14086,
   "y": 0,
   "w": 64,
   "h": 79,
   "ax": 22.6
  },
  "YOUTH_DAUGHTER_raise": {
-  "x": 14228,
+  "x": 14151,
   "y": 0,
   "w": 42,
   "h": 78,
   "ax": 22.8
  },
  "CHILD_SON_mood_sad": {
-  "x": 14271,
+  "x": 14194,
   "y": 0,
   "w": 33,
   "h": 65,
   "ax": 15.0
  },
  "CHILD_SON_mood_angry": {
-  "x": 14305,
+  "x": 14228,
   "y": 0,
   "w": 36,
   "h": 67,
   "ax": 15.9
  },
  "CHILD_SON_mood_cry": {
-  "x": 14342,
+  "x": 14265,
   "y": 0,
   "w": 34,
   "h": 66,
   "ax": 16.8
  },
  "CHILD_SON_mood_stressed": {
-  "x": 14377,
+  "x": 14300,
   "y": 0,
   "w": 36,
   "h": 66,
   "ax": 17.6
  },
  "CHILD_SON_mood_sulk": {
-  "x": 14414,
+  "x": 14337,
   "y": 0,
   "w": 33,
   "h": 52,
   "ax": 16.0
  },
  "CHILD_SON_mood_back_sulk": {
-  "x": 14448,
+  "x": 14371,
   "y": 0,
   "w": 33,
   "h": 67,
   "ax": 17.3
  },
  "CHILD_SON_mood_sick": {
-  "x": 14482,
+  "x": 14405,
   "y": 0,
   "w": 38,
   "h": 65,
   "ax": 19.9
  },
  "CHILD_SON_mood_phone": {
-  "x": 14521,
+  "x": 14444,
   "y": 0,
   "w": 32,
   "h": 64,
   "ax": 15.6
  },
  "CHILD_SON_mood_rebel": {
-  "x": 14554,
+  "x": 14477,
   "y": 0,
   "w": 31,
   "h": 66,
   "ax": 14.9
  },
  "CHILD_SON_mood_mope_walkA": {
-  "x": 14586,
+  "x": 14509,
   "y": 0,
   "w": 33,
   "h": 64,
   "ax": 16.2
  },
  "CHILD_SON_mood_mope_walkB": {
-  "x": 14620,
+  "x": 14543,
   "y": 0,
   "w": 32,
   "h": 64,
   "ax": 15.2
  },
  "CHILD_SON_mood_sigh": {
-  "x": 14653,
+  "x": 14576,
   "y": 0,
   "w": 33,
   "h": 65,
   "ax": 15.8
  },
  "TEEN_SON_mood_sad": {
-  "x": 14687,
+  "x": 14610,
   "y": 0,
   "w": 35,
   "h": 77,
   "ax": 16.3
  },
  "TEEN_SON_mood_angry": {
-  "x": 14723,
+  "x": 14646,
   "y": 0,
   "w": 40,
   "h": 77,
   "ax": 17.6
  },
  "TEEN_SON_mood_cry": {
-  "x": 14764,
+  "x": 14687,
   "y": 0,
   "w": 40,
   "h": 77,
   "ax": 20.0
  },
  "TEEN_SON_mood_stressed": {
-  "x": 14805,
+  "x": 14728,
   "y": 0,
   "w": 43,
   "h": 77,
   "ax": 21.8
  },
  "TEEN_SON_mood_sulk": {
-  "x": 14849,
+  "x": 14772,
   "y": 0,
   "w": 38,
   "h": 62,
   "ax": 17.1
  },
  "TEEN_SON_mood_back_sulk": {
-  "x": 14888,
+  "x": 14811,
   "y": 0,
   "w": 35,
   "h": 75,
   "ax": 17.3
  },
  "TEEN_SON_mood_sick": {
-  "x": 14924,
+  "x": 14847,
   "y": 0,
   "w": 46,
   "h": 76,
   "ax": 25.0
  },
  "TEEN_SON_mood_phone": {
-  "x": 14971,
+  "x": 14894,
   "y": 0,
   "w": 35,
   "h": 75,
   "ax": 17.4
  },
  "TEEN_SON_mood_rebel": {
-  "x": 15007,
+  "x": 14930,
   "y": 0,
   "w": 35,
   "h": 77,
   "ax": 17.3
  },
  "TEEN_SON_mood_mope_walkA": {
-  "x": 15043,
+  "x": 14966,
   "y": 0,
   "w": 37,
   "h": 75,
   "ax": 18.7
  },
  "TEEN_SON_mood_mope_walkB": {
-  "x": 15081,
+  "x": 15004,
   "y": 0,
   "w": 38,
   "h": 75,
   "ax": 18.6
  },
  "TEEN_SON_mood_sigh": {
-  "x": 15120,
+  "x": 15043,
   "y": 0,
   "w": 33,
   "h": 77,
   "ax": 15.6
  },
  "YOUTH_SON_mood_sad": {
-  "x": 15154,
+  "x": 15077,
   "y": 0,
   "w": 39,
   "h": 84,
   "ax": 19.4
  },
  "YOUTH_SON_mood_angry": {
-  "x": 15194,
+  "x": 15117,
   "y": 0,
   "w": 43,
   "h": 85,
   "ax": 17.8
  },
  "YOUTH_SON_mood_cry": {
-  "x": 15238,
+  "x": 15161,
   "y": 0,
   "w": 45,
   "h": 83,
   "ax": 22.5
  },
  "YOUTH_SON_mood_stressed": {
-  "x": 15284,
+  "x": 15207,
   "y": 0,
   "w": 48,
   "h": 84,
   "ax": 24.1
  },
  "YOUTH_SON_mood_sulk": {
-  "x": 15333,
+  "x": 15256,
   "y": 0,
   "w": 42,
   "h": 65,
   "ax": 18.2
  },
  "YOUTH_SON_mood_back_sulk": {
-  "x": 15376,
+  "x": 15299,
   "y": 0,
   "w": 39,
   "h": 84,
   "ax": 19.1
  },
  "YOUTH_SON_mood_sick": {
-  "x": 15416,
+  "x": 15339,
   "y": 0,
   "w": 53,
   "h": 84,
   "ax": 28.6
  },
  "YOUTH_SON_mood_phone": {
-  "x": 15470,
+  "x": 15393,
   "y": 0,
   "w": 40,
   "h": 82,
   "ax": 18.8
  },
  "YOUTH_SON_mood_rebel": {
-  "x": 15511,
+  "x": 15434,
   "y": 0,
   "w": 38,
   "h": 84,
   "ax": 19.7
  },
  "YOUTH_SON_mood_mope_walkA": {
-  "x": 15550,
+  "x": 15473,
   "y": 0,
   "w": 44,
   "h": 82,
   "ax": 23.1
  },
  "YOUTH_SON_mood_mope_walkB": {
-  "x": 15595,
+  "x": 15518,
   "y": 0,
   "w": 44,
   "h": 82,
   "ax": 23.4
  },
  "YOUTH_SON_mood_sigh": {
-  "x": 15640,
+  "x": 15563,
   "y": 0,
   "w": 46,
   "h": 85,
   "ax": 20.1
  },
  "CHILD_DAUGHTER_mood_sad": {
-  "x": 15687,
+  "x": 15610,
   "y": 0,
   "w": 37,
   "h": 67,
   "ax": 19.0
  },
  "CHILD_DAUGHTER_mood_angry": {
-  "x": 15725,
+  "x": 15648,
   "y": 0,
   "w": 39,
   "h": 67,
   "ax": 19.6
  },
  "CHILD_DAUGHTER_mood_cry": {
-  "x": 15765,
+  "x": 15688,
   "y": 0,
   "w": 41,
   "h": 67,
   "ax": 20.2
  },
  "CHILD_DAUGHTER_mood_stressed": {
-  "x": 15807,
+  "x": 15730,
   "y": 0,
   "w": 42,
   "h": 67,
   "ax": 20.1
  },
  "CHILD_DAUGHTER_mood_sulk": {
-  "x": 15850,
+  "x": 15773,
   "y": 0,
   "w": 38,
   "h": 58,
   "ax": 18.7
  },
  "CHILD_DAUGHTER_mood_back_sulk": {
-  "x": 15889,
+  "x": 15812,
   "y": 0,
   "w": 42,
   "h": 66,
   "ax": 21.3
  },
  "CHILD_DAUGHTER_mood_sick": {
-  "x": 15932,
+  "x": 15855,
   "y": 0,
   "w": 42,
   "h": 67,
   "ax": 20.6
  },
  "CHILD_DAUGHTER_mood_phone": {
-  "x": 15975,
+  "x": 15898,
   "y": 0,
   "w": 41,
   "h": 66,
   "ax": 19.9
  },
  "CHILD_DAUGHTER_mood_rebel": {
-  "x": 16017,
+  "x": 15940,
   "y": 0,
   "w": 36,
   "h": 66,
   "ax": 18.4
  },
  "CHILD_DAUGHTER_mood_mope_walkA": {
-  "x": 16054,
+  "x": 15977,
   "y": 0,
   "w": 38,
   "h": 66,
   "ax": 18.6
  },
  "CHILD_DAUGHTER_mood_mope_walkB": {
-  "x": 16093,
+  "x": 16016,
   "y": 0,
   "w": 38,
   "h": 66,
   "ax": 18.5
  },
  "CHILD_DAUGHTER_mood_sigh": {
-  "x": 16132,
+  "x": 16055,
   "y": 0,
   "w": 50,
   "h": 67,
   "ax": 21.4
  },
  "TEEN_DAUGHTER_mood_sad": {
-  "x": 16183,
+  "x": 16106,
   "y": 0,
   "w": 34,
   "h": 76,
   "ax": 17.5
  },
  "TEEN_DAUGHTER_mood_angry": {
-  "x": 16218,
+  "x": 16141,
   "y": 0,
   "w": 34,
   "h": 76,
   "ax": 18.0
  },
  "TEEN_DAUGHTER_mood_cry": {
-  "x": 16253,
+  "x": 16176,
   "y": 0,
   "w": 38,
   "h": 76,
   "ax": 18.0
  },
  "TEEN_DAUGHTER_mood_stressed": {
-  "x": 16292,
+  "x": 16215,
   "y": 0,
   "w": 40,
   "h": 76,
   "ax": 19.3
  },
  "TEEN_DAUGHTER_mood_sulk": {
-  "x": 16333,
+  "x": 16256,
   "y": 0,
   "w": 39,
   "h": 62,
   "ax": 17.8
  },
  "TEEN_DAUGHTER_mood_back_sulk": {
-  "x": 16373,
+  "x": 16296,
   "y": 0,
   "w": 34,
   "h": 74,
   "ax": 17.2
  },
  "TEEN_DAUGHTER_mood_sick": {
-  "x": 16408,
+  "x": 16331,
   "y": 0,
   "w": 43,
   "h": 76,
   "ax": 21.8
  },
  "TEEN_DAUGHTER_mood_phone": {
-  "x": 16452,
+  "x": 16375,
   "y": 0,
   "w": 39,
   "h": 75,
   "ax": 19.1
  },
  "TEEN_DAUGHTER_mood_rebel": {
-  "x": 16492,
+  "x": 16415,
   "y": 0,
   "w": 34,
   "h": 75,
   "ax": 17.9
  },
  "TEEN_DAUGHTER_mood_mope_walkA": {
-  "x": 16527,
+  "x": 16450,
   "y": 0,
   "w": 34,
   "h": 73,
   "ax": 17.5
  },
  "TEEN_DAUGHTER_mood_mope_walkB": {
-  "x": 16562,
+  "x": 16485,
   "y": 0,
   "w": 36,
   "h": 73,
   "ax": 17.6
  },
  "TEEN_DAUGHTER_mood_sigh": {
-  "x": 16599,
+  "x": 16522,
   "y": 0,
   "w": 34,
   "h": 73,
   "ax": 17.7
  },
  "YOUTH_DAUGHTER_mood_sad": {
-  "x": 16634,
+  "x": 16557,
   "y": 0,
   "w": 36,
   "h": 82,
   "ax": 18.3
  },
  "YOUTH_DAUGHTER_mood_angry": {
-  "x": 16671,
+  "x": 16594,
   "y": 0,
   "w": 42,
   "h": 82,
   "ax": 18.6
  },
  "YOUTH_DAUGHTER_mood_cry": {
-  "x": 16714,
+  "x": 16637,
   "y": 0,
   "w": 39,
   "h": 81,
   "ax": 18.7
  },
  "YOUTH_DAUGHTER_mood_stressed": {
-  "x": 16754,
+  "x": 16677,
   "y": 0,
   "w": 44,
   "h": 80,
   "ax": 21.7
  },
  "YOUTH_DAUGHTER_mood_sulk": {
-  "x": 16799,
+  "x": 16722,
   "y": 0,
   "w": 42,
   "h": 65,
   "ax": 17.7
  },
  "YOUTH_DAUGHTER_mood_back_sulk": {
-  "x": 16842,
+  "x": 16765,
   "y": 0,
   "w": 37,
   "h": 81,
   "ax": 18.5
  },
  "YOUTH_DAUGHTER_mood_sick": {
-  "x": 16880,
+  "x": 16803,
   "y": 0,
   "w": 46,
   "h": 81,
   "ax": 23.1
  },
  "YOUTH_DAUGHTER_mood_phone": {
-  "x": 16927,
+  "x": 16850,
   "y": 0,
   "w": 37,
   "h": 80,
   "ax": 18.8
  },
  "YOUTH_DAUGHTER_mood_rebel": {
-  "x": 16965,
+  "x": 16888,
   "y": 0,
   "w": 33,
   "h": 80,
   "ax": 17.3
  },
  "YOUTH_DAUGHTER_mood_mope_walkA": {
-  "x": 16999,
+  "x": 16922,
   "y": 0,
   "w": 36,
   "h": 79,
   "ax": 17.6
  },
  "YOUTH_DAUGHTER_mood_mope_walkB": {
-  "x": 17036,
+  "x": 16959,
   "y": 0,
   "w": 36,
   "h": 77,
   "ax": 18.9
  },
  "YOUTH_DAUGHTER_mood_sigh": {
-  "x": 17073,
+  "x": 16996,
   "y": 0,
   "w": 35,
   "h": 79,
