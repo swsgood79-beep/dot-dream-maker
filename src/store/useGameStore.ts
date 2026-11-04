@@ -11,6 +11,7 @@ import { canPlace, findFreeSpot } from '../engine/room';
 import { applyEffect, recordStyle, resolveParentingEvent, type EventOutcome } from '../engine/parenting';
 import { REC_CHOICES, bumpAttitude, dominantAttitude } from '../engine/psyche';
 import { visitNight, type HomeworkWay, type Lunch, type NightTouch } from '../engine/parentTouch';
+import { resolveSpecial, type SpecialPlay } from '../engine/specialDay';
 import { resolveReport } from '../engine/school';
 import { readDiary as readDiaryEngine, respondCaught as respondCaughtEngine, skipDiary as skipDiaryEngine } from '../engine/diary';
 import { CUTSCENE_MAP } from '../data/cutsceneData';
@@ -90,6 +91,7 @@ interface GameStore {
   visitNight: (kind: NightTouch) => { delta: Effect; talk: string | null } | null;
   helpHomework: (way: HomeworkWay, pick?: number) => { delta: Effect; reply: string; correct?: boolean } | null;
   packLunch: (kind: Lunch) => Effect | null;
+  playSpecial: (p: SpecialPlay) => { text: string; title: string; delta: Effect; photo: boolean } | null;
   clearNew: (ids: string[]) => void;
   finishEnding: () => void;
   quitToTitle: () => void;
@@ -387,6 +389,15 @@ export const useGameStore = create<GameStore>()(
             const delta = applyEffect(g, fx);
             g.homeworkAsk = null;
             out = { delta, reply, correct };
+          });
+          return out;
+        },
+        playSpecial: (p) => {
+          let out: { text: string; title: string; delta: Effect; photo: boolean } | null = null;
+          mutate((g) => {
+            const r = resolveSpecial(g, p);
+            if (!r) return;
+            out = { text: r.text, title: r.result.title, delta: r.delta, photo: !!r.result.photo };
           });
           return out;
         },

@@ -1,3 +1,4 @@
+import { rollSpecialDay } from './specialDay';
 import { COMBO_MAP, FURNITURE, FURNITURE_MAP } from '../data/furnitureData';
 import { ACTION_MAP, SCHEDULE_ACTIONS } from '../data/scheduleData';
 import { evaluateEnding } from '../data/endingData';
@@ -104,6 +105,10 @@ export interface SaveState extends GameState {
   newContent?: string[]; // 아직 안 본 새 스케줄·가구 (NEW 표시)
   actingCooldown?: number;
   allowanceThisMonth?: boolean;
+  // ── v0.37 특별한 하루
+  pendingSpecial?: string | null;
+  specialSeen?: string[]; // '이벤트ID:성장단계'
+  lastSpecialAt?: number; // 마지막 특별한 하루의 monthIndex
 }
 
 /** 게임 시작부터 센 달 수 (8세 1월 = 1) */
@@ -684,5 +689,6 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
     // 아직 안 읽은 일기에 생일 선물 바람이 남아 있으면, 선물을 받은 뒤 읽게 되어 앞뒤가 안 맞으므로 지운다
     if (s.diaryNew) s.diaryNew = { ...s.diaryNew, lines: s.diaryNew.lines.filter((l) => !l.startsWith(BDAY_MARK)) };
   }
+  rollSpecialDay(s);
   return { state: s, weeks, events, contest: contestResult };
 }

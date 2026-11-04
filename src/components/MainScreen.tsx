@@ -17,6 +17,7 @@ import { RecModal } from './RecModal';
 import { ActingAlertModal } from './ActingAlertModal';
 import { UnlockModal } from './UnlockModal';
 import { NightModal } from './NightModal';
+import { SpecialDayModal } from './SpecialDayModal';
 import { HomeworkModal, LunchModal } from './ParentTouchModals';
 import { CONTESTS } from '../engine/simulation';
 import { WISH_MAP } from '../data/parentingData';
@@ -66,6 +67,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const [eventShown, setEventShown] = useState<string | null>(null);
   const [reportShown, setReportShown] = useState(false);
   const [bdayShown, setBdayShown] = useState(false);
+  const [specialShown, setSpecialShown] = useState<string | null>(null);
   const [diaryOpen, setDiaryOpen] = useState(false);
   const [recOpen, setRecOpen] = useState(false);
   const [nightOpen, setNightOpen] = useState(false);
@@ -91,9 +93,11 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const openReport = idle && !openCut && !openUnlock && !eventShown && !bdayShown && (reportShown || !!game.pendingReport);
   const openBday = idle && !openCut && !openUnlock && !openReport && !eventShown && (bdayShown || !!game.pendingBirthday);
   const openEvent = idle && !openCut && !openUnlock && !openReport && !openBday ? (eventShown ?? game.pendingEvent ?? null) : null;
+  // ✨ 특별한 하루: 육아 상황까지 끝난 뒤
+  const openSpecial = idle && !openCut && !openUnlock && !openReport && !openBday && !openEvent && !eventShown ? (specialShown ?? game.pendingSpecial ?? null) : null;
   // 이상행동 안내: 새 달 창들이 다 끝난 뒤 한 번
   const markActingSeen = useGameStore((s) => s.markActingSeen);
-  const openAlert = idle && !openCut && !openUnlock && !openReport && !openBday && !openEvent && !recOpen && !!game.acting && !game.acting.seen;
+  const openAlert = idle && !openCut && !openUnlock && !openReport && !openBday && !openEvent && !openSpecial && !recOpen && !!game.acting && !game.acting.seen;
   const showContest = !!(lastResult && !playing && lastResult.contest && contestSeen !== lastResult);
 
   const stress = game.status.stress;
@@ -354,6 +358,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
       {openUnlock && <UnlockModal onClose={() => {}} />}
       {openReport && <ReportCardModal onPick={() => setReportShown(true)} onClose={() => setReportShown(false)} />}
       {openBday && <BirthdayModal onPick={() => setBdayShown(true)} onClose={() => setBdayShown(false)} />}
+      {openSpecial && <SpecialDayModal key={openSpecial} id={openSpecial} onStart={() => setSpecialShown(openSpecial)} onClose={() => setSpecialShown(null)} />}
       {openEvent && <EventModal key={openEvent} id={openEvent} onPick={() => setEventShown(openEvent)} onClose={() => setEventShown(null)} />}
     </div>
   );

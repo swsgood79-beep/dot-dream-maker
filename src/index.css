@@ -381,3 +381,13 @@ button {
 @keyframes week-card { 0% { transform: scale(.4); opacity: 0; } 18% { transform: scale(1.08); opacity: 1; } 28% { transform: scale(1); } 85% { transform: scale(1); opacity: 1; } 100% { transform: scale(.9) translateY(-10px); opacity: 0; } }
 .week-card { animation: week-card 1.4s ease-out both; }
 @media (prefers-reduced-motion: reduce) { .week-card { animation: none; } }
+
+/* ✨ 특별한 하루 */
+@keyframes sp-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.sp-float { animation: sp-float 3.2s ease-in-out infinite; }
+@keyframes sp-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.sp-bob { animation: sp-bob 0.9s ease-in-out infinite; }
+@keyframes sp-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.sp-shake { animation: sp-shake 0.25s ease-in-out 3; }
+@keyframes sp-pop { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-26px); opacity: 0; } }
+.sp-pop { animation: sp-pop 0.7s ease-out forwards; }
