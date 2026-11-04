@@ -199,3 +199,27 @@ export function sceneLine(w: WeekResult): string {
   if (!sc) return '';
   return w.outcome === 'GREAT' ? sc.lines.GREAT : w.outcome === 'FAIL' ? sc.lines.FAIL : sc.lines.SUCCESS;
 }
+
+/* ───────── 장면 안의 짧은 이야기: 도착 → 활동 중 → 결과 ───────── */
+const MIDDLE: Record<string, string[]> = {
+  EDUCATION: ['수업이 시작됐다. 집중, 집중!', '모르는 건 손을 번쩍 들고 물어봤다.', '옆자리 친구랑 머리를 맞대고 문제를 풀었다.', '선생님 설명을 열심히 받아 적었다.'],
+  JOB: ['오늘 할 일을 배웠다. 생각보다 바쁘다!', '손님이 끝도 없이 밀려온다!', '"제법인데?" 사장님이 웃으며 지나갔다.', '땀을 뻘뻘 흘리며 열심히 일했다.'],
+  OUTING: ['우와, 볼 게 정말 많다!', '시간 가는 줄 모르고 돌아다녔다.', '신기한 걸 잔뜩 구경했다.', '사진도 몇 장 찍었다.'],
+  REST: ['느긋하게 쉬는 중...', '오랜만에 아무 생각 없이 쉬었다.', '맛있는 것도 먹고 뒹굴뒹굴.'],
+  RUNAWAY: ['어디로 가야 할지 모르겠다...', '빗소리만 들린다. 집 생각이 난다.'],
+};
+const MIDDLE_FAIL = ['어쩐지 오늘은 잘 안 풀린다...', '자꾸 딴생각이 난다...', '몸이 무겁다. 힘이 안 난다...'];
+
+/** 바깥 활동 장면에서 차례로 보여 줄 세 문장 */
+export function sceneBeats(w: WeekResult): string[] {
+  const sc = sceneFor(w);
+  if (!sc) return [sceneLine(w)];
+  const pick = (a: string[]) => a[(w.week + w.actionId.length) % a.length];
+  const arrive = w.outcome === 'RUNAWAY' ? '...결국 집을 나와 버렸다.' : `📍 ${sc.place}에 도착!`;
+  const mid = w.outcome === 'FAIL' ? pick(MIDDLE_FAIL) : pick(MIDDLE[w.actionType] ?? MIDDLE.OUTING);
+  return [arrive, mid, sceneLine(w)];
+}
+
+/** 장면 한 편의 길이 (ms): 도착 → 활동 → 결과 → 도장 */
+export const SCENE_BEAT_MS = [0, 1200, 2500, 3500];
+export const SCENE_MS = 4700;

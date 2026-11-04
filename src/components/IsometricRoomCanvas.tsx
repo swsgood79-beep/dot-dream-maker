@@ -19,6 +19,7 @@ import { PixelButton, ko } from './ui';
 import { catTapLine, childTapLine } from '../data/roomTalk';
 import { sceneFor, sceneLine } from '../data/activityScenes';
 import { ActivitySceneView } from './ActivitySceneView';
+import { SCENE_MS } from '../data/activityScenes';
 
 /**
  * 아늑한 2D 아이소메트릭 도트 방 (HTML5 Canvas)
@@ -196,8 +197,15 @@ export function IsometricRoomCanvas({
       setTimeout(() => setPopups((p) => p.filter((x) => !ids.has(x.id))), 1800 + items.length * 220);
     };
     const steps: Step[] = [];
-    for (const w of playback.weeks) {
-      const outside = w.actionType === 'RUNAWAY' || (!w.targetInstanceId && w.actionType !== 'REST' && w.outcome !== 'STRIKE');
+    // 방에서 휴식(REST_01)만 집 안, 가족 캠핑 같은 바깥 휴식은 밖으로
+    const isOut = (w: WeekResult) => w.actionType === 'RUNAWAY' || (!w.targetInstanceId && w.actionId !== 'REST_01' && w.outcome !== 'STRIKE' && w.outcome !== 'SICK' && w.outcome !== 'NO_GOLD');
+    playback.weeks.forEach((w, wi) => {
+      const outside = isOut(w);
+      // 바깥 활동이 연달아 있으면 집에 들르지 않고 장면에서 장면으로 바로 넘어간다
+      const prev = playback.weeks[wi - 1];
+      const next = playback.weeks[wi + 1];
+      const fromOutside = !!prev && isOut(prev) && !!sceneFor(prev);
+      const toOutside = !!next && isOut(next) && !!sceneFor(next);
       // 공부 → 독서 포즈, 휴식 → 침대 위에서 책 읽기, 대성공 → 만세 점프, 알바 → 바쁘게 움직이기
       const pose = poseFor(w);
       steps.push({
@@ -212,21 +220,22 @@ export function IsometricRoomCanvas({
         },
       });
       if (outside) {
-        steps.push({ kind: 'goto', resolve: (wd) => doorCell(wd.n) });
-        steps.push({ kind: 'call', fn: () => setBubble(ACT_BUBBLE[w.actionType]) });
-        steps.push({ kind: 'call', fn: () => sfx('door') });
-        steps.push({ kind: 'fade', to: 0, ms: 350 });
+        if (!(fromOutside && sceneFor(w))) {
+          steps.push({ kind: 'goto', resolve: (wd) => doorCell(wd.n) });
+          steps.push({ kind: 'call', fn: () => setBubble(ACT_BUBBLE[w.actionType]) });
+          steps.push({ kind: 'call', fn: () => sfx('door') });
+          steps.push({ kind: 'fade', to: 0, ms: 350 });
+        }
         if (sceneFor(w)) {
-          // 밖에 있는 동안 그 장소 장면을 보여 줌 (스탯 변화도 장면 안에서)
-          steps.push({ kind: 'wait', ms: 300, pose: 'idle', onStart: () => setBubble(null) });
-          steps.push({
-            kind: 'call',
-            fn: () => {
-              setScene(w);
-              sfx(w.outcome === 'GREAT' ? 'great' : w.outcome === 'FAIL' || w.outcome === 'RUNAWAY' ? 'fail' : 'stat');
-            },
-          });
-          steps.push({ kind: 'wait', ms: 2300, pose: 'idle' });
+          // 밖에 있는 동안 그 장소 장면: 도착 → 활동 → 결과 도장 (ActivitySceneView가 단계별로 보여 줌)
+          if (!fromOutside) steps.push({ kind: 'wait', ms: 250, pose: 'idle', onStart: () => setBubble(null) });
+          steps.push({ kind: 'call', fn: () => setScene(w) });
+          steps.push({ kind: 'wait', ms: SCENE_MS, pose: 'idle' });
+          if (toOutside) {
+            // 다음 주도 밖: 집에 들르지 않고 다음 장면으로
+            steps.push({ kind: 'call', fn: () => setScene(null) });
+            return;
+          }
           steps.push({ kind: 'call', fn: () => setScene(null) });
           steps.push({ kind: 'fade', to: 1, ms: 350 });
           steps.push({ kind: 'wait', ms: 700, pose: w.outcome === 'GREAT' ? 'cheer' : w.outcome === 'FAIL' ? 'tired' : 'idle', onStart: () => {
@@ -252,7 +261,7 @@ export function IsometricRoomCanvas({
             return cells[0] ?? null;
           },
         });
-        steps.push({ kind: 'wait', ms: 1500, pose, onStart: () => {
+        steps.push({ kind: 'wait', ms: 2000, pose, onStart: () => {
           // 침대에서 휴식: 침대 위로 올라가 눕는다
           const v = viewRef.current!;
           const bed = v.placed.find((p) => p.instanceId === w.targetInstanceId);
@@ -278,7 +287,7 @@ export function IsometricRoomCanvas({
           spawnPopups(w.popups);
         } });
       }
-    }
+    });
     steps.push({
       kind: 'call',
       fn: () => {
@@ -556,7 +565,7 @@ export function IsometricRoomCanvas({
             </span>
           ))}
         </div>
-        {scene && <ActivitySceneView week={scene} stage={growthStage(game.age)} gender={game.gender} />}
+        {scene && <ActivitySceneView key={scene.week} week={scene} stage={growthStage(game.age)} gender={game.gender} />}
         {banner && (
           <div className="pop-in pointer-events-none absolute top-2 left-1/2 z-30 -translate-x-1/2 border-3 border-ink bg-gold px-3 py-1 text-xs font-bold whitespace-nowrap shadow-[3px_3px_0_#000]">
             {banner}

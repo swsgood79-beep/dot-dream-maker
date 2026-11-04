@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { sceneFor, sceneLine } from '../data/activityScenes';
+import { SCENE_BEAT_MS, sceneBeats, sceneFor } from '../data/activityScenes';
+import { sfx } from '../audio/sfx';
 import type { WeekResult } from '../engine/simulation';
 import { frameName, hasFrame } from '../render/spriteCharacter';
 import { readLight, type Light } from '../render/sceneLight';
@@ -26,12 +27,25 @@ export const sceneBg = (id: string): string | undefined => BG[id];
 /** 바깥 활동 중 방 대신 보여 주는 장소 장면 */
 export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; stage: Stage; gender: Gender }) {
   const sc = sceneFor(week);
-  const line = sceneLine(week);
+  const beats = sceneBeats(week);
+  // 단계: 0 도착 · 1 활동 중 · 2 결과 문장 · 3 결과 도장 + 획득
+  const [phase, setPhase] = useState(0);
+  const line = beats[Math.min(phase, beats.length - 1)] ?? '';
   const [typed, setTyped] = useState(0);
   const [light, setLight] = useState<Light | null>(null);
   useEffect(() => {
+    const ts = SCENE_BEAT_MS.slice(1).map((ms, i) =>
+      setTimeout(() => {
+        setPhase(i + 1);
+        if (i + 1 < 3) setTyped(0); // 도장 단계는 결과 문장을 그대로 둔다
+        if (i + 1 === 3) sfx(week.outcome === 'GREAT' ? 'great' : week.outcome === 'FAIL' || week.outcome === 'RUNAWAY' ? 'fail' : 'stat');
+      }, ms),
+    );
+    return () => ts.forEach(clearTimeout);
+  }, [week]);
+  useEffect(() => {
     if (typed >= line.length) return;
-    const t = setTimeout(() => setTyped((n) => n + 1), 28);
+    const t = setTimeout(() => setTyped((n) => n + 1), 26);
     return () => clearTimeout(t);
   }, [typed, line]);
   const bgId = week.outcome === 'RUNAWAY' ? 'RUNAWAY' : week.actionId;
@@ -40,8 +54,10 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
     if (u) readLight(u, setLight);
   }, [bgId]);
   if (!sc) return null;
-  const great = week.outcome === 'GREAT';
-  const fail = week.outcome === 'FAIL';
+  // 결과(대성공·실패) 연출은 마지막 도장 단계에서
+  const done = phase >= 3;
+  const great = done && week.outcome === 'GREAT';
+  const fail = done && (week.outcome === 'FAIL' || week.outcome === 'RUNAWAY');
   // 활동 포즈 그림이 있으면 그 동작으로 (대성공이어도 동작 그대로 폴짝)
   const actFrame = sc.act ? `${stage}_${gender}_${sc.act}` : '';
   const pose = fail ? 'tired' : actFrame && hasFrame(actFrame) ? sc.act! : great ? 'cheer' : sc.pose;
@@ -108,22 +124,46 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
         </div>
       )}
       {fail && <div className="pointer-events-none absolute inset-0 bg-[#3a3f5c]/25" />}
-      {/* 이번 주 결과 */}
+      {/* 결과 도장 */}
+      {done && (
+        <div className="pointer-events-none absolute top-[26%] left-1/2 z-10 -translate-x-1/2">
+          <span
+            className="stamp-slam block rounded-md border-4 px-4 py-1 text-2xl font-bold whitespace-nowrap shadow-[4px_4px_0_rgba(0,0,0,.35)]"
+            style={
+              week.outcome === 'GREAT'
+                ? { background: '#ffd84d', borderColor: '#c0392b', color: '#c0392b' }
+                : week.outcome === 'FAIL' || week.outcome === 'RUNAWAY'
+                  ? { background: '#d8dbe6', borderColor: '#5a5f73', color: '#3b3f4f' }
+                  : { background: '#c8f5dc', borderColor: '#1b7a4a', color: '#1b7a4a' }
+            }
+          >
+            {week.outcome === 'GREAT' ? '🌟 대성공!' : week.outcome === 'FAIL' ? '😵 실패...' : week.outcome === 'RUNAWAY' ? '🌧️ 가출...' : '✔ 성공'}
+          </span>
+        </div>
+      )}
+      {/* 이번 주 이야기 + 결과 */}
       <div className="absolute inset-x-3 bottom-3 rounded-lg border-3 border-ink bg-[#fffaf0] p-2 text-ink shadow-[3px_3px_0_rgba(0,0,0,.3)]">
         <p className="min-h-8 text-xs leading-snug">{line.slice(0, typed)}</p>
-        <div className="mt-1 flex flex-wrap gap-1">
-          {week.popups.slice(0, 6).map((p, i) => (
-            <span key={i} className="pop-in rounded border border-ink bg-panel px-1 text-[10px] font-bold" style={{ animationDelay: `${0.4 + i * 0.15}s`, animationFillMode: 'both' }}>
-              {ko(p)}
-            </span>
-          ))}
-          {week.goldDelta !== 0 && (
-            <span className={`pop-in rounded border border-ink px-1 text-[10px] font-bold ${week.goldDelta > 0 ? 'bg-gold' : 'bg-white'}`}>
-              {week.goldDelta > 0 ? '+' : ''}
-              {week.goldDelta}G
-            </span>
-          )}
-        </div>
+        {!done ? (
+          // 진행 막대: 장면이 끝날 때까지 차오름
+          <div className="mt-1 h-2 w-full overflow-hidden rounded-full border border-ink bg-white">
+            <div className="scene-progress h-full bg-[#5bd6a8]" />
+          </div>
+        ) : (
+          <div className="mt-1 flex flex-wrap gap-1">
+            {week.popups.slice(0, 6).map((p, i) => (
+              <span key={i} className="pop-in rounded border border-ink bg-panel px-1 text-[10px] font-bold" style={{ animationDelay: `${0.25 + i * 0.12}s`, animationFillMode: 'both' }}>
+                {ko(p)}
+              </span>
+            ))}
+            {week.goldDelta !== 0 && (
+              <span className={`pop-in rounded border border-ink px-1 text-[10px] font-bold ${week.goldDelta > 0 ? 'bg-gold' : 'bg-white'}`}>
+                {week.goldDelta > 0 ? '+' : ''}
+                {week.goldDelta}G
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

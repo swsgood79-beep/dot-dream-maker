@@ -337,3 +337,8 @@ button {
 @keyframes smoke { 0%, 100% { transform: translateX(0) scale(1); } 50% { transform: translateX(30px) scale(1.12); } }
 .smoke { animation: smoke 9s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .tv-flicker, .dust, .searchlight, .smoke { animation: none; } }
+/* 바깥 활동 장면: 진행 막대 · 결과 도장 */
+@keyframes scene-progress { from { width: 0; } to { width: 100%; } }
+.scene-progress { animation: scene-progress 3.5s linear both; }
+@keyframes stamp-slam { 0% { transform: scale(2.6) rotate(-14deg); opacity: 0; } 55% { transform: scale(.92) rotate(-7deg); opacity: 1; } 100% { transform: scale(1) rotate(-7deg); } }
+.stamp-slam { animation: stamp-slam .4s cubic-bezier(.3,1.4,.5,1) both; }
