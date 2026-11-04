@@ -188,7 +188,7 @@ export function ContestReveal({ contest, gender, age, onClose }: { contest: Cont
           </div>
           {phase === 'result' && (
             <div
-              className={`stamp absolute top-6 right-3 rotate-[-8deg] rounded border-4 px-2 py-1 text-lg font-bold ${
+              className={`stamp absolute top-6 right-3 rounded border-4 px-2 py-1 text-lg font-bold ${
                 contest.win ? 'border-[#c0392b] bg-gold text-[#c0392b]' : 'border-ink bg-white text-ink'
               }`}
             >

@@ -143,7 +143,7 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
       )}
       {/* 이번 주 이야기 + 결과 */}
       <div className="absolute inset-x-3 bottom-3 rounded-lg border-3 border-ink bg-[#fffaf0] p-2 text-ink shadow-[3px_3px_0_rgba(0,0,0,.3)]">
-        <p className="min-h-8 text-xs leading-snug">{line.slice(0, typed)}</p>
+        <p className="min-h-9 text-[13px] leading-snug font-bold">{line.slice(0, typed)}</p>
         {!done ? (
           // 진행 막대: 장면이 끝날 때까지 차오름
           <div className="mt-1 h-2 w-full overflow-hidden rounded-full border border-ink bg-white">
@@ -152,12 +152,12 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
         ) : (
           <div className="mt-1 flex flex-wrap gap-1">
             {week.popups.slice(0, 6).map((p, i) => (
-              <span key={i} className="pop-in rounded border border-ink bg-panel px-1 text-[10px] font-bold" style={{ animationDelay: `${0.25 + i * 0.12}s`, animationFillMode: 'both' }}>
+              <span key={i} className="pop-in rounded border border-ink bg-panel px-1.5 text-[11px] font-bold" style={{ animationDelay: `${0.25 + i * 0.12}s`, animationFillMode: 'both' }}>
                 {ko(p)}
               </span>
             ))}
             {week.goldDelta !== 0 && (
-              <span className={`pop-in rounded border border-ink px-1 text-[10px] font-bold ${week.goldDelta > 0 ? 'bg-gold' : 'bg-white'}`}>
+              <span className={`pop-in rounded border border-ink px-1.5 text-[11px] font-bold ${week.goldDelta > 0 ? 'bg-gold' : 'bg-white'}`}>
                 {week.goldDelta > 0 ? '+' : ''}
                 {week.goldDelta}G
               </span>

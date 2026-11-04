@@ -144,8 +144,8 @@ button {
 /* 대회 결과 도장 / 꽃가루 */
 @keyframes stamp-in {
   0% { transform: rotate(-8deg) scale(2.4); opacity: 0; }
-  60% { transform: rotate(-8deg) scale(0.9); opacity: 1; }
-  100% { transform: rotate(-8deg) scale(1); }
+  60% { transform: rotate(-2deg) scale(0.9); opacity: 1; }
+  100% { transform: none; }
 }
 .stamp {
   animation: stamp-in 0.35s ease-out both;
@@ -340,11 +340,13 @@ button {
 /* 바깥 활동 장면: 진행 막대 · 결과 도장 */
 @keyframes scene-progress { from { width: 0; } to { width: 100%; } }
 .scene-progress { animation: scene-progress 3.5s linear both; }
-@keyframes stamp-slam { 0% { transform: scale(2.6) rotate(-14deg); opacity: 0; } 55% { transform: scale(.92) rotate(-7deg); opacity: 1; } 100% { transform: scale(1) rotate(-7deg); } }
+/* 끝은 기울기 없이 (돌린 글자는 흐리게 그려짐) */
+@keyframes stamp-slam { 0% { transform: scale(2.6) rotate(-12deg); opacity: 0; } 55% { transform: scale(.94) rotate(-2deg); opacity: 1; } 100% { transform: none; } }
 .stamp-slam { animation: stamp-slam .4s cubic-bezier(.3,1.4,.5,1) both; }
 /* 바깥 활동 엽서 */
-@keyframes postcard-in { 0% { transform: translateY(40px) rotate(4deg) scale(.85); opacity: 0; } 70% { transform: translateY(-4px) rotate(-1.5deg) scale(1.01); opacity: 1; } 100% { transform: rotate(-1deg) scale(1); } }
-.postcard-in { animation: postcard-in .5s cubic-bezier(.3,1.3,.5,1) both; transform: rotate(-1deg); }
+/* 엽서: 들어올 때만 살짝 기울고, 멈추면 똑바로 (돌려 둔 채면 안의 글자가 흐림) */
+@keyframes postcard-in { 0% { transform: translateY(40px) rotate(4deg) scale(.85); opacity: 0; } 70% { transform: translateY(-4px) rotate(-1deg) scale(1.01); opacity: 1; } 100% { transform: none; } }
+.postcard-in { animation: postcard-in .5s cubic-bezier(.3,1.3,.5,1) both; }
 @media (prefers-reduced-motion: reduce) { .postcard-in { animation: none; } }
 @keyframes clue-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,.5); } 50% { box-shadow: 0 0 0 8px rgba(255,255,255,0); } }
 .clue-pulse { animation: clue-pulse 1.6s ease-out infinite; }

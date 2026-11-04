@@ -658,7 +658,7 @@ export function IsometricRoomCanvas({
             <div className="pointer-events-none absolute inset-0 z-20 bg-[#1b1f3b]/45" />
             <div key={scene.week} className="postcard-in absolute top-[5%] right-[5%] bottom-[13%] left-[5%] z-20 overflow-hidden rounded-md border-[6px] border-[#fffaf0] shadow-[6px_8px_0_rgba(0,0,0,.4)]">
               <ActivitySceneView week={scene} stage={growthStage(game.age)} gender={game.gender} />
-              <span className="pointer-events-none absolute top-1.5 right-1.5 z-30 rotate-6 rounded-sm border-2 border-dashed border-[#c0392b] bg-[#fff1c2] px-1 text-[10px] font-bold text-[#c0392b]">📮 {scene.week + 1}주</span>
+              <span className="pointer-events-none absolute top-1.5 right-1.5 z-30 rounded-sm border-2 border-dashed border-[#c0392b] bg-[#fff1c2] px-1 text-[10px] font-bold text-[#c0392b]">📮 {scene.week + 1}주</span>
             </div>
           </>
         )}
