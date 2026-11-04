@@ -12,9 +12,27 @@ const TIER_FX: Record<string, { confetti: number; fireworks: number; colors: str
   C: { confetti: 10, fireworks: 0, colors: ['#c8c8d8', '#e8dcc8'] },
 };
 
-export function EndingBackdrop({ step, tier, art, sky, rel }: { step: Stage; tier: string; art?: string; sky: [string, string]; rel: Relation }) {
+/** 진로 발표 분위기: festive 축하 / gloomy 처진 결말(방구석 한량) / shady 어둠의 길(괴도·지하세계 보스) */
+export type RevealMood = 'festive' | 'gloomy' | 'shady';
+export function revealMood(id: string): RevealMood {
+  if (id === 'END_50') return 'gloomy';
+  if (id === 'END_47' || id === 'END_48') return 'shady';
+  return 'festive';
+}
+export const REVEAL_RIBBON: Record<RevealMood, { text: (tier: string) => string; color: string }> = {
+  festive: { text: (t) => (t === 'C' ? '🎓 진로 발표' : t === 'B' ? '🎉 축하해요!' : `🏆 ${t}급 엔딩 달성!`), color: '' },
+  gloomy: { text: () => '😶 ...진로 발표', color: '#c9c9d4' },
+  shady: { text: () => '🌙 어둠 속의 길', color: '#c9a8ff' },
+};
+
+export function EndingBackdrop({ step, tier, art: brightArt, darkArt, sky, rel, mood = 'festive' }: { step: Stage; tier: string; art?: string; darkArt?: string; sky: [string, string]; rel: Relation; mood?: RevealMood }) {
+  // 처진 결말·어둠의 길은 그 직업의 어두운 그림(밤·빈 공간)을 배경으로
+  const art = mood !== 'festive' && darkArt ? darkArt : brightArt;
   const stage = step === 'intro' || step === 'drum';
   const reveal = step === 'reveal';
+  const party = reveal && mood === 'festive';
+  const gloomy = reveal && mood === 'gloomy';
+  const shady = reveal && mood === 'shady';
   const late = step === 'letter' || step === 'later';
   const phone = step === 'phone';
   const cold = phone && rel === 'HOLLOW';
@@ -34,17 +52,48 @@ export function EndingBackdrop({ step, tier, art, sky, rel }: { step: Stage; tie
       {reveal && (
         <>
           {art ? (
-            <img src={art} alt="" className="absolute inset-0 h-full w-full scale-125 object-cover" style={{ filter: 'blur(14px) brightness(.55) saturate(1.25)' }} />
+            <img
+              src={art}
+              alt=""
+              className={`absolute inset-0 h-full w-full object-cover ${gloomy || shady ? 'scale-110' : 'scale-125'}`}
+              style={{ filter: gloomy ? 'blur(4px) grayscale(.55) brightness(.5)' : shady ? 'blur(5px) brightness(.45) saturate(.85) hue-rotate(-15deg)' : 'blur(14px) brightness(.55) saturate(1.25)' }}
+            />
           ) : (
-            <div className="absolute inset-0" style={{ background: `linear-gradient(${sky[0]}, ${sky[1]})`, filter: 'brightness(.6)' }} />
+            <div className="absolute inset-0" style={{ background: `linear-gradient(${sky[0]}, ${sky[1]})`, filter: gloomy ? 'grayscale(.8) brightness(.45)' : 'brightness(.6)' }} />
           )}
-          <div className="rays-gold absolute top-[38%] left-1/2 h-[180vmax] w-[180vmax] -translate-x-1/2 -translate-y-1/2" />
-          <div className="ending-flash absolute inset-0 bg-white" />
+          {party && <div className="rays-gold absolute top-[38%] left-1/2 h-[180vmax] w-[180vmax] -translate-x-1/2 -translate-y-1/2" />}
+          {party && <div className="ending-flash absolute inset-0 bg-white" />}
+          {/* 처진 결말: 어두운 방에 깜빡이는 TV 불빛 · 떠다니는 먼지 */}
+          {gloomy && (
+            <>
+              <div className="absolute inset-0 bg-[#2a2f3d]/45" />
+              <div className="tv-flicker absolute bottom-0 left-0 h-2/3 w-2/3" style={{ background: 'radial-gradient(ellipse at 15% 85%, rgba(120,170,255,.38), transparent 65%)' }} />
+              {Array.from({ length: 26 }).map((_, i) => (
+                <span key={`d${i}`} className="dust absolute rounded-full bg-[#d8d0c0]/60" style={{ left: `${rnd(i, 30) * 100}%`, top: `${rnd(i, 31) * 100}%`, width: 2 + rnd(i, 32) * 2, height: 2 + rnd(i, 32) * 2, animationDelay: `${rnd(i, 33) * 8}s`, animationDuration: `${8 + rnd(i, 34) * 6}s` }} />
+              ))}
+            </>
+          )}
+          {/* 어둠의 길: 밤하늘 서치라이트 · 낮게 깔린 연기 · 반짝이는 보석빛 */}
+          {shady && (
+            <>
+              <div className="absolute inset-0 bg-[#160c2a]/50" />
+              <div className="searchlight absolute bottom-0 left-[12%] h-[120%] w-24 origin-bottom" />
+              <div className="searchlight absolute right-[12%] bottom-0 h-[120%] w-24 origin-bottom" style={{ animationDelay: '-2.2s', animationDirection: 'reverse' }} />
+              {Array.from({ length: 7 }).map((_, i) => (
+                <span key={`m${i}`} className="smoke absolute rounded-full" style={{ left: `${-10 + rnd(i, 35) * 90}%`, bottom: `${-8 + rnd(i, 36) * 18}%`, width: 160 + rnd(i, 37) * 120, height: 90 + rnd(i, 37) * 60, background: 'radial-gradient(closest-side, rgba(150,120,190,.35), transparent)', animationDelay: `${rnd(i, 38) * 6}s` }} />
+              ))}
+              {Array.from({ length: 10 }).map((_, i) => (
+                <span key={`g${i}`} className="twinkle absolute text-[10px] text-[#d9b4ff]" style={{ left: `${rnd(i, 39) * 100}%`, top: `${rnd(i, 40) * 60}%`, animationDelay: `${rnd(i, 41) * 2}s` }}>
+                  ✦
+                </span>
+              ))}
+            </>
+          )}
         </>
       )}
 
       {/* 별 */}
-      {!late &&
+      {!late && !gloomy &&
         Array.from({ length: 46 }).map((_, i) => (
           <span
             key={`s${i}`}
@@ -54,7 +103,7 @@ export function EndingBackdrop({ step, tier, art, sky, rel }: { step: Stage; tie
         ))}
 
       {/* 번지는 불빛 (보케) */}
-      {!cold &&
+      {!cold && !gloomy &&
         Array.from({ length: 12 }).map((_, i) => {
           const c = late ? ['#ffd89a', '#ffb36b', '#fff1c2'][i % 3] : ['#ff9fd0', '#9fd8ff', '#ffd84d', '#b98bff'][i % 4];
           const s = 30 + rnd(i, 5) * 70;
@@ -79,7 +128,7 @@ export function EndingBackdrop({ step, tier, art, sky, rel }: { step: Stage; tie
             return (
               <span
                 key={`l${i}`}
-                className="bulb absolute h-2.5 w-2 rounded-b-full"
+                className={`absolute h-2.5 w-2 rounded-b-full ${gloomy || shady ? 'opacity-30' : 'bulb'}`}
                 style={{ left: `${x}%`, top: `${26 + y * 3.2}px`, background: ['#ffd84d', '#ff6fae', '#5bd6ff', '#5bd66b'][i % 4], color: ['#ffd84d', '#ff6fae', '#5bd6ff', '#5bd66b'][i % 4], animationDelay: `${(i % 4) * 0.35}s` }}
               />
             );
@@ -92,7 +141,7 @@ export function EndingBackdrop({ step, tier, art, sky, rel }: { step: Stage; tie
       )}
 
       {/* 꽃가루 + 불꽃놀이 */}
-      {reveal &&
+      {party &&
         Array.from({ length: fx.confetti }).map((_, i) => (
           <span
             key={`c${i}`}
@@ -100,7 +149,7 @@ export function EndingBackdrop({ step, tier, art, sky, rel }: { step: Stage; tie
             style={{ left: `${rnd(i, 10) * 100}%`, width: 4 + rnd(i, 11) * 4, height: 6 + rnd(i, 12) * 6, background: fx.colors[i % fx.colors.length], animationDelay: `${0.3 + rnd(i, 13) * 3}s`, animationDuration: `${2.6 + rnd(i, 14) * 2.4}s` }}
           />
         ))}
-      {reveal &&
+      {party &&
         Array.from({ length: fx.fireworks }).map((_, i) => (
           <div key={`f${i}`} className="firework absolute" style={{ left: `${15 + rnd(i, 15) * 70}%`, top: `${8 + rnd(i, 16) * 30}%`, animationDelay: `${0.6 + i * 0.7}s` }}>
             {Array.from({ length: 12 }).map((_, k) => (

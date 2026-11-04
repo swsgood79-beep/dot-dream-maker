@@ -17,7 +17,7 @@ import { buildLetter } from '../data/letterData';
 import { TEMPERAMENT_MAP } from '../data/temperamentData';
 import { ACHIEVEMENTS, epilogueLines } from '../data/legacyData';
 import { DiaryRecap, PhoneEnding } from './EndingExtras';
-import { EndingBackdrop, Ribbon } from './EndingBackdrop';
+import { EndingBackdrop, REVEAL_RIBBON, Ribbon, revealMood } from './EndingBackdrop';
 import { relationEnding } from '../engine/psyche';
 import { endingArt } from '../render/endingArt';
 
@@ -67,7 +67,7 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
     sfx('drumroll');
     const t = setTimeout(() => {
       setStep('reveal');
-      sfx('ending');
+      sfx(ending && revealMood(ending.id) === 'gloomy' ? 'sad' : 'ending');
     }, 1700);
     return () => clearTimeout(t);
   }, [step]);
@@ -78,7 +78,7 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="ending-root relative flex h-full flex-col items-center justify-center gap-3 overflow-hidden bg-[#0d1030] p-4 text-center text-white">
-      <EndingBackdrop step={step} tier={ending.tier} art={endingArt(ending.id, game.gender, 'BRIGHT')} sky={scene.sky} rel={relationEnding(game)} />
+      <EndingBackdrop step={step} tier={ending.tier} art={endingArt(ending.id, game.gender, 'BRIGHT')} darkArt={endingArt(ending.id, game.gender, 'DARK')} sky={scene.sky} rel={relationEnding(game)} mood={revealMood(ending.id)} />
       {step === 'intro' && (
         <div className="pop-in flex flex-col items-center gap-4">
           <p className="text-sm text-gold">🎓 19세 12월</p>
@@ -256,9 +256,15 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
 
       {step === 'reveal' && (
         <div className="flex w-full flex-col items-center gap-3">
-          <Ribbon text={ending.tier === 'C' ? '🎓 진로 발표' : ending.tier === 'B' ? '🎉 축하해요!' : `🏆 ${ending.tier}급 엔딩 달성!`} color={ending.tier === 'SS' ? '#ffd84d' : ending.tier === 'S' ? '#ffe08a' : ending.tier === 'A' ? '#9fe0ff' : '#fff6e5'} />
+          <Ribbon
+            text={REVEAL_RIBBON[revealMood(ending.id)].text(ending.tier)}
+            color={REVEAL_RIBBON[revealMood(ending.id)].color || (ending.tier === 'SS' ? '#ffd84d' : ending.tier === 'S' ? '#ffe08a' : ending.tier === 'A' ? '#9fe0ff' : '#fff6e5')}
+          />
           {/* 직업 엔딩 일러스트 카드 */}
-          <div className={`card-reveal w-full overflow-hidden rounded-md ${ending.tier === 'S' || ending.tier === 'SS' ? 'gold-frame' : 'wood-frame'}`}>
+          <div
+            className={`card-reveal w-full overflow-hidden rounded-md ${revealMood(ending.id) === 'festive' && (ending.tier === 'S' || ending.tier === 'SS') ? 'gold-frame' : 'wood-frame'}`}
+            style={revealMood(ending.id) === 'shady' ? { boxShadow: '0 0 0 3px #3a2a5c, 0 0 26px rgba(150,100,255,.55)' } : revealMood(ending.id) === 'gloomy' ? { filter: 'saturate(.75)' } : undefined}
+          >
             <div
               className="relative flex h-56 items-end justify-center overflow-hidden"
               style={{ background: `linear-gradient(${scene.sky[0]}, ${scene.sky[1]})` }}

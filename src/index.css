@@ -328,3 +328,12 @@ button {
 @media (prefers-reduced-motion: reduce) {
   .bokeh, .bulb, .spot-sweep, .rays-gold, .confetti-full, .spark, .rain, .petal, .gold-frame::after { animation: none; }
 }
+@keyframes tv-flicker { 0%, 100% { opacity: .9; } 8% { opacity: .5; } 12% { opacity: 1; } 40% { opacity: .75; } 44% { opacity: .95; } 70% { opacity: .6; } }
+.tv-flicker { animation: tv-flicker 2.6s steps(1) infinite; }
+@keyframes dust { 0% { transform: translate(0, 0); opacity: 0; } 20% { opacity: .8; } 100% { transform: translate(24px, -60px); opacity: 0; } }
+.dust { animation: dust 10s linear infinite both; }
+.searchlight { background: linear-gradient(to top, rgba(230,220,255,.28), rgba(230,220,255,0)); clip-path: polygon(40% 100%, 60% 100%, 100% 0, 0 0); animation: search-sweep 5s ease-in-out infinite alternate; }
+@keyframes search-sweep { from { transform: rotate(-24deg); } to { transform: rotate(20deg); } }
+@keyframes smoke { 0%, 100% { transform: translateX(0) scale(1); } 50% { transform: translateX(30px) scale(1.12); } }
+.smoke { animation: smoke 9s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .tv-flicker, .dust, .searchlight, .smoke { animation: none; } }
