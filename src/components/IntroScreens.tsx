@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { sfx } from '../audio/sfx';
-import { Sprite } from './Sprite';
+import { ArtBackdrop, GameLogo } from './ArtBackdrop';
+import { eventScene } from '../render/eventScenes';
+import { endingArt } from '../render/endingArt';
+import type { Gender } from '../types/game';
 
 /** 반짝이는 밤하늘 배경 */
 function Stars({ n = 24 }: { n?: number }) {
@@ -19,9 +22,7 @@ function Stars({ n = 24 }: { n?: number }) {
   );
 }
 
-const LOGO = '도트 드림 메이커';
-
-/** 게임을 켜면 가장 먼저 나오는 화면: 로고 + "화면을 터치하세요" (첫 터치로 소리도 켜짐) */
+/** 게임을 켜면 가장 먼저 나오는 화면: 일러스트 배경 + 로고 + "화면을 터치하세요" (첫 터치로 소리도 켜짐) */
 export function SplashScreen({ onStart }: { onStart: () => void }) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
@@ -30,50 +31,42 @@ export function SplashScreen({ onStart }: { onStart: () => void }) {
   }, []);
   return (
     <div
-      className="relative flex h-full flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-[#141838] via-[#2b2f5c] to-[#6b4a8a] text-center"
+      className="relative flex h-full flex-col items-center justify-center overflow-hidden text-center"
       onClick={() => {
         if (!ready) return;
         sfx('levelup');
         onStart();
       }}
     >
-      <Stars />
-      {/* 언덕 위의 집 */}
-      <div className="absolute inset-x-0 bottom-0 h-40 rounded-t-[50%] bg-[#2f6b4a]" />
-      <div className="absolute bottom-28 left-1/2 -translate-x-1/2 text-6xl drop-shadow-[0_0_14px_#ffd84d]">🏠</div>
-      <p className="relative mb-2 text-[11px] tracking-[0.3em] text-white/60">DOT DREAM MAKER</p>
-      <h1 className="relative flex text-[40px] leading-none font-bold text-gold drop-shadow-[3px_3px_0_#000]">
-        {[...LOGO].map((ch, i) => (
-          <span key={i} className="logo-bounce inline-block" style={{ animationDelay: `${i * 0.08}s`, width: ch === ' ' ? 12 : undefined }}>
-            {ch}
-          </span>
-        ))}
-      </h1>
-      <p className="relative mt-3 text-sm text-white/85">작은 방에서 시작되는 12년의 성장 이야기</p>
-      <div className="relative mt-8 flex items-end gap-2">
-        <span className="bob inline-block" style={{ animationDelay: '0s' }}>
-          <Sprite name="CHILD_SON_cheer" scale={1.1} />
-        </span>
-        <span className="bob inline-block" style={{ animationDelay: '.3s' }}>
-          <Sprite name="CAT_sit" scale={1.1} />
-        </span>
-        <span className="bob inline-block" style={{ animationDelay: '.6s' }}>
-          <Sprite name="CHILD_DAUGHTER_cheer" scale={1.1} />
-        </span>
+      <ArtBackdrop dim={0.55} band={[8, 34]} />
+      <Stars n={14} />
+      <div className="relative mt-24">
+        <GameLogo size={1.05} />
+        <p className="fade-up mt-4 text-sm text-white/85 drop-shadow-[0_2px_4px_#000]" style={{ animationDelay: '.8s' }}>
+          작은 방에서 시작되는 12년의 성장 이야기
+        </p>
       </div>
-      <p className={`relative mt-12 text-base font-bold text-white ${ready ? 'animate-pulse' : 'opacity-0'}`}>▶ 화면을 터치하세요</p>
-      <p className="absolute bottom-3 text-[10px] text-white/50">© 2026 Dot Dream Maker</p>
+      <p className={`absolute bottom-24 text-sm font-bold tracking-[0.25em] text-white drop-shadow-[0_2px_4px_#000] ${ready ? 'animate-pulse' : 'opacity-0'}`}>TOUCH TO START</p>
+      <p className="absolute bottom-3 text-[10px] text-white/45">© 2026 Dot Dream Maker</p>
     </div>
   );
 }
 
-/* ───────── 오프닝: 처음 한 번만 나오는 짧은 이야기 ───────── */
-const PANELS: { sky: string; text: string; sprites: string[]; emoji?: string }[] = [
-  { sky: 'from-[#141838] to-[#3a3a7a]', emoji: '🌙', text: '어느 봄날 밤,\n우리 집에 작은 기적이 찾아왔어요.', sprites: [] },
-  { sky: 'from-[#ffd6e7] to-[#fff6d6]', text: '여덟 살.\n아직은 작고, 겁도 많고,\n궁금한 것투성이인 아이.', sprites: ['CHILD_DAUGHTER_stand', 'CHILD_SON_stand'] },
-  { sky: 'from-[#c9e4ff] to-[#f5e8ff]', text: '앞으로 12년.\n공부하고, 뛰어놀고, 다투고, 화해하면서\n아이는 쑥쑥 자라날 거예요.', sprites: ['CHILD_SON_cheer', 'TEEN_DAUGHTER_stand', 'YOUTH_SON_stand'] },
-  { sky: 'from-[#ffe2c4] to-[#fff6d6]', emoji: '🏠', text: '매달의 스케줄, 방 안의 가구,\n그리고 부모의 작은 선택 하나하나가\n아이를 만들어 갑니다.', sprites: ['CAT_sit'] },
-  { sky: 'from-[#2b2f5c] to-[#6b4a8a]', text: '스무 살이 되는 날,\n이 아이는 어떤 어른이 되어 있을까요?', sprites: ['JOB_END_01_DAUGHTER', 'JOB_END_14_SON', 'JOB_END_18_DAUGHTER'] },
+/* ───────── 오프닝: 처음 한 번만 나오는 짧은 영상 같은 이야기 ───────── */
+type Panel =
+  | { kind: 'night'; text: string }
+  | { kind: 'art'; id: string; g: Gender; text: string }
+  | { kind: 'montage'; arts: [string, Gender][]; text: string }
+  | { kind: 'logo'; text: string };
+const PANELS: Panel[] = [
+  { kind: 'night', text: '어느 봄날 밤,\n우리 집에 작은 기적이 찾아왔어요.' },
+  { kind: 'art', id: 'CS_SCHOOL', g: 'DAUGHTER', text: '여덟 살.\n아직은 작고, 겁도 많고, 궁금한 것투성이.' },
+  { kind: 'art', id: 'F_SLEEPOVER', g: 'SON', text: '친구와 뛰어놀고,' },
+  { kind: 'art', id: 'T_DOOR_SLAM', g: 'DAUGHTER', text: '가끔은 문을 쾅 닫고,' },
+  { kind: 'art', id: 'M_SORRY', g: 'SON', text: '그래도 다시 마주 앉아 화해하면서.' },
+  { kind: 'art', id: 'Y_GRADUATION', g: 'DAUGHTER', text: '매달의 스케줄과 부모의 작은 선택 하나하나가\n아이를 만들어 갑니다.' },
+  { kind: 'montage', arts: [['END_01', 'DAUGHTER'], ['END_14', 'SON'], ['END_18', 'DAUGHTER']], text: '스무 살이 되는 날,\n이 아이는 어떤 어른이 되어 있을까요?' },
+  { kind: 'logo', text: '당신의 12년이 지금 시작됩니다.' },
 ];
 
 export function OpeningScreen({ onDone }: { onDone: () => void }) {
@@ -82,11 +75,26 @@ export function OpeningScreen({ onDone }: { onDone: () => void }) {
   const p = PANELS[i];
   useEffect(() => setTyped(0), [i]);
   useEffect(() => {
-    if (typed >= p.text.length) return;
-    const t = setTimeout(() => setTyped((n) => n + 1), 45);
+    // 그림 미리 불러오기
+    for (const q of PANELS) {
+      const urls = q.kind === 'art' ? [eventScene(q.id, q.g)] : q.kind === 'montage' ? q.arts.map(([e, g]) => endingArt(e, g, 'BRIGHT')) : [];
+      urls.forEach((u) => {
+        if (!u) return;
+        const im = new Image();
+        im.src = u;
+      });
+    }
+  }, []);
+  useEffect(() => {
+    if (typed >= p.text.length) {
+      // 다 쓰면 잠시 뒤 자동으로 다음 장면 (마지막 로고는 터치 대기)
+      if (p.kind === 'logo') return;
+      const t = setTimeout(() => setI((n) => Math.min(PANELS.length - 1, n + 1)), 2300);
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(() => setTyped((n) => n + 1), 55);
     return () => clearTimeout(t);
-  }, [typed, p.text]);
-  const dark = i === 0 || i === PANELS.length - 1;
+  }, [typed, p]);
 
   const next = () => {
     if (typed < p.text.length) return setTyped(p.text.length);
@@ -96,10 +104,80 @@ export function OpeningScreen({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <div className={`relative flex h-full flex-col items-center justify-center overflow-hidden bg-gradient-to-b ${p.sky} px-6 text-center`} onClick={next}>
-      {dark && <Stars n={16} />}
+    <div className="relative h-full overflow-hidden bg-black" onClick={next}>
+      {/* 장면 */}
+      <div key={i} className="cine-in absolute inset-0">
+        {p.kind === 'night' && (
+          <div className="absolute inset-0 bg-gradient-to-b from-[#070a22] via-[#141a46] to-[#2a2560]">
+            <Stars n={40} />
+            <span className="shooting absolute top-[18%] right-[10%] h-0.5 w-24 rounded-full bg-gradient-to-l from-white to-transparent" />
+            <span className="absolute top-[14%] left-[18%] text-5xl drop-shadow-[0_0_24px_#fff8]">🌙</span>
+            {/* 언덕 위 작은 집: 창문에 불이 켜짐 */}
+            <svg className="absolute inset-x-0 bottom-0 w-full" viewBox="0 0 100 50" preserveAspectRatio="none" style={{ height: '42%' }}>
+              <path d="M0 30 Q25 18 50 26 T100 22 L100 50 L0 50 Z" fill="#232a5a" />
+              <path d="M0 38 Q30 28 60 36 T100 34 L100 50 L0 50 Z" fill="#161b3e" />
+            </svg>
+            <div className="absolute bottom-[30%] left-1/2 -translate-x-1/2">
+              <div className="relative h-16 w-20">
+                <div className="absolute bottom-0 h-11 w-20 bg-[#3a4078] shadow-[0_0_0_2px_#22264a]" />
+                <div className="absolute bottom-11 left-0 h-0 w-0 border-r-[40px] border-b-[22px] border-l-[40px] border-r-transparent border-b-[#4a4f8a] border-l-transparent" />
+                <div className="window-glow absolute bottom-3 left-3 h-5 w-5 bg-[#ffd86b] shadow-[0_0_22px_8px_rgba(255,200,90,.55)]" />
+                <div className="window-glow absolute bottom-3 right-3 h-5 w-5 bg-[#ffd86b] shadow-[0_0_22px_8px_rgba(255,200,90,.55)]" style={{ animationDelay: '2.1s' }} />
+              </div>
+            </div>
+          </div>
+        )}
+        {p.kind === 'art' && eventScene(p.id, p.g) && (
+          <>
+            <img src={eventScene(p.id, p.g)} alt="" className="absolute inset-0 h-full w-full scale-125 object-cover" style={{ filter: 'blur(18px) brightness(.45) saturate(1.2)' }} />
+            {/* 그림 전체가 보이는 와이드 화면 (영화 장면처럼) */}
+            <div className="absolute inset-x-0 top-[22%] aspect-[16/9] overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,.6)]">
+              <img src={eventScene(p.id, p.g)} alt="" className="kenburns h-full w-full object-cover" style={{ animationName: i % 2 ? 'kenburns-b' : 'kenburns-a', animationDuration: '7s' }} />
+            </div>
+          </>
+        )}
+        {p.kind === 'montage' && (
+          <div className="absolute inset-0 bg-gradient-to-b from-[#141838] via-[#2b2f5c] to-[#5a3f78]">
+            <Stars n={22} />
+            <div className="absolute inset-x-0 top-[14%] flex justify-center">
+              {p.arts.map(([e, g], k) => {
+                const u = endingArt(e, g, 'BRIGHT');
+                return (
+                  <div
+                    key={e}
+                    className="fade-up -mx-3 w-[38%] bg-white p-1 pb-4 shadow-[0_8px_18px_rgba(0,0,0,.5)]"
+                    style={{ transform: `rotate(${(k - 1) * 8}deg) translateY(${k === 1 ? -10 : 8}px)`, animationDelay: `${0.25 + k * 0.45}s`, zIndex: k === 1 ? 2 : 1 }}
+                  >
+                    {u ? <img src={u} alt="" className="aspect-[4/3] w-full object-cover" /> : <div className="aspect-[4/3] w-full bg-[#ddd]" />}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {p.kind === 'logo' && (
+          <>
+            <ArtBackdrop dim={0.6} band={[12, 34]} />
+            <div className="absolute inset-0 flex items-center justify-center pt-24">
+              <GameLogo size={1.1} />
+            </div>
+          </>
+        )}
+        {/* 아래쪽 어둡게 (자막 잘 보이게) */}
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 to-transparent" />
+      </div>
+      {/* 영화 화면 위아래 띠 */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[7%] bg-black" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[7%] bg-black" />
+      {/* 자막 */}
+      <p className="absolute inset-x-6 bottom-[13%] min-h-16 text-center text-[17px] leading-relaxed font-bold whitespace-pre-line text-white drop-shadow-[0_2px_6px_#000]">
+        {p.text.slice(0, typed)}
+      </p>
+      {p.kind === 'logo' && typed >= p.text.length && (
+        <p className="fade-up absolute inset-x-0 bottom-[8.5%] text-center text-xs font-bold tracking-[0.25em] text-[#ffe9a8] animate-pulse">TOUCH TO START</p>
+      )}
       <button
-        className="absolute top-3 right-3 z-10 rounded border-2 border-ink bg-white/80 px-2 py-0.5 text-[11px] font-bold"
+        className="absolute top-[8.5%] right-3 z-10 rounded-full border border-white/40 bg-black/40 px-3 py-1 text-[11px] font-bold text-white/90"
         onClick={(e) => {
           e.stopPropagation();
           onDone();
@@ -107,21 +185,12 @@ export function OpeningScreen({ onDone }: { onDone: () => void }) {
       >
         건너뛰기 ▶▶
       </button>
-      <div key={i} className="pop-in flex min-h-40 items-end justify-center gap-2">
-        {p.emoji && <span className="text-7xl drop-shadow-[0_0_16px_#fff6]">{p.emoji}</span>}
-        {p.sprites.map((s) => (
-          <Sprite key={s} name={s} scale={1.4} />
-        ))}
-      </div>
-      <p className={`mt-8 min-h-24 text-base leading-relaxed font-bold whitespace-pre-line ${dark ? 'text-white' : 'text-ink'}`}>
-        {p.text.slice(0, typed)}
-      </p>
-      <div className="absolute bottom-6 flex gap-1.5">
+      {/* 진행 막대 */}
+      <div className="absolute inset-x-6 top-[3%] flex gap-1">
         {PANELS.map((_, k) => (
-          <span key={k} className={`h-2 w-2 rounded-full border border-ink ${k === i ? 'bg-gold' : 'bg-white/60'}`} />
+          <span key={k} className={`h-0.5 flex-1 rounded-full ${k <= i ? 'bg-white/90' : 'bg-white/25'}`} />
         ))}
       </div>
-      <p className={`absolute bottom-12 text-[11px] ${dark ? 'text-white/60' : 'text-ink/60'}`}>{typed >= p.text.length ? '화면을 누르면 다음으로' : ''}</p>
     </div>
   );
 }

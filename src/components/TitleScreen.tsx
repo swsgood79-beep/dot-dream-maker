@@ -12,6 +12,9 @@ import { TEMPERAMENTS, type TemperamentId } from '../data/temperamentData';
 import { DEFAULT_PARENT, PARENT_TOTAL, ABILITIES, type ParentProfile } from '../data/parentData';
 import { ParentPicker } from './ParentPicker';
 import { SettingsModal } from './SettingsModal';
+import { ArtBackdrop, GameLogo } from './ArtBackdrop';
+import { frameName } from '../render/spriteCharacter';
+import { growthStage } from '../engine/room';
 
 const WISHES: { stat: StatKey; text: string }[] = [
   { stat: 'INT', text: '똑똑한 아이로' },
@@ -40,7 +43,7 @@ export function TitleScreen({ onStart, onOpening }: { onStart: () => void; onOpe
 
   if (mode === 'hall' || mode === 'ach') {
     return (
-      <div className="flex h-full flex-col bg-[#2b2f5c] p-3">
+      <div className="flex h-full flex-col bg-gradient-to-b from-[#141838] to-[#2b2f5c] p-3">
         <p className="mb-2 text-center text-lg font-bold text-gold drop-shadow-[2px_2px_0_#000]">{mode === 'hall' ? '🏛️ 명예의 전당' : '🏅 업적'}</p>
         <div className="pixel-box flex-1 overflow-y-auto p-3">{mode === 'hall' ? <HallPanel /> : <AchievementPanel />}</div>
         <PixelButton className="mt-3" onClick={() => setMode('menu')}>← 돌아가기</PixelButton>
@@ -50,7 +53,7 @@ export function TitleScreen({ onStart, onOpening }: { onStart: () => void; onOpe
 
   if (mode === 'book') {
     return (
-      <div className="flex h-full flex-col bg-[#2b2f5c] p-3">
+      <div className="flex h-full flex-col bg-gradient-to-b from-[#141838] to-[#2b2f5c] p-3">
         <div className="pixel-box flex-1 overflow-y-auto p-3">
           <EncyclopediaPanel />
         </div>
@@ -60,62 +63,58 @@ export function TitleScreen({ onStart, onOpening }: { onStart: () => void; onOpe
   }
 
   return (
-    <div className="relative flex h-full flex-col items-center justify-center gap-5 overflow-hidden bg-gradient-to-b from-[#7ec8ff] via-[#bfe6ff] to-[#fff1d6] p-6 text-center">
-      {/* 하늘 · 구름 · 언덕 */}
-      <span className="cloud top-[8%] text-5xl" style={{ animationDuration: '38s' }}>☁️</span>
-      <span className="cloud top-[22%] text-3xl" style={{ animationDuration: '52s', animationDelay: '-20s' }}>☁️</span>
-      <span className="cloud top-[14%] text-4xl" style={{ animationDuration: '45s', animationDelay: '-33s' }}>☁️</span>
-      <div className="pointer-events-none absolute inset-x-[-10%] bottom-0 h-[30%] rounded-t-[50%] bg-[#7cc96b]" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[16%] bg-[#5aa84e]" />
+    <div className="relative flex h-full flex-col items-center justify-center gap-5 overflow-hidden p-6 text-center">
+      {/* 고화질 일러스트가 천천히 바뀌는 배경 */}
+      <ArtBackdrop dim={mode === 'menu' ? 0.5 : 0.7} band={[4, 30]} />
       {mode === 'menu' && (
         <button
           onClick={() => setSettings(true)}
-          className="absolute top-3 right-3 z-10 rounded border-2 border-ink bg-white px-2 py-1 text-sm shadow-[2px_2px_0_rgba(0,0,0,.35)]"
+          className="menu-glass absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-base text-white"
           title="설정"
         >
           ⚙️
         </button>
       )}
-      <div className="relative">
-        <h1 className="flex justify-center text-[34px] leading-none font-bold text-gold drop-shadow-[3px_3px_0_#1b1f3b]">
-          {[...'도트 드림 메이커'].map((ch, i) => (
-            <span key={i} className="logo-bounce inline-block" style={{ animationDelay: `${i * 0.08}s`, width: ch === ' ' ? 10 : undefined }}>
-              {ch}
-            </span>
-          ))}
-        </h1>
-        <p className="mt-1 text-xs font-bold text-ink/70">Dot Dream Maker</p>
-        <div className="mt-3 flex items-end justify-center gap-1">
-          {['CHILD_SON_cheer', 'TEEN_DAUGHTER_stand', 'CAT_sit', 'YOUTH_SON_stand', 'CHILD_DAUGHTER_cheer'].map((n, i) => (
-            <span key={n} className="bob inline-block" style={{ animationDelay: `${i * 0.2}s` }}>
-              <Sprite name={n} />
-            </span>
-          ))}
-        </div>
+      <div className={`relative ${mode === 'menu' ? 'mt-20 mb-2' : 'scale-75'}`}>
+        <GameLogo size={mode === 'menu' ? 1 : 0.8} />
       </div>
 
       {mode === 'menu' && (
-        <div className="relative z-10 flex w-full max-w-xs flex-col gap-2.5">
+        <div className="fade-up relative z-10 flex w-full max-w-xs flex-col gap-2" style={{ animationDelay: '.5s' }}>
           {game && (
-            <PixelButton color="bg-mint" onClick={onStart}>
-              ▶ 이어하기 <span className="text-xs font-normal">({game.childName}, {game.age}세 {game.month}월)</span>
-            </PixelButton>
+            <button
+              onClick={onStart}
+              className="pixel-btn flex items-center gap-3 bg-gradient-to-b from-[#ffe27a] to-[#f2b632] px-3 py-2 text-left text-ink"
+            >
+              <span className="flex h-12 w-12 shrink-0 items-end justify-center overflow-hidden rounded-full border-2 border-ink bg-[#fff6e0]">
+                <Sprite name={frameName(growthStage(game.age), game.gender, 'cheer')} scale={0.7} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <b className="block text-base">▶ 이어하기</b>
+                <span className="block truncate text-[11px] opacity-75">
+                  {game.childName} · {game.age}세 {game.month}월
+                </span>
+              </span>
+            </button>
           )}
-          <PixelButton onClick={() => setMode('family')}>
-            ✦ 새로 키우기 {playthrough > 1 && `(${playthrough}번째 아이)`}
-          </PixelButton>
-          <PixelButton color="bg-sky" onClick={() => setMode('book')}>
-            👑 엔딩 도감 ({unlockedEndings.length}/{ENDINGS.length})
-          </PixelButton>
-          <div className="grid grid-cols-2 gap-2">
-            <PixelButton color="bg-white" className="!text-xs" onClick={() => setMode('hall')}>
-              🏛️ 명예의 전당 ({hallCount})
-            </PixelButton>
-            <PixelButton color="bg-white" className="!text-xs" onClick={() => setMode('ach')}>
-              🏅 업적 ({achCount}/{ACHIEVEMENTS.length})
-            </PixelButton>
+          <div className="menu-glass overflow-hidden rounded-lg border border-white/25 text-left text-white shadow-[0_8px_24px_rgba(0,0,0,.4)]">
+            {[
+              { icon: '✦', label: '새로 키우기', sub: playthrough > 1 ? `${playthrough}번째 아이` : '첫 아이를 맞이해요', on: () => setMode('family') },
+              { icon: '👑', label: '엔딩 도감', sub: `${unlockedEndings.length} / ${ENDINGS.length}`, on: () => setMode('book') },
+              { icon: '🏛️', label: '명예의 전당', sub: `${hallCount}명의 아이`, on: () => setMode('hall') },
+              { icon: '🏅', label: '업적', sub: `${achCount} / ${ACHIEVEMENTS.length}`, on: () => setMode('ach') },
+            ].map((m, k) => (
+              <button key={m.label} onClick={m.on} className={`flex w-full items-center gap-3 px-3 py-2.5 text-left active:bg-white/15 ${k ? 'border-t border-white/12' : ''}`}>
+                <span className="flex h-8 w-8 items-center justify-center rounded-md bg-white/12 text-base">{m.icon}</span>
+                <span className="min-w-0 flex-1">
+                  <b className="block text-sm">{m.label}</b>
+                  <span className="block text-[10px] text-white/60">{m.sub}</span>
+                </span>
+                <span className="text-white/50">›</span>
+              </button>
+            ))}
           </div>
-          <p className="mt-1 text-[10px] font-bold text-ink/60">v0.35.0 · 새 배경음악</p>
+          <p className="mt-1 text-[10px] font-bold text-white/45">v0.36.0 · 새 오프닝</p>
         </div>
       )}
       {settings && <SettingsModal onClose={() => setSettings(false)} onOpening={onOpening} />}
