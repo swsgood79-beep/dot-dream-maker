@@ -3,7 +3,14 @@
 패널은 흰 여백으로 나뉘어 있으므로 사분면마다 흰색이 아닌 영역의 테두리를 찾아 자르고, 외곽선 몇 픽셀을 안쪽으로 깎는다."""
 import os
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageEnhance
+
+# 밝기 보정: 원본이 전체적으로 어두워서 중간 톤을 끌어올림 (감마 0.8, 하이라이트는 거의 그대로) + 채도 살짝
+_LUT = [round(255 * (i / 255) ** 0.8) for i in range(256)] * 3
+
+
+def brighten(im):
+    return ImageEnhance.Color(im.convert('RGB').point(_LUT)).enhance(1.06)
 
 SHEETS = {
     's1': ['EDU_01', 'EDU_02', 'EDU_03', 'EDU_04'],
@@ -46,5 +53,6 @@ for sid, ids in SHEETS.items():
         crop = Image.fromarray(img[box[1]:box[3], box[0]:box[2]].astype(np.uint8))
         if crop.width > W:  # 원본 해상도 유지 (폰 화면은 2~3배 밀도라 줄이면 흐려짐)
             crop = crop.resize((W, round(crop.height * W / crop.width)), Image.LANCZOS)
+        crop = brighten(crop)
         crop.save(f'{OUT}/{gid}.webp', quality=88, method=6)
         print(f'  {sid} → {gid}: {box[2] - box[0]}×{box[3] - box[1]} → {crop.size}')

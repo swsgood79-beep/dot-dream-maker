@@ -20,9 +20,11 @@ import numpy as np
 from PIL import Image
 
 SRC = 'assets-src/character-sheet.png'
-OUT_PNG = 'src/assets/characters.png'
-OUT_JSON = 'src/render/characterAtlas.json'
-BLOCK = 5.67  # 원본 1도트당 픽셀 수 (런 길이 분석으로 측정)
+# HI=2: 같은 그림을 2배 해상도로 다시 잘라 고화질 시트를 만든다 (게임은 이 시트로 그림, 좌표·크기는 1배 아틀라스 기준)
+HI = int(os.environ.get('HI', '1'))
+OUT_PNG = 'src/assets/characters.png' if HI == 1 else 'src/assets/characters_hi.webp'
+OUT_JSON = 'src/render/characterAtlas.json' if HI == 1 else 'src/render/characterAtlasHi.json'
+BLOCK = 5.67 / HI  # 원본 1도트당 픽셀 수 (런 길이 분석으로 측정)
 
 NAMES = [
     # 1행: 유년기
@@ -570,7 +572,8 @@ for g in ('SON', 'DAUGHTER'):
             sprites[f'{st}_{g}_{key}'] = defringe(cut(img_a, b, blk))
             # 장면 화면용 고해상도 원본 (폰 화면에서 흐려지지 않게)
             os.makedirs('src/assets/acts', exist_ok=True)
-            Image.fromarray(defringe(cut(img_a, b, 1.0))).save(f'src/assets/acts/{st}_{g}_{key}.webp', quality=90, method=6)
+            if HI == 1:
+                Image.fromarray(defringe(cut(img_a, b, 1.0))).save(f'src/assets/acts/{st}_{g}_{key}.webp', quality=90, method=6)
         print(f'  활동 포즈: {path} → 12동작')
 
 # 부모님 캐릭터는 게임에서 사용하지 않음 (v0.5.17) → 아틀라스에서 제외
@@ -622,18 +625,29 @@ for base in walk_sets:
 names = list(sprites)
 frames = [sprites[n] for n in names]
 gap = 1
-aw = sum(f.shape[1] for f in frames) + gap * (len(frames) - 1)
-ah = max(f.shape[0] for f in frames)
+# 선반 배치 (고화질 시트는 WebP 최대 크기 안에 들도록 여러 줄로)
+ROW_W = 10 ** 9 if HI == 1 else 4096
+pos, x, y, rh = [], 0, 0, 0
+for f in frames:
+    h, w, _ = f.shape
+    if x + w > ROW_W:
+        x, y, rh = 0, y + rh + gap, 0
+    pos.append((x, y))
+    x += w + gap
+    rh = max(rh, h)
+aw = max(px + f.shape[1] for (px, _), f in zip(pos, frames))
+ah = max(py + f.shape[0] for (_, py), f in zip(pos, frames))
 atlas = np.zeros((ah, aw, 4), np.uint8)
 meta = {}
-x = 0
-for name, f in zip(names, frames):
+for name, f, (x, y) in zip(names, frames, pos):
     h, w, _ = f.shape
-    atlas[0:h, x : x + w] = f
+    atlas[y : y + h, x : x + w] = f
     # 상체(위 60%) 중심 = 그리는 기준점. 보폭이 넓은 걷기 그림에서 몸이 좌우로 흔들리지 않게 한다
     _, oxs = np.where(f[: int(h * 0.6), :, 3] > 0)
-    meta[name] = {'x': x, 'y': 0, 'w': w, 'h': h, 'ax': round(float(oxs.mean()) + 0.5, 1)}
-    x += w + gap
-Image.fromarray(atlas).save(OUT_PNG, optimize=True)
+    meta[name] = {'x': x, 'y': y, 'w': w, 'h': h, 'ax': round(float(oxs.mean()) + 0.5, 1)}
+if HI == 1:
+    Image.fromarray(atlas).save(OUT_PNG, optimize=True)
+else:
+    Image.fromarray(atlas).save(OUT_PNG, quality=92, method=6)
 json.dump(meta, open(OUT_JSON, 'w'), indent=1)
-print('atlas', atlas.shape, {k: (v['w'], v['h']) for k, v in meta.items()})
+print('atlas', atlas.shape, len(meta))

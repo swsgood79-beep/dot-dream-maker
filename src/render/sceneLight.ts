@@ -28,7 +28,7 @@ export function readLight(url: string, cb: (l: Light) => void): void {
     r /= n; g /= n; b /= n; fr /= fn; fg /= fn; fb /= fn;
     // 밝기는 빼고 색감만: 가장 밝은 채널을 255로 맞춘 색을 흰색과 섞는다
     const m = Math.max(r, g, b, 1);
-    const tint: [number, number, number] = [r / m, g / m, b / m].map((c) => Math.round(255 * (0.62 + 0.38 * c))) as [number, number, number];
+    const tint: [number, number, number] = [r / m, g / m, b / m].map((c) => Math.round(255 * (0.78 + 0.22 * c))) as [number, number, number];
     const dark = (c: number) => Math.round(c * 0.35);
     const l: Light = {
       tint,
@@ -59,7 +59,7 @@ export function litSprite(src: string, l: Light, cb: (url: string) => void): voi
     const gr = ctx.createLinearGradient(0, 0, 0, img.height);
     const [r, g, b] = l.tint;
     gr.addColorStop(0, `rgb(${r},${g},${b})`);
-    gr.addColorStop(1, `rgb(${Math.round(r * 0.86)},${Math.round(g * 0.86)},${Math.round(b * 0.86)})`);
+    gr.addColorStop(1, `rgb(${Math.round(r * 0.93)},${Math.round(g * 0.93)},${Math.round(b * 0.93)})`);
     ctx.fillStyle = gr;
     ctx.fillRect(0, 0, img.width, img.height);
     ctx.globalCompositeOperation = 'destination-in';

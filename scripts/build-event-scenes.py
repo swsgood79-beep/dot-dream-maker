@@ -4,7 +4,14 @@
 칸 순서는 scripts/make-event-scene-requests.py 의 장면 목록 순서 그대로."""
 import os, re, sys
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageEnhance
+
+# 밝기 보정: 원본이 전체적으로 어두워서 중간 톤을 끌어올림 (감마 0.8, 하이라이트는 거의 그대로) + 채도 살짝
+_LUT = [round(255 * (i / 255) ** 0.8) for i in range(256)] * 3
+
+
+def brighten(im):
+    return ImageEnhance.Color(im.convert('RGB').point(_LUT)).enhance(1.06)
 
 GENDER = sys.argv[1] if len(sys.argv) > 1 else 'SON'
 SRC = 'assets-src/events' if GENDER == 'SON' else 'assets-src/events-daughter'
@@ -47,6 +54,7 @@ for n, chunk in enumerate(chunks, 1):
         crop = Image.fromarray(img[box[1]:box[3], box[0]:box[2]].astype(np.uint8))
         if crop.width > W:  # 원본 해상도 유지 (폰 화면은 2~3배 밀도라 줄이면 흐려짐)
             crop = crop.resize((W, round(crop.height * W / crop.width)), Image.LANCZOS)
+        crop = brighten(crop)
         crop.save(f'{OUT}/{gid}_{GENDER}.webp', quality=86, method=6)
         done += 1
 # 다시 받은 장면: assets-src/event-overrides/sheet-*.webp 의 지정 칸으로 덮어쓰기
@@ -66,6 +74,7 @@ for path, picks in OVERRIDES.get(GENDER, {}).items():
             print('  패널을 못 찾음:', path, q)
             continue
         crop = Image.fromarray(img[box[1]:box[3], box[0]:box[2]].astype(np.uint8))
+        crop = brighten(crop)
         crop.save(f'{OUT}/{gid}_{GENDER}.webp', quality=86, method=6)
         print(f'  교체: {gid}_{GENDER} ← {path} #{q} {crop.size}')
 print(f'{done} scenes → {OUT} ({GENDER})')

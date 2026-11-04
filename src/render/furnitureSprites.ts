@@ -2,7 +2,7 @@ import atlasUrl from '../assets/furniture.png';
 import atlas from './furnitureAtlas.json';
 import type { PlacedFurniture } from '../types/game';
 import { footprint } from '../engine/room';
-import { RES } from './spriteCharacter';
+import { RES, SHEET } from './spriteCharacter';
 
 /**
  * 손그림 가구 스프라이트 (assets-src/furniture-*.png → scripts/build-furniture.py → src/assets/furniture.png).
@@ -44,7 +44,7 @@ export function hasFurnitureSprite(id: string): boolean {
 /** 화면 위 높이 (논리 px) — 탭 판정/반짝이 위치용 */
 export function furnitureSpriteHeight(id: string): number | null {
   const f = FRAMES[id];
-  return f ? f.h / RES : null;
+  return f ? f.h / SHEET : null;
 }
 
 type Proj = (x: number, y: number) => [number, number];
@@ -68,8 +68,8 @@ export function drawFurnitureSprite(
   const [, frontY] = proj(x1, y1);
   // 밑면이 칸 중앙보다 조금 앞쪽에 닿도록
   const baseY = cy + (frontY - cy) * 0.7;
-  const w = f.w / RES;
-  const h = f.h / RES;
+  const w = f.w / SHEET;
+  const h = f.h / SHEET;
   const want = p.rotation === 90 || p.rotation === 270 ? 'R' : 'L';
   const flip = want !== f.face;
   const x = Math.round((cx - w / 2) * RES) / RES;

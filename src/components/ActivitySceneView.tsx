@@ -51,9 +51,9 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
     <div className="scene-in absolute inset-0 z-20 overflow-hidden" style={{ background: `linear-gradient(${sc.sky[0]}, ${sc.sky[1]})` }}>
       {bg ? (
         <>
-          <img src={bg} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ filter: 'saturate(.92) brightness(.94)' }} />
+          <img src={bg} alt="" className="absolute inset-0 h-full w-full object-cover" />
           {/* 아이 쪽으로 빛이 모이고 가장자리는 살짝 어둡게 → 아이가 장면 안에 서 있는 느낌 */}
-          <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(ellipse 60% 45% at 50% 66%, rgba(255,246,220,.22), transparent 70%), radial-gradient(ellipse at 50% 55%, transparent 55%, rgba(20,16,30,.38))' }} />
+          <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(ellipse 60% 45% at 50% 66%, rgba(255,246,220,.2), transparent 70%), radial-gradient(ellipse at 50% 55%, transparent 65%, rgba(20,16,30,.16))' }} />
         </>
       ) : (
         /* 바닥 */

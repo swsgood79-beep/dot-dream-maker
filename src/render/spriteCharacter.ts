@@ -1,17 +1,21 @@
-import atlasUrl from '../assets/characters.png';
+import atlasUrl from '../assets/characters_hi.webp';
 import atlas from './characterAtlas.json';
+import atlasHi from './characterAtlasHi.json';
 import type { Gender, GrowthStage } from '../types/game';
 import { drawCharacterProcedural, proceduralHeight, type CharacterDrawOpts } from './character';
 
 /**
  * 스프라이트 시트(assets-src/character-sheet.png → src/assets/characters.png) 기반 캐릭터 렌더링.
  * 프레임: {단계}_{성별}_{stand|read|cheer|walkN|back_*|행동}, CAT_*
- * 시트 1도트 = 캔버스 백버퍼 1px (RES=2) → 논리 좌표에서는 1/RES 크기로 그린다.
+ * 크기·기준점은 1배 아틀라스(1도트 = 논리 1/SHEET), 그림은 같은 그림을 2배로 자른 고화질 시트(characters_hi.webp)에서.
+ * 캔버스 백버퍼는 논리 좌표의 RES배 → 고화질 시트 1px = 백버퍼 1px.
  */
-export const RES = 2;
+export const SHEET = 2;
+export const RES = 4;
 
 type Frame = { x: number; y: number; w: number; h: number; ax?: number };
 const FRAMES = atlas as Record<string, Frame>;
+const HIF = atlasHi as Record<string, Frame>;
 
 let img: HTMLImageElement | null = null;
 let ready = false;
@@ -51,7 +55,7 @@ export function frameName(stage: GrowthStage, gender: Gender, kind: string): str
 
 export function characterHeight(stage: GrowthStage, gender: Gender = 'SON'): number {
   const f = FRAMES[frameName(stage, gender, 'stand')];
-  return f ? f.h / RES : proceduralHeight(stage);
+  return f ? f.h / SHEET : proceduralHeight(stage);
 }
 
 /** 프레임을 (fx, fy) = 발 중앙 기준으로 그린다 */
@@ -59,22 +63,23 @@ export function drawFrame(ctx: CanvasRenderingContext2D, name: string, fx: numbe
   const f = FRAMES[name];
   const sheet = loadSheet();
   if (!f || !sheet || !ready) return false;
-  const w = f.w / RES;
-  const h = f.h / RES;
+  const g = HIF[name] ?? f;
+  const w = f.w / SHEET;
+  const h = f.h / SHEET;
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.imageSmoothingEnabled = false;
   // 백버퍼 픽셀 격자에 맞춰 반올림 → 도트가 흐려지지 않음
   // 기준점: 상체 중심(ax). 좌우 반전 시 반대쪽에서 잰다
-  const ax = (f.ax ?? f.w / 2) / RES;
+  const ax = (f.ax ?? f.w / 2) / SHEET;
   const x = Math.round((fx - (flip ? w - ax : ax)) * RES) / RES;
   const y = Math.round((fy - h) * RES) / RES;
   if (flip) {
     ctx.translate(x + w, y);
     ctx.scale(-1, 1);
-    ctx.drawImage(sheet, f.x, f.y, f.w, f.h, 0, 0, w, h);
+    ctx.drawImage(sheet, g.x, g.y, g.w, g.h, 0, 0, w, h);
   } else {
-    ctx.drawImage(sheet, f.x, f.y, f.w, f.h, x, y, w, h);
+    ctx.drawImage(sheet, g.x, g.y, g.w, g.h, x, y, w, h);
   }
   ctx.restore();
   return true;
@@ -163,12 +168,13 @@ export function spriteUrl(name: string): string {
   const f = FRAMES[name];
   const sheet = loadSheet();
   if (!f || !sheet || !ready || typeof document === 'undefined') return '';
+  const g = HIF[name] ?? f;
   const cv = document.createElement('canvas');
-  cv.width = f.w;
-  cv.height = f.h;
+  cv.width = g.w;
+  cv.height = g.h;
   const ctx = cv.getContext('2d');
   if (!ctx) return '';
-  ctx.drawImage(sheet, f.x, f.y, f.w, f.h, 0, 0, f.w, f.h);
+  ctx.drawImage(sheet, g.x, g.y, g.w, g.h, 0, 0, g.w, g.h);
   const url = cv.toDataURL();
   urlCache.set(name, url);
   return url;
