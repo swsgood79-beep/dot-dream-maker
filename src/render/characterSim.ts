@@ -15,6 +15,8 @@ export interface Actor {
   drawAt?: { gx: number; gy: number; lift: number } | null;
   /** 활동 포즈 이름 (있으면 그 그림으로) */
   act?: string | null;
+  /** 앉아 있는 동안 숨길 가구 (그림 안에 책상이 같이 그려진 앉은 포즈) */
+  hideFurniture?: string | null;
   /** 기분이 나빠 터덜터덜 (걷는 속도 60%) */
   slow?: boolean;
 }
@@ -213,6 +215,7 @@ export class CharacterSim {
     this.actor.pose = 'idle';
     this.actor.drawAt = null;
     this.actor.act = null;
+    this.actor.hideFurniture = null;
   }
 
   private walkTo(w: World, goals: Cell[]) {
@@ -377,6 +380,7 @@ export class CharacterSim {
       if (cur.elapsed >= cur.ms) {
         this.current = null;
         a.drawAt = null;
+        a.hideFurniture = null;
       }
     } else if (cur.kind === 'fade') {
       const t = Math.min(1, cur.elapsed / cur.ms);

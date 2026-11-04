@@ -635,6 +635,25 @@ for g in ('SON', 'DAUGHTER'):
             sprites[f'{st}_{g}_mood_{key}'] = defringe(cut(img_m, b, blk))
         print(f'  상태 포즈: {path} → 12동작')
 
+# 행동 포즈 밝기 맞춤 (v0.34.2): Gemini 행동 시트가 서기 그림보다 어둡게 나옴(최대 -20%)
+# 밝은 쪽 픽셀(피부·옷, 상위 30%)의 밝기를 그 단계 서기 그림에 맞춰 올린다 (어두운 머리카락 비율 차이에 휘둘리지 않게)
+def _bright(spr):
+    m = spr[..., 3] > 0
+    lum = spr[..., :3][m].astype(float).mean(axis=1)
+    return float(np.percentile(lum, 70)) if len(lum) else 0
+for name in list(sprites):
+    parts = name.split('_')
+    if len(parts) != 3 or parts[2] not in ('desk', 'read', 'pc', 'draw', 'music', 'exercise', 'work', 'tired'):
+        continue
+    base = sprites.get(f'{parts[0]}_{parts[1]}_stand')
+    if base is None:
+        continue
+    gain = min(1.5, max(1.0, _bright(base) / max(1, _bright(sprites[name]))))
+    if gain > 1.02:
+        spr = sprites[name].astype(float)
+        spr[..., :3] = np.clip(spr[..., :3] * gain, 0, 255)
+        sprites[name] = spr.astype(np.uint8)
+
 # 부모님 캐릭터는 게임에서 사용하지 않음 (v0.5.17) → 아틀라스에서 제외
 for n in [n for n in sprites if n.startswith('PARENT')]:
     del sprites[n]

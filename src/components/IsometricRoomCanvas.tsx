@@ -1,3 +1,4 @@
+import type { PlacedFurniture } from '../types/game';
 import { parentClass } from '../data/parentData';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FURNITURE_MAP } from '../data/furnitureData';
@@ -91,6 +92,37 @@ function popupKind(text: string): Popup['kind'] {
   if (text === '대성공!') return 'great';
   if (text.startsWith('-') || text === '실패...' || text === '가출...') return 'bad';
   return 'stat';
+}
+
+/** 책상·컴퓨터 책상에 앉을 자리: 책상 앞쪽 가운데, 책상을 바라보는 방향 (책상 그림이 향한 쪽이 앞) */
+const SEAT_FURNITURE = new Set(['oak_desk', 'microscope_table', 'gaming_pc', 'dual_monitor', 'stock_monitor']);
+/** 책상 공부 그림 안에 큰 책상까지 그려진 경우(청소년 딸·청년): 앉는 동안 방 책상을 숨기고 그림 속 책상을 그 자리에 */
+const deskInSprite = (stage: string, gender: string, pose: string) => pose === 'desk' && (stage === 'YOUTH' || (stage === 'TEEN' && gender === 'DAUGHTER'));
+function sitAtDesk(actor: { drawAt?: { gx: number; gy: number; lift: number } | null; facing: 'L' | 'R'; back?: boolean; hideFurniture?: string | null }, desk: PlacedFurniture, ownDesk: boolean) {
+  if (ownDesk) {
+    const fp = footprint(desk);
+    const cx = fp.reduce((a, c) => a + c.x, 0) / fp.length + 0.5;
+    const cy = fp.reduce((a, c) => a + c.y, 0) / fp.length + 0.5;
+    const frontY = !(desk.rotation === 90 || desk.rotation === 270);
+    // 그림 기준점(상체)은 왼쪽, 책상은 오른쪽 → 몸이 책상 앞쪽에 오게 살짝 비켜 앉힘
+    actor.drawAt = frontY ? { gx: cx - 0.1, gy: cy + 0.35, lift: 0 } : { gx: cx + 0.35, gy: cy - 0.1, lift: 0 };
+    actor.facing = frontY ? 'R' : 'L';
+    actor.hideFurniture = desk.instanceId;
+  } else {
+    const seat = deskSeat(desk);
+    actor.drawAt = { gx: seat.gx, gy: seat.gy, lift: 0 };
+    actor.facing = seat.facing;
+    actor.hideFurniture = null;
+  }
+  actor.back = false;
+}
+function deskSeat(p: PlacedFurniture, inset = 0.62): { gx: number; gy: number; facing: 'L' | 'R' } {
+  const fp = footprint(p);
+  const cx = fp.reduce((a, c) => a + c.x, 0) / fp.length + 0.5;
+  const cy = fp.reduce((a, c) => a + c.y, 0) / fp.length + 0.5;
+  // 그림이 실제로 향한 쪽: 회전 0·180 = 왼쪽 아래(+y), 90·270 = 오른쪽 아래(+x)
+  const frontY = !(p.rotation === 90 || p.rotation === 270);
+  return frontY ? { gx: cx - 0.2, gy: cy + inset, facing: 'R' } : { gx: cx + inset, gy: cy - 0.2, facing: 'L' };
 }
 
 export function IsometricRoomCanvas({
@@ -305,6 +337,11 @@ export function IsometricRoomCanvas({
             // 누운 그림은 머리가 오른쪽 위(침대 머리판 쪽) → 침대가 좌우 반전되어 그려지면 같이 반전
             sim.actor.facing = furnitureFlipped(bed) ? 'L' : 'R';
           }
+          // 책상 공부·컴퓨터: 책상 앞 가운데 의자에 앉기
+          const desk = v.placed.find((p) => p.instanceId === w.targetInstanceId);
+          if ((pose === 'desk' || pose === 'pc') && desk && SEAT_FURNITURE.has(desk.furnitureId)) {
+            sitAtDesk(sim.actor, desk, deskInSprite(growthStage(lifeRef.current.game.age), lifeRef.current.game.gender, pose));
+          }
           haloRef.current = HALO[w.outcome];
           // 집에서 하는 활동도 활동 포즈 그림이 있으면 그 동작으로 (예: 집안일 → 빗자루질)
           sim.actor.act =
@@ -419,7 +456,26 @@ export function IsometricRoomCanvas({
       if (!cells.length) return null;
       const stage = growthStage(g.age);
       const act = h.act && hasFrame(`${stage}_${g.gender}_${h.act}`) ? h.act : undefined;
-      return { goal: cells, pose: act ? 'idle' : h.pose, act, ms: h.ms, face: footprint(t)[0], start: say(h.bubbles), end: quiet };
+      const sit = !act && (h.pose === 'desk' || h.pose === 'pc') && SEAT_FURNITURE.has(t.furnitureId);
+      return {
+        goal: cells,
+        pose: act ? 'idle' : h.pose,
+        act,
+        ms: h.ms,
+        face: footprint(t)[0],
+        start: () => {
+          say(h.bubbles)();
+          if (sit) {
+            // 책상 앞 가운데 의자에 앉기
+            sitAtDesk(sim.actor, t, deskInSprite(stage, g.gender, h.pose));
+          }
+        },
+        end: () => {
+          quiet();
+          sim.actor.drawAt = null;
+          sim.actor.hideFurniture = null;
+        },
+      };
     };
     return () => {
       sim.onIdlePick = undefined;

@@ -612,7 +612,8 @@ export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
 
   // 가구 + 캐릭터 + 반려묘 (깊이 순서대로)
   type Drawable = { key: number; draw: () => void };
-  const list: Drawable[] = depthSorted(v.placed).map((p, i) => {
+  const hidden = v.actor?.actor.hideFurniture;
+  const list: Drawable[] = depthSorted(v.placed.filter((p) => p.instanceId !== hidden)).map((p, i) => {
     const r = footprintRect(p);
     return { key: r.x1 + r.y1 + i * 1e-4, draw: () => drawFurniture(ctx, n, p, { selected: p.instanceId === v.selectedId, time: v.time, emptyCushion: !!v.cat }) };
   });
