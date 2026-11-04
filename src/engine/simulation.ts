@@ -1,5 +1,5 @@
-import { COMBO_MAP, FURNITURE_MAP } from '../data/furnitureData';
-import { ACTION_MAP } from '../data/scheduleData';
+import { COMBO_MAP, FURNITURE, FURNITURE_MAP } from '../data/furnitureData';
+import { ACTION_MAP, SCHEDULE_ACTIONS } from '../data/scheduleData';
 import { evaluateEnding } from '../data/endingData';
 import type {
   AptitudeKey,
@@ -17,6 +17,7 @@ import { computeActiveCombos, computeAura, findFreeSpot, roomSizeForAge, STARTER
 import { rollParentingEvent, updateWish } from './parenting';
 import { BDAY_MARK, writeDiary, type DiaryEntry } from './diary';
 import { dominantAttitude, monthlyPsyche, type Acting, type Attitude } from './psyche';
+import { MASTERY_PER_LV, MASTERY_TITLE, masteryLevel, masteryMul } from './mastery';
 import type { ParentStyle } from '../data/parentingData';
 import { TEMPERAMENT_MAP, type TemperamentId } from '../data/temperamentData';
 import { CUTSCENES, pickFriend } from '../data/cutsceneData';
@@ -95,6 +96,8 @@ export interface SaveState extends GameState {
   attitudes?: Record<Attitude, number>; // 4대 양육 태도 누적
   doorLocked?: boolean; // 방문 잠금
   acting?: Acting | null; // 관찰 카메라로 볼 수 있는 이상행동
+  pendingUnlock?: { age: number; actions: string[]; furniture: string[] } | null; // 새로 열린 콘텐츠 알림
+  newContent?: string[]; // 아직 안 본 새 스케줄·가구 (NEW 표시)
   actingCooldown?: number;
   allowanceThisMonth?: boolean;
 }
@@ -396,7 +399,8 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
         const m = comboMult(k);
         maxMult = Math.max(maxMult, m);
         const tm = (temper?.statMul[k] ?? 1) * parentStatMul(s.parent?.points, k) * (attitude === 'TIGER' && (k === 'INT' || k === 'TEC') ? 1.2 : 1);
-        gain = Math.round((base + auraV) * GAIN_SCALE * growthCurve(s.stats[k]) * m * conditionFactor * tm);
+        const mm = masteryMul(masteryLevel(s.actionCounts[action.id] ?? 0)); // 숙련도
+        gain = Math.round((base + auraV) * GAIN_SCALE * growthCurve(s.stats[k]) * m * conditionFactor * tm * mm);
       }
     }
     if (gain !== 0) {
@@ -464,7 +468,13 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
   else if (!isFail && action.type !== 'REST') s.ideaPoints += 1;
 
   // 행동 카운트 & 외출 이벤트
+  const lvBefore = masteryLevel(s.actionCounts[action.id] ?? 0);
   s.actionCounts[action.id] = (s.actionCounts[action.id] ?? 0) + 1;
+  const lvAfter = masteryLevel(s.actionCounts[action.id]);
+  if (lvAfter > lvBefore) {
+    popups.push(`★ 숙련 Lv.${lvAfter}!`);
+    notes.push(`🎓 ${action.name} 숙련도 Lv.${lvAfter} (${MASTERY_TITLE[lvAfter]}) — 효율 +${Math.round((lvAfter - 1) * MASTERY_PER_LV * 100)}%`);
+  }
   if (action.type === 'OUTING' || action.id === 'REST_02') {
     s.actionCounts.OUTING_TOTAL = (s.actionCounts.OUTING_TOTAL ?? 0) + 1;
   }
@@ -636,6 +646,13 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
     s.age += 1;
     s.history = [...(s.history ?? []), { age: s.age, stats: { ...s.stats }, fame: s.status.fame }];
     addPhoto(s, { emoji: '🎍', title: `${s.age}세 새해`, caption: '올해도 건강하게, 즐겁게!', pose: 'cheer' });
+    // 이 나이에 새로 열린 스케줄·가구 → 새해 첫 달에 알림 창 + NEW 표시
+    const acts = SCHEDULE_ACTIONS.filter((a) => a.minAge === s.age).map((a) => a.id);
+    const furn = FURNITURE.filter((f) => f.minAge === s.age).map((f) => f.id);
+    if (acts.length || furn.length) {
+      s.pendingUnlock = { age: s.age, actions: acts, furniture: furn };
+      s.newContent = [...new Set([...(s.newContent ?? []), ...acts, ...furn])];
+    }
     const newSize = roomSizeForAge(s.age, parentClass(s.parent));
     if (newSize > s.roomSize) {
       s.roomSize = newSize;

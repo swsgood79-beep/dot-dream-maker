@@ -15,6 +15,7 @@ import { SeasonFx } from './SeasonFx';
 import { Tutorial } from './Tutorial';
 import { RecModal } from './RecModal';
 import { ActingAlertModal } from './ActingAlertModal';
+import { UnlockModal } from './UnlockModal';
 import { WISH_MAP } from '../data/parentingData';
 import { sfx } from '../audio/sfx';
 import type { ContestId, MonthResult } from '../engine/simulation';
@@ -77,12 +78,14 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   // 새 달 시작 순서: 월간 결과 → 성장 컷신 → 성적표 → 육아 상황
   const idle = !lastResult && !playing && !contestOpen && !showTutorial;
   const openCut = idle && !eventShown && !reportShown ? (game.pendingCutscene ?? null) : null;
-  const openReport = idle && !openCut && !eventShown && !bdayShown && (reportShown || !!game.pendingReport);
-  const openBday = idle && !openCut && !openReport && !eventShown && (bdayShown || !!game.pendingBirthday);
-  const openEvent = idle && !openCut && !openReport && !openBday ? (eventShown ?? game.pendingEvent ?? null) : null;
+  // 새로 열린 콘텐츠: 성장 컷신 바로 뒤
+  const openUnlock = idle && !openCut && !eventShown && !reportShown && !bdayShown && !!game.pendingUnlock;
+  const openReport = idle && !openCut && !openUnlock && !eventShown && !bdayShown && (reportShown || !!game.pendingReport);
+  const openBday = idle && !openCut && !openUnlock && !openReport && !eventShown && (bdayShown || !!game.pendingBirthday);
+  const openEvent = idle && !openCut && !openUnlock && !openReport && !openBday ? (eventShown ?? game.pendingEvent ?? null) : null;
   // 이상행동 안내: 새 달 창들이 다 끝난 뒤 한 번
   const markActingSeen = useGameStore((s) => s.markActingSeen);
-  const openAlert = idle && !openCut && !openReport && !openBday && !openEvent && !recOpen && !!game.acting && !game.acting.seen;
+  const openAlert = idle && !openCut && !openUnlock && !openReport && !openBday && !openEvent && !recOpen && !!game.acting && !game.acting.seen;
   const showContest = !!(lastResult && !playing && lastResult.contest && contestSeen !== lastResult);
 
   const stress = game.status.stress;
@@ -317,6 +320,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
       {recOpen && <RecModal onClose={() => setRecOpen(false)} />}
       {diaryOpen && <DiaryModal onClose={() => setDiaryOpen(false)} />}
       {openCut && <CutsceneModal key={openCut} id={openCut} />}
+      {openUnlock && <UnlockModal onClose={() => {}} />}
       {openReport && <ReportCardModal onPick={() => setReportShown(true)} onClose={() => setReportShown(false)} />}
       {openBday && <BirthdayModal onPick={() => setBdayShown(true)} onClose={() => setBdayShown(false)} />}
       {openEvent && <EventModal key={openEvent} id={openEvent} onPick={() => setEventShown(openEvent)} onClose={() => setEventShown(null)} />}

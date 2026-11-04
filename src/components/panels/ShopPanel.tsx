@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { COMBOS, FURNITURE, FURNITURE_MAP } from '../../data/furnitureData';
 import { useGameStore } from '../../store/useGameStore';
 import type { FurnitureCategory } from '../../types/game';
@@ -11,6 +11,9 @@ const CAT_LABEL: Record<FurnitureCategory, string> = {
 };
 
 export function ShopPanel({ onPlaceMode }: { onPlaceMode: (furnitureId: string) => void }) {
+  // 상점을 닫으면 본 가구의 NEW 표시를 지운다
+  const clearNew = useGameStore((st) => st.clearNew);
+  useEffect(() => () => clearNew(FURNITURE.map((f) => f.id)), [clearNew]);
   const game = useGameStore((s) => s.game)!;
   const buy = useGameStore((s) => s.buyFurniture);
   const [tab, setTab] = useState<'shop' | 'combo' | 'storage'>('shop');
@@ -58,6 +61,7 @@ export function ShopPanel({ onPlaceMode }: { onPlaceMode: (furnitureId: string) 
                   <div className="min-w-0 flex-1">
                     <p className="font-bold">
                       {f.name} {owned && <span className="text-emerald-700">✔</span>} {f.width > 1 && <span className="opacity-60">({f.width}칸)</span>}
+                      {!locked && game.newContent?.includes(f.id) && <span className="ml-1 rounded border border-ink bg-[#ff6fae] px-1 text-[9px] text-white">NEW</span>}
                     </p>
                     <p className="flex flex-wrap items-center gap-x-1.5 text-[10px] opacity-80">오라: {aura.length ? aura : '-'}</p>
                     {combo && <p className="text-[10px] text-wood">콤보: {combo.name}</p>}

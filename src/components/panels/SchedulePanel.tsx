@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { MASTERY_PER_LV, MASTERY_TITLE, masteryLevel, masteryProgress } from '../../engine/mastery';
+import { useEffect, useState } from 'react';
 import { ACTION_TYPE_LABEL, SCHEDULE_ACTIONS } from '../../data/scheduleData';
 import { useGameStore } from '../../store/useGameStore';
 import type { ScheduleAction } from '../../types/game';
@@ -21,6 +22,9 @@ function actionSummary(a: ScheduleAction) {
 
 export function SchedulePanel() {
   const game = useGameStore((s) => s.game)!;
+  // 스케줄 창을 닫으면 본 스케줄의 NEW 표시를 지운다
+  const clearNew = useGameStore((s) => s.clearNew);
+  useEffect(() => () => clearNew(SCHEDULE_ACTIONS.map((a) => a.id)), [clearNew]);
   const setSlot = useGameStore((s) => s.setScheduleSlot);
   const [slot, setSlot_] = useState(0);
   // 방금 넣은 행동 (확인 표시용)
@@ -101,11 +105,28 @@ export function SchedulePanel() {
                     <span className="block font-bold">
                       {a.name}
                       {locked && ` 🔒${a.minAge}세`}
+                      {!locked && game.newContent?.includes(a.id) && <span className="ml-1 rounded border border-ink bg-[#ff6fae] px-1 text-[9px] text-white">NEW</span>}
                       {flashed && <span className="ml-1 rounded border border-ink bg-mint px-1 text-[9px]">✓ {justSet!.week + 1}주에 넣음</span>}
                       {current && !flashed && <span className="ml-1 rounded border border-dashed border-ink px-1 text-[9px] opacity-70">{slot + 1}주 현재</span>}
                       {wishTarget === a.id && <span className="ml-1 rounded border border-ink bg-[#fff1c2] px-1 text-[9px]">💭 아이가 원해요</span>}
                     </span>
                     <span className="block text-[10px] opacity-70">{actionSummary(a)}</span>
+                    {!locked && (() => {
+                      // 숙련도: 같은 활동을 할수록 효율 상승
+                      const cnt = game.actionCounts[a.id] ?? 0;
+                      const lv = masteryLevel(cnt);
+                      const pr = masteryProgress(cnt);
+                      return (
+                        <span className="mt-0.5 flex items-center gap-1 text-[9px]">
+                          <span className="tracking-tighter text-[#e0a100]">{'★'.repeat(lv)}<span className="text-ink/20">{'★'.repeat(5 - lv)}</span></span>
+                          <span className="opacity-70">
+                            숙련 Lv.{lv} {MASTERY_TITLE[lv]}
+                            {lv > 1 && ` · 효율 +${Math.round((lv - 1) * MASTERY_PER_LV * 100)}%`}
+                            {pr && ` · 다음까지 ${pr[1] - pr[0]}주`}
+                          </span>
+                        </span>
+                      );
+                    })()}
                   </span>
                   <span className="shrink-0 text-right text-[10px]">
                     <span className={a.weeklyGoldDelta < 0 ? 'text-red-600' : 'text-emerald-700'}>
