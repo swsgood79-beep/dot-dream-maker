@@ -148,8 +148,8 @@ function drawFurniture(
   opts: { selected?: boolean; alpha?: number; tint?: string; time?: number; emptyCushion?: boolean } = {},
 ) {
   // 반려묘 쿠션 그림에는 고양이가 그려져 있음 → 고양이가 밖에 나와 있으면 빈 쿠션으로
-  const skipSprite = opts.emptyCushion && p.furnitureId === 'cat_cushion';
-  if (!skipSprite && drawFurnitureSprite(ctx, (x, y) => project(n, x, y), p, opts.alpha ?? 1)) return;
+  const frame = opts.emptyCushion && p.furnitureId === 'cat_cushion' ? 'cat_cushion_empty' : undefined;
+  if (drawFurnitureSprite(ctx, (x, y) => project(n, x, y), p, opts.alpha ?? 1, frame)) return;
   ctx.save();
   ctx.globalAlpha = opts.alpha ?? 1;
   const drawn = drawFurnitureModel(ctx, (x, y) => project(n, x, y), p, opts.time ?? 0);

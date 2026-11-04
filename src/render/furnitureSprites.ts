@@ -55,8 +55,9 @@ export function drawFurnitureSprite(
   proj: Proj,
   p: Pick<PlacedFurniture, 'furnitureId' | 'gridX' | 'gridY' | 'rotation'>,
   alpha = 1,
+  frame?: string, // 다른 그림으로 그릴 때 (예: 고양이가 나가 있는 빈 쿠션)
 ): boolean {
-  const f = FRAMES[p.furnitureId];
+  const f = FRAMES[frame ?? p.furnitureId] ?? FRAMES[p.furnitureId];
   const sheet = load();
   if (!f || !sheet || !ready) return false;
   const cells = footprint(p);

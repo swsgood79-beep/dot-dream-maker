@@ -167,6 +167,70 @@ missing = [k for k in wanted if k not in sprites]
 if missing:
     sys.exit(f'칸에서 그림을 못 찾음: {missing}')
 
+
+
+def empty_cushion(spr):
+    """반려묘 쿠션 그림에서 고양이를 지운 빈 쿠션 (고양이가 쿠션 밖에 나와 있을 때)
+    분홍이 아닌 안쪽 픽셀(주황·크림·갈색·고양이 외곽선) = 고양이 → 주변 분홍으로 메우고, 오목한 가운데 그늘을 넣는다"""
+    a = spr.astype(np.float64).copy()
+    h, w, _ = a.shape
+    alpha = a[..., 3] > 0
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    pink = (r > 140) & (b >= g - 8) & (r - g > 25)
+    # 바깥 테두리(투명에 닿은 픽셀)는 쿠션 외곽선이라 남김
+    pad = np.pad(~alpha, 1, constant_values=True)
+    edge = np.zeros_like(alpha)
+    for dy, dx in ((0, 1), (2, 1), (1, 0), (1, 2)):
+        edge |= pad[dy:dy + h, dx:dx + w]
+    # 고양이 몸 색(주황 털 · 크림 배)으로 고양이 자리를 찾고, 그 범위 안의 분홍이 아닌 픽셀(외곽선 포함)을 고양이로
+    orange = (r > 150) & (g > 70) & (b < g - 15)
+    cream = (r > 185) & (g > 165) & (b > 130) & (r - b < 70)
+    core = alpha & (orange | cream) & ~edge
+    core[int(h * 0.62):] = False
+    cys, cxs = np.where(core)
+    by0, by1, bx0, bx1 = cys.min() - 1, cys.max() + 1, cxs.min() - 1, cxs.max() + 1
+    box = np.zeros_like(alpha)
+    box[max(0, by0):by1 + 1, max(0, bx0):bx1 + 1] = True
+    cat = alpha & ~pink & ~edge & box
+    # 고양이 덩어리 주변 1칸까지 (안티앨리어싱 섞인 색)
+    grow = cat.copy()
+    for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+        grow |= np.roll(cat, (dy, dx), axis=(0, 1))
+    cat = grow & alpha & ~edge
+    rgb = a[..., :3]
+    # 쿠션 윗면 분홍(밝은 쪽)과 안쪽 그늘 색: 고양이 주변 분홍 픽셀에서 뽑음
+    ys, xs = np.where(cat)
+    y0, y1, x0, x1 = ys.min(), ys.max(), xs.min(), xs.max()
+    near = alpha & pink & ~edge
+    near[: max(0, y0 - 3)] = False
+    near[y1 + 4:] = False
+    pk = rgb[near]
+    light = np.percentile(pk, 75, axis=0)
+    dark = np.percentile(pk, 15, axis=0)
+    rim_line = dark * 0.78
+    cy, cx = (y0 + y1) / 2 + 0.5, (x0 + x1) / 2
+    ry, rx = (y1 - y0) / 2 + 1.5, (x1 - x0) / 2 + 2
+    yy, xx = np.mgrid[0:h, 0:w]
+    d = ((yy - cy) / ry) ** 2 + ((xx - cx) / rx) ** 2
+    # 고양이 자리: 오목한 안쪽 (위는 앞 테두리 그늘로 어둡게 → 아래로 갈수록 밝게, 4단계)
+    inside = alpha & ~edge & (d < 1.0)
+    t = np.clip((yy - (cy - ry)) / (2 * ry), 0, 1)
+    steps = np.floor(t * 4) / 3
+    col = dark[None, None, :] * (1 - steps[..., None]) + light[None, None, :] * steps[..., None]
+    rgb[inside] = col[inside]
+    # 안쪽 테두리 선 (뒤쪽 반원만)
+    ring = alpha & ~edge & (d >= 0.78) & (d < 1.0) & (yy < cy + 1)
+    rgb[ring] = rim_line
+    # 타원 밖으로 삐져나온 고양이 픽셀은 윗면 분홍으로
+    rest = cat & ~inside
+    rgb[rest] = light
+    a[..., :3] = rgb
+    return np.clip(a, 0, 255).astype(np.uint8)
+
+
+if 'cat_cushion' in sprites:
+    sprites['cat_cushion_empty'] = (empty_cushion(sprites['cat_cushion'][0]), sprites['cat_cushion'][1])
+
 gap = 1
 names = sorted(sprites)
 aw = sum(sprites[n][0].shape[1] for n in names) + gap * (len(names) - 1)
