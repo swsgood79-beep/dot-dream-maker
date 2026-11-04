@@ -15,7 +15,7 @@ import type {
 } from '../types/game';
 import { computeActiveCombos, computeAura, findFreeSpot, roomSizeForAge, STARTER_FURNITURE } from './room';
 import { rollParentingEvent, updateWish } from './parenting';
-import { writeDiary, type DiaryEntry } from './diary';
+import { BDAY_MARK, writeDiary, type DiaryEntry } from './diary';
 import { dominantAttitude, monthlyPsyche, type Acting, type Attitude } from './psyche';
 import type { ParentStyle } from '../data/parentingData';
 import { TEMPERAMENT_MAP, type TemperamentId } from '../data/temperamentData';
@@ -647,6 +647,10 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
   const cut = CUTSCENES.find((c) => c.age === s.age && c.month === s.month && !(s.seenCutscenes ?? []).includes(c.id));
   if (cut) s.pendingCutscene = cut.id;
   if ((s.month === 7 || s.month === 2) && !(s.age === 8 && s.month === 2)) s.pendingReport = true;
-  if (s.birthMonth === s.month) s.pendingBirthday = true;
+  if (s.birthMonth === s.month) {
+    s.pendingBirthday = true;
+    // 아직 안 읽은 일기에 생일 선물 바람이 남아 있으면, 선물을 받은 뒤 읽게 되어 앞뒤가 안 맞으므로 지운다
+    if (s.diaryNew) s.diaryNew = { ...s.diaryNew, lines: s.diaryNew.lines.filter((l) => !l.startsWith(BDAY_MARK)) };
+  }
   return { state: s, weeks, events, contest: contestResult };
 }

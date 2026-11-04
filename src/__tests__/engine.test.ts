@@ -754,3 +754,21 @@ describe('realistic parenting (GDD 11)', () => {
     expect(relationEnding(s)).toBe('DEPENDENT');
   });
 });
+
+describe('birthday diary hint order', () => {
+  it('gift wish is read the month before the birthday, never after the gift', () => {
+    let st = createNewGame('t', 'DAUGHTER', 'MOR');
+    st.birthMonth = 5;
+    st.month = 1;
+    let rs = 3;
+    const rng = () => ((rs = (rs * 16807) % 2147483647), rs / 2147483647);
+    for (let i = 0; i < 4; i++) {
+      st.pendingEvent = null;
+      st.pendingCutscene = null;
+      st.pendingBirthday = false;
+      st = runMonth(st, rng).state;
+      const hint = !!st.diaryNew?.lines.some((l) => l.startsWith('곧 내 생일'));
+      if (st.month === 5) expect(hint).toBe(false); // 생일 달: 선물 창보다 늦게 읽히는 바람은 없음
+    }
+  });
+});

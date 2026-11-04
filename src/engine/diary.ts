@@ -26,6 +26,9 @@ const TEMPER_SECRET = {
 };
 
 /** 이번 달 일기 쓰기: 비밀이 있으면 꼭, 없으면 가끔 */
+/** 생일 선물 힌트 줄 (생일이 지나면 읽지 않은 일기에서 지운다) */
+export const BDAY_MARK = '곧 내 생일이다!';
+
 export function writeDiary(s: SaveState, weeks: WeekResult[], contest: ContestResult | undefined, rng: Rng) {
   const stage = growthStage(s.age);
   const lines: string[] = [];
@@ -42,8 +45,9 @@ export function writeDiary(s: SaveState, weeks: WeekResult[], contest: ContestRe
   }
   if (weeks.some((w) => w.outcome === 'GREAT')) lines.push('오늘은 뭐든 술술 됐다. 나 좀 천재인가?');
   if (contest) lines.push(contest.win ? `${contest.title}에서 이겼다!!! 꿈인가?` : `${contest.title}... 아쉬웠다. 다음엔 꼭.`);
-  if (s.birthMonth && s.birthMonth === (s.month % 12) + 1) {
-    lines.push(`다음 달이 내 생일이다! ${wantedGift(s).emoji} ${wantedGift(s).name} 받고 싶다... 말할까 말까.`);
+  // 일기는 다음 달에 읽히므로, 생일 두 달 전에 써야 생일 한 달 전에 읽힌다 (생일 선물보다 먼저)
+  if (s.birthMonth && s.birthMonth === ((s.month + 1) % 12) + 1) {
+    lines.push(`${BDAY_MARK} ${wantedGift(s).emoji} ${wantedGift(s).name} 받고 싶다... 말할까 말까.`);
   }
   if (rng() < 0.25) lines.push(['고양이가 또 내 침대에서 잤다.', '저녁 반찬이 맛있었다.', '창밖에 비가 왔다. 왠지 좋았다.'][Math.floor(rng() * 3)]);
 
