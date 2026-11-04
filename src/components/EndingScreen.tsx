@@ -18,6 +18,7 @@ import { TEMPERAMENT_MAP } from '../data/temperamentData';
 import { ACHIEVEMENTS, epilogueLines } from '../data/legacyData';
 import { DiaryRecap, PhoneEnding } from './EndingExtras';
 import { relationEnding } from '../engine/psyche';
+import { endingArt } from '../render/endingArt';
 
 type Step = 'intro' | 'album' | 'photos' | 'recap' | 'drum' | 'reveal' | 'phone' | 'letter' | 'later';
 
@@ -272,7 +273,11 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
                   ✦
                 </span>
               ))}
-              <div className="relative mb-2 flex items-end">
+              {endingArt(ending.id, game.gender, 'BRIGHT') && (
+                // 직업 엔딩 일러스트가 있으면 카드 전체를 그 그림으로
+                <img src={endingArt(ending.id, game.gender, 'BRIGHT')} alt="" className="absolute inset-0 h-full w-full object-cover" />
+              )}
+              <div className="relative mb-2 flex items-end" style={endingArt(ending.id, game.gender, 'BRIGHT') ? { display: 'none' } : undefined}>
                 {hasFrame(jobFrame) ? (
                   // 직업 의상 그림이 있으면 그 그림 (소품은 그림에 포함)
                   <Sprite name={jobFrame} scale={1.9} />

@@ -4,10 +4,12 @@ import { sfx } from '../audio/sfx';
 import type { EndingDefinition } from '../types/game';
 import type { Photo, SaveState } from '../engine/simulation';
 import { growthStage } from '../engine/room';
-import { RELATION_META, relationEnding, type Relation } from '../engine/psyche';
+import { ATTITUDE_META, RELATION_META, autonomy, dominantAttitude, relationEnding, selfEsteem, type Relation } from '../engine/psyche';
+import { ENDING_SCENE } from '../data/endingScenes';
+import { endingArt, hasDarkArt } from '../render/endingArt';
 import { frameName, hasFrame } from '../render/spriteCharacter';
 import { Sprite } from './Sprite';
-import { PixelButton } from './ui';
+import { PixelButton, TIER_COLOR } from './ui';
 
 /* ───────── ① 12년 비밀 일기 회상 (GDD 11.3) ───────── */
 const SKIP = /생일|새해|우리 집에 온 날|우승|입상|1등|성적표/;
@@ -25,51 +27,113 @@ const PAGE_STYLE = {
 
 export function DiaryRecap({ game, onDone }: { game: SaveState; onDone: () => void }) {
   const stages: ('CHILD' | 'TEEN' | 'YOUTH')[] = ['CHILD', 'TEEN', 'YOUTH'];
-  const [i, setI] = useState(0);
-  const st = stages[i];
-  const p = pickPage(game.photos ?? [], st);
-  const style = PAGE_STYLE[st];
+  const pages = stages.map((st) => ({ st, p: pickPage(game.photos ?? [], st) }));
+  const [shown, setShown] = useState(0); // 폴라로이드가 한 장씩 놓인다
+  const [zoom, setZoom] = useState<number | null>(null);
+  useEffect(() => {
+    if (shown >= 3) return;
+    const t = setTimeout(() => {
+      setShown((n) => n + 1);
+      sfx('page');
+    }, shown === 0 ? 400 : 650);
+    return () => clearTimeout(t);
+  }, [shown]);
+  const dom = dominantAttitude(game);
+  const LABEL = { CHILD: '크레파스 그림일기', TEEN: '비밀 노트', YOUTH: '진로 노트' };
+  const TILT = [-3, 2.5, -2];
+
+  const pic = (st: 'CHILD' | 'TEEN' | 'YOUTH', p: Photo | null, cls: string) => {
+    const img = p ? photoScene(p.title, game.gender, p.age) : undefined;
+    return img ? (
+      <img src={img} alt="" className={`w-full object-cover ${cls}`} />
+    ) : (
+      <div className={`room-bg flex w-full items-end justify-center ${cls}`}>
+        {p && <span className="mr-1 mb-6 text-2xl">{p.emoji}</span>}
+        <Sprite name={frameName(st, game.gender, p?.pose ?? 'stand')} scale={1} />
+      </div>
+    );
+  };
+
   return (
-    <div className="pop-in flex w-full flex-1 flex-col items-center justify-center gap-3" key={i}>
-      <p className="text-xs text-gold">📔 12년 동안 몰래 써 온 일기 ({i + 1}/3)</p>
-      <div className={`w-full rounded-sm border-3 border-ink p-3 text-left shadow-[6px_6px_0_rgba(0,0,0,.35)] ${style.paper}`} style={{ transform: `rotate(${style.tilt}deg)` }}>
-        <p className="mb-1 flex justify-between text-[11px] font-bold text-ink/60">
-          <span>
-            {style.deco} {p ? `${p.age}살` : ''} {style.title}
-          </span>
-          <span>{p ? `${p.month}월` : ''}</span>
-        </p>
-        {p && photoScene(p.title, game.gender, p.age) ? (
-          <img src={photoScene(p.title, game.gender, p.age)} alt="" className="mb-2 aspect-video w-full border-2 border-ink object-cover" />
-        ) : (
-          <div className="room-bg mb-2 flex h-28 items-end justify-center border-2 border-ink">
-            {p && <span className="mr-1 mb-8 text-3xl">{p.emoji}</span>}
-            <Sprite name={frameName(st, game.gender, p?.pose ?? 'stand')} scale={1.2} />
-          </div>
-        )}
-        <p className={`font-bold ${style.ink} ${style.font}`}>
-          {p ? (
-            <>
-              오늘은 「{p.title}」.
-              <br />
-              {p.caption}
-            </>
-          ) : (
-            '이 시절 일기장은 비어 있다...'
-          )}
-        </p>
+    <div className="flex min-h-0 w-full flex-1 flex-col items-center gap-2">
+      <div className="text-center">
+        <p className="text-base font-bold text-gold drop-shadow-[2px_2px_0_#000]">📔 12년 비밀 일기 회상</p>
+        <p className="text-[11px] opacity-70">19세 성인식 날, 책상 서랍 속에서 찾은 세 권의 기록</p>
+      </div>
+      {/* 폴라로이드 3장 */}
+      <div className="flex min-h-0 w-full flex-1 flex-col justify-center">
+        {pages.map(({ st, p }, i) => {
+          const age = p?.age ?? (st === 'CHILD' ? 9 : st === 'TEEN' ? 14 : 18);
+          return (
+            <button
+              key={st}
+              onClick={() => {
+                sfx('click');
+                setZoom(i);
+              }}
+              className={`relative w-[86%] bg-white p-1.5 pb-1 text-left shadow-[4px_5px_0_rgba(0,0,0,.4)] transition-all duration-500 ${i % 2 ? 'self-end' : 'self-start'} ${i ? 'mt-2.5' : ''}`}
+              style={{ transform: `rotate(${TILT[i]}deg) translateY(${i < shown ? 0 : 40}px)`, opacity: i < shown ? 1 : 0 }}
+            >
+              <span className="absolute -top-2 left-1/2 h-4 w-14 -translate-x-1/2 rotate-[-4deg] bg-[#ffe9a8]/80" />
+              {pic(st, p, 'aspect-[16/6.5] border border-ink/30')}
+              <p className="mt-1 flex items-baseline justify-between text-[11px] font-bold text-ink">
+                <span>
+                  {age}세 · {LABEL[st]}
+                </span>
+                <span className="text-[9px] opacity-50">눌러서 펼치기</span>
+              </p>
+              <p className="truncate text-[10px] text-ink/70">{p ? `「${p.title}」 ${p.caption}` : '이 시절 일기장은 비어 있다...'}</p>
+            </button>
+          );
+        })}
+      </div>
+      {/* 양육 요약 */}
+      <div className="w-full rounded border-2 border-ink bg-[#fff6e5] px-2 py-1 text-center text-[11px] text-ink" style={{ opacity: shown >= 3 ? 1 : 0, transition: 'opacity .5s' }}>
+        <b>양육 태도:</b> {dom ? `${ATTITUDE_META[dom].emoji} ${ATTITUDE_META[dom].label}` : '🌈 골고루 (뚜렷한 태도 없음)'}
+        <br />
+        🌟 자존감 {selfEsteem(game)} · ❤️ 친밀도 {game.status.affection} · 🧭 자율성 {autonomy(game)}
       </div>
       <PixelButton
         className="w-full"
         color="bg-gold"
         onClick={() => {
           sfx('page');
-          if (i < 2) setI(i + 1);
-          else onDone();
+          onDone();
         }}
       >
-        {i < 2 ? '다음 장 ▶' : '🎉 진로 발표!'}
+        🎉 진로 발표 보기
       </PixelButton>
+
+      {/* 펼쳐 보기 */}
+      {zoom !== null && (() => {
+        const { st, p } = pages[zoom];
+        const style = PAGE_STYLE[st];
+        return (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setZoom(null)}>
+            <div className={`pop-in w-full rounded-sm border-3 border-ink p-3 text-left shadow-[6px_6px_0_rgba(0,0,0,.35)] ${style.paper}`} style={{ transform: `rotate(${style.tilt}deg)` }}>
+              <p className="mb-1 flex justify-between text-[11px] font-bold text-ink/60">
+                <span>
+                  {style.deco} {p ? `${p.age}살` : ''} {style.title}
+                </span>
+                <span>{p ? `${p.month}월` : ''}</span>
+              </p>
+              {pic(st, p, 'mb-2 aspect-video border-2 border-ink')}
+              <p className={`font-bold ${style.ink} ${style.font}`}>
+                {p ? (
+                  <>
+                    오늘은 「{p.title}」.
+                    <br />
+                    {p.caption}
+                  </>
+                ) : (
+                  '이 시절 일기장은 비어 있다...'
+                )}
+              </p>
+              <p className="mt-2 text-center text-[10px] text-ink/50">화면을 누르면 닫혀요</p>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -110,21 +174,57 @@ export function PhoneEnding({ game, ending, onDone }: { game: SaveState; ending:
   const meta = RELATION_META[rel];
   const job = ending.id === 'END_50' ? '백수 생활' : ending.title.replace(/ \(.*\)$/, '');
   const msgs = messages(rel, job, game.childName).map((m) => (m.from === 'me' ? { ...m, text: m.text.replace('딸/아들', game.gender === 'SON' ? '아들' : '딸') } : m));
+  // 첫 메시지는 아이가 보낸 사진 (지금 모습)
+  const total = msgs.length + 1;
   const [shown, setShown] = useState(0);
+  const [round, setRound] = useState(0);
   useEffect(() => {
-    if (shown >= msgs.length) return;
+    if (shown >= total) return;
     const t = setTimeout(() => {
       setShown((n) => n + 1);
-      sfx(msgs[shown].from === 'sys' ? 'sad' : 'click');
+      const m = shown === 0 ? null : msgs[shown - 1];
+      sfx(m?.from === 'sys' ? 'sad' : 'click');
     }, shown === 0 ? 700 : 1300);
     return () => clearTimeout(t);
-  }, [shown, msgs]);
+  }, [shown, total, msgs, round]);
   const jobFrame = `JOB_${ending.id}_${game.gender}`;
   const dark = rel === 'HOLLOW';
+  const sad = rel === 'HOLLOW' || rel === 'DEPENDENT';
+  const art = endingArt(ending.id, game.gender, sad ? 'DARK' : 'BRIGHT');
+  // 어두운 그림이 따로 없으면 밝은 그림·도트 장면에 어두운 필터
+  const dim = sad && !(art && hasDarkArt(ending.id, game.gender));
+  const scene = ENDING_SCENE[ending.id] ?? { bg: '🏠', prop: '✨', sky: ['#bfe9ff', '#ffffff'] as [string, string] };
+
+  const photo = (
+    <div className="relative w-[82%] overflow-hidden rounded-xl border-2 border-white shadow-[0_2px_6px_rgba(0,0,0,.35)]">
+      {art ? (
+        <img src={art} alt="" className="aspect-[4/3] w-full object-cover" style={dim ? { filter: rel === 'HOLLOW' ? 'grayscale(.7) brightness(.6) contrast(1.1)' : 'saturate(.6) brightness(.85) hue-rotate(-10deg)' } : undefined} />
+      ) : (
+        <div className="relative flex aspect-[4/3] w-full items-end justify-center overflow-hidden" style={{ background: `linear-gradient(${scene.sky[0]}, ${scene.sky[1]})` }}>
+          <span className="absolute top-2 left-1/2 -translate-x-1/2 text-6xl opacity-70">{scene.bg}</span>
+          <div className="relative mb-1">
+            <Sprite name={hasFrame(jobFrame) ? jobFrame : frameName('YOUTH', game.gender, sad ? 'tired' : 'cheer')} scale={1.5} />
+          </div>
+          {dim && <div className="absolute inset-0" style={{ background: rel === 'HOLLOW' ? 'rgba(15,15,35,.62)' : 'rgba(40,60,110,.3)' }} />}
+        </div>
+      )}
+      {rel === 'HOLLOW' && <span className="absolute right-1 bottom-1 rounded bg-black/50 px-1 text-[9px] text-white/80">새벽 3시, 퇴근길</span>}
+    </div>
+  );
 
   return (
-    <div className="pop-in flex w-full flex-1 flex-col items-center gap-2">
+    <div className="pop-in flex min-h-0 w-full flex-1 flex-col items-center gap-2">
       <p className="text-xs text-gold">📱 몇 년 뒤, 휴대폰이 울렸다</p>
+      {/* 엔딩 제목 */}
+      <div className="w-full max-w-[300px] rounded border-2 border-ink bg-[#fff6e5] px-2 py-1 text-center text-ink">
+        <p className="text-sm font-bold">
+          <span className={`mr-1 rounded border border-ink px-1 text-[11px] ${TIER_COLOR[ending.tier]}`}>{ending.tier}급</span>
+          {job}
+        </p>
+        <p className="text-[10px] font-bold" style={{ color: dark ? '#5a5f73' : '#1b1f3b' }}>
+          {meta.emoji} {meta.label} · ❤️ 친밀도 {game.status.affection} · 🌟 자존감 {selfEsteem(game)}
+        </p>
+      </div>
       <div className="flex min-h-0 w-full max-w-[300px] flex-1 flex-col overflow-hidden rounded-[28px] border-[6px] border-[#1b1f3b] bg-[#1b1f3b] shadow-[6px_6px_0_rgba(0,0,0,.35)]">
         <div className="flex items-center gap-2 bg-[#2b2f5c] px-3 py-2 text-white">
           <span className={`flex h-9 w-9 items-end justify-center overflow-hidden rounded-full border-2 border-white ${dark ? 'bg-[#4a4f63] grayscale' : 'bg-[#bfe6ff]'}`}>
@@ -133,8 +233,9 @@ export function PhoneEnding({ game, ending, onDone }: { game: SaveState; ending:
           <span className="text-sm font-bold">{game.childName}</span>
           <span className="ml-auto text-[10px] opacity-60">{meta.emoji}</span>
         </div>
-        <div className={`flex flex-1 flex-col gap-2 overflow-y-auto p-3 ${dark ? 'bg-[#3b3f4f]' : 'bg-[#b8d4ea]'}`}>
-          {msgs.slice(0, shown).map((m, k) =>
+        <div key={round} className={`flex flex-1 flex-col gap-2 overflow-y-auto p-3 ${dark ? 'bg-[#3b3f4f]' : 'bg-[#b8d4ea]'}`}>
+          {shown >= 1 && <div className="pop-in flex justify-start">{photo}</div>}
+          {msgs.slice(0, Math.max(0, shown - 1)).map((m, k) =>
             m.from === 'sys' ? (
               <p key={k} className="pop-in mx-auto rounded-full bg-black/30 px-3 py-1 text-[11px] text-white">
                 {m.text}
@@ -145,18 +246,25 @@ export function PhoneEnding({ game, ending, onDone }: { game: SaveState; ending:
               </div>
             ),
           )}
-          {shown < msgs.length && <p className="animate-pulse text-[11px] text-white/70">입력 중...</p>}
+          {shown < total && <p className="animate-pulse text-[11px] text-white/70">입력 중...</p>}
         </div>
       </div>
-      {shown >= msgs.length && (
-        <>
-          <p className="pop-in rounded border-2 border-ink px-2 py-0.5 text-xs font-bold text-ink" style={{ background: meta.color }}>
-            {meta.emoji} 관계 결말: {meta.label}
-          </p>
-          <PixelButton className="w-full" color="bg-gold" onClick={onDone}>
-            {rel === 'HOLLOW' ? '...' : '📮 편지 읽기'}
+      {shown >= total && (
+        <div className="pop-in flex w-full gap-2">
+          <PixelButton
+            className="flex-1"
+            color="bg-white"
+            onClick={() => {
+              setShown(0);
+              setRound((r) => r + 1);
+            }}
+          >
+            ↺ 다시 보기
           </PixelButton>
-        </>
+          <PixelButton className="flex-[2]" color="bg-gold" onClick={onDone}>
+            {rel === 'HOLLOW' ? '... 다음 ▶' : '📮 편지 읽기 ▶'}
+          </PixelButton>
+        </div>
       )}
     </div>
   );
