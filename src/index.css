@@ -258,3 +258,33 @@ button {
 .bubble-crack { animation: bubble-crack 0.7s ease-in forwards; }
 @keyframes rec-zoom { from { transform: scale(1); } to { transform: scale(1.25); } }
 .rec-zoom { animation: rec-zoom 1.2s ease-out forwards; }
+
+/* 아이 기분 말풍선 (방 안 머리 위) */
+.mood-bubble {
+  position: relative;
+  border: 2px solid;
+  border-radius: 10px;
+  padding: 2px 4px;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+}
+.mood-bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+  border-color: inherit;
+  transform: translateX(-50%) rotate(45deg);
+}
+@keyframes mood-pulse {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.mood-pulse { animation: mood-pulse 1.1s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .mood-pulse { animation: none; }
+}

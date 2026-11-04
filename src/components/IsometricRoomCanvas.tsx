@@ -8,6 +8,7 @@ import { furnitureFlipped, hasFurnitureSprite } from '../render/furnitureSprites
 import { characterHeight, RES } from '../render/spriteCharacter';
 import { besideCells, CharacterSim, doorCell, nearestFreeCell, type Step } from '../render/characterSim';
 import { isColdRoom } from '../engine/psyche';
+import { childMood, MOOD_STYLE } from '../engine/mood';
 import { CatSim } from '../render/catSim';
 import { project } from '../render/isoRenderer';
 import { sfx } from '../audio/sfx';
@@ -129,6 +130,10 @@ export function IsometricRoomCanvas({
   // GDD 11.2 방 공기: 공부 가구만 가득 + 스트레스 → 숨 막히는 청회색 방
   const cold = isColdRoom(game);
   const distant = !!game.doorLocked || game.status.affection <= 35;
+  // 기분 말풍선: 다른 말풍선이 없고 스케줄 연출 중이 아닐 때 늘 머리 위에
+  const mood = childMood(game);
+  const moodStyle = MOOD_STYLE[mood.level];
+  const showMood = !bubble && !playback && !scene;
   const { w, h } = canvasSize(n);
   const sel = game.placedFurniture.find((p) => p.instanceId === selected) ?? null;
 
@@ -486,8 +491,14 @@ export function IsometricRoomCanvas({
             style={{ width: w * scale, height: h * scale, imageRendering: 'pixelated', touchAction: 'manipulation', filter: cold ? 'saturate(0.45) hue-rotate(175deg) brightness(0.88)' : undefined, transition: 'filter 1.2s' }}
           />
           {/* 머리 위 말풍선 */}
-          <div ref={bubbleRef} className="pointer-events-none absolute top-0 left-0" style={{ visibility: bubble ? 'visible' : 'hidden' }}>
-            <div className="pop-in border-2 border-ink bg-white px-1 text-sm leading-tight shadow-[2px_2px_0_rgba(0,0,0,.4)]">{bubble}</div>
+          <div ref={bubbleRef} className="pointer-events-none absolute top-0 left-0" style={{ visibility: bubble || showMood ? 'visible' : 'hidden' }}>
+            {bubble ? (
+              <div className="pop-in border-2 border-ink bg-white px-1 text-sm leading-tight shadow-[2px_2px_0_rgba(0,0,0,.4)]">{bubble}</div>
+            ) : (
+              <div key={mood.emoji} className={`mood-bubble pop-in ${moodStyle.pulse ? 'mood-pulse' : ''}`} style={{ background: moodStyle.bg, borderColor: moodStyle.border }} title={mood.label}>
+                <span className="text-base leading-none">{mood.emoji}</span>
+              </div>
+            )}
           </div>
           <div ref={fxRef} className="pointer-events-none absolute top-0 left-0">
             {fx?.map((e, i) => (
