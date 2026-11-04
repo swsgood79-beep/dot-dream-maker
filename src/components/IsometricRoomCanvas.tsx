@@ -1,4 +1,5 @@
 import type { PlacedFurniture } from '../types/game';
+import deskSeatFrames from '../render/deskSeat.json';
 import { parentClass } from '../data/parentData';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FURNITURE_MAP } from '../data/furnitureData';
@@ -97,7 +98,8 @@ function popupKind(text: string): Popup['kind'] {
 /** 책상·컴퓨터 책상에 앉을 자리: 책상 앞쪽 가운데, 책상을 바라보는 방향 (책상 그림이 향한 쪽이 앞) */
 const SEAT_FURNITURE = new Set(['oak_desk', 'microscope_table', 'gaming_pc', 'dual_monitor', 'stock_monitor']);
 /** 책상 공부 그림 안에 큰 책상까지 그려진 경우(청소년 딸·청년): 앉는 동안 방 책상을 숨기고 그림 속 책상을 그 자리에 */
-const deskInSprite = (stage: string, gender: string, pose: string) => pose === 'desk' && (stage === 'YOUTH' || (stage === 'TEEN' && gender === 'DAUGHTER'));
+const DESK_IN_SPRITE = new Set(deskSeatFrames as string[]); // build-sprites.py가 내보냄 (의자 그림을 받으면 빠짐)
+const deskInSprite = (stage: string, gender: string, pose: string) => pose === 'desk' && DESK_IN_SPRITE.has(`${stage}_${gender}_desk`);
 function sitAtDesk(actor: { drawAt?: { gx: number; gy: number; lift: number } | null; facing: 'L' | 'R'; back?: boolean; hideFurniture?: string | null }, desk: PlacedFurniture, ownDesk: boolean) {
   if (ownDesk) {
     const fp = footprint(desk);

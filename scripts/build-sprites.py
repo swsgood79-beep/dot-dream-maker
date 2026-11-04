@@ -635,6 +635,24 @@ for g in ('SON', 'DAUGHTER'):
             sprites[f'{st}_{g}_mood_{key}'] = defringe(cut(img_m, b, blk))
         print(f'  상태 포즈: {path} → 12동작')
 
+# 책상 없이 의자에만 앉은 공부 그림 (v0.34.3): 받으면 '책상 공부' 그림을 교체 → 방 책상 앞에 바로 앉힘
+# 아직 교체되지 않은(그림 안에 책상이 있는) 프레임 목록은 src/render/deskSeat.json 으로 내보냄
+DESK_IN_SPRITE = {'TEEN_DAUGHTER_desk', 'YOUTH_SON_desk', 'YOUTH_DAUGHTER_desk'}
+for st, g in (('TEEN', 'DAUGHTER'), ('YOUTH', 'SON'), ('YOUTH', 'DAUGHTER')):
+    path = f'assets-src/seat-{st.lower()}-{g.lower()}.png'
+    if not os.path.exists(path) or f'{st}_{g}_stand' not in sprites:
+        continue
+    img_s = np.asarray(Image.open(path).convert('RGB')).astype(np.int32)
+    m = (765 - img_s.sum(axis=2)) > 60
+    comps = components(m, f=2, min_cells=150)
+    b = tight_box(img_s, max(comps, key=lambda c: (c[2] - c[0]) * (c[3] - c[1])))
+    # 크기: 앉은 키 = 그 단계 서기 키의 78% (어린이 책상 공부 그림 비율)
+    want = sprites[f'{st}_{g}_stand'].shape[0] * 0.78
+    sprites[f'{st}_{g}_desk'] = defringe(cut(img_s, b, (b[3] - b[1]) / want))
+    DESK_IN_SPRITE.discard(f'{st}_{g}_desk')
+    print(f'  의자에 앉은 공부 그림: {path}')
+json.dump(sorted(DESK_IN_SPRITE), open('src/render/deskSeat.json', 'w'))
+
 # 행동 포즈 밝기 맞춤 (v0.34.2): Gemini 행동 시트가 서기 그림보다 어둡게 나옴(최대 -20%)
 # 밝은 쪽 픽셀(피부·옷, 상위 30%)의 밝기를 그 단계 서기 그림에 맞춰 올린다 (어두운 머리카락 비율 차이에 휘둘리지 않게)
 def _bright(spr):
