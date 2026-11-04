@@ -206,11 +206,7 @@ export function IsometricRoomCanvas({
       w.actionType === 'RUNAWAY' || (!HOME_ACTIONS.has(w.actionId) && w.outcome !== 'STRIKE' && w.outcome !== 'SICK' && w.outcome !== 'NO_GOLD' && !!sceneFor(w));
     playback.weeks.forEach((w, wi) => {
       const outside = isOut(w);
-      // 바깥 활동이 연달아 있으면 집에 들르지 않고 장면에서 장면으로 바로 넘어간다
-      const prev = playback.weeks[wi - 1];
-      const next = playback.weeks[wi + 1];
-      const fromOutside = !!prev && isOut(prev) && !!sceneFor(prev);
-      const toOutside = !!next && isOut(next) && !!sceneFor(next);
+      void wi;
       // 공부 → 독서 포즈, 휴식 → 침대 위에서 책 읽기, 대성공 → 만세 점프, 알바 → 바쁘게 움직이기
       const pose = poseFor(w);
       steps.push({
@@ -225,28 +221,32 @@ export function IsometricRoomCanvas({
         },
       });
       if (outside) {
-        if (!(fromOutside && sceneFor(w))) {
-          steps.push({ kind: 'goto', resolve: (wd) => doorCell(wd.n) });
-          steps.push({ kind: 'call', fn: () => setBubble(ACT_BUBBLE[w.actionType]) });
-          steps.push({ kind: 'call', fn: () => sfx('door') });
-          steps.push({ kind: 'fade', to: 0, ms: 350 });
-        }
+        steps.push({ kind: 'goto', resolve: (wd) => doorCell(wd.n) });
+        steps.push({ kind: 'call', fn: () => setBubble(ACT_BUBBLE[w.actionType]) });
+        steps.push({ kind: 'call', fn: () => sfx('door') });
+        steps.push({ kind: 'fade', to: 0, ms: 350 });
         if (sceneFor(w)) {
           // 밖에 있는 동안 그 장소 장면: 도착 → 활동 → 결과 도장 (ActivitySceneView가 단계별로 보여 줌)
-          if (!fromOutside) steps.push({ kind: 'wait', ms: 250, pose: 'idle', onStart: () => setBubble(null) });
+          steps.push({ kind: 'wait', ms: 250, pose: 'idle', onStart: () => setBubble(null) });
           steps.push({ kind: 'call', fn: () => setScene(w) });
           steps.push({ kind: 'wait', ms: SCENE_MS, pose: 'idle' });
-          if (toOutside) {
-            // 다음 주도 밖: 집에 들르지 않고 다음 장면으로
-            steps.push({ kind: 'call', fn: () => setScene(null) });
-            return;
-          }
           steps.push({ kind: 'call', fn: () => setScene(null) });
+          // 매주 집으로 돌아옴: 문으로 들어와 "다녀왔어요!" + 그 주 결과 표정, 방 안으로 몇 걸음
+          steps.push({ kind: 'call', fn: () => sfx('door') });
           steps.push({ kind: 'fade', to: 1, ms: 350 });
-          steps.push({ kind: 'wait', ms: 700, pose: w.outcome === 'GREAT' ? 'cheer' : w.outcome === 'FAIL' ? 'tired' : 'idle', onStart: () => {
-            haloRef.current = HALO[w.outcome];
-            setBubble(w.outcome === 'GREAT' ? '✨' : w.outcome === 'FAIL' ? '😓' : '🏠');
-          } });
+          steps.push({
+            kind: 'wait',
+            ms: 1100,
+            pose: w.outcome === 'GREAT' ? 'cheer' : w.outcome === 'FAIL' || w.outcome === 'RUNAWAY' ? 'tired' : 'idle',
+            onStart: () => {
+              haloRef.current = HALO[w.outcome];
+              setBubble(
+                w.outcome === 'GREAT' ? '✨ 다녀왔어요! 오늘 최고!' : w.outcome === 'FAIL' ? '😓 다녀왔어요...' : w.outcome === 'RUNAWAY' ? '...' : '🏠 다녀왔어요!',
+              );
+            },
+          });
+          steps.push({ kind: 'goto', resolve: (wd) => nearestFreeCell(wd.n, wd.placed, { x: 1, y: wd.n - 2 }, new Set()) });
+          steps.push({ kind: 'call', fn: () => setBubble(null) });
         } else {
           steps.push({ kind: 'wait', ms: 600, pose: 'idle', onStart: () => setBubble(null) });
           steps.push({ kind: 'fade', to: 1, ms: 350 });
