@@ -1,15 +1,15 @@
 import { EVENT_MAP, PARENTING_EVENTS } from '../data/parentingData';
 import type { Gender } from '../types/game';
 
-/** 이벤트 장면 일러스트 (scripts/build-event-scenes.py → src/assets/events/{이벤트ID}_{SON|DAUGHTER}.webp) */
-const IMG = Object.fromEntries(
-  Object.entries(import.meta.glob('../assets/events/*.webp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>).map(
-    ([k, v]) => [k.split('/').pop()!.replace('.webp', ''), v],
-  ),
-);
+import manifest from './eventManifest.json';
+
+/** 이벤트 장면 일러스트 (고화질, scripts/build-event-hd.py → public/events/{이벤트ID}_{SON|DAUGHTER}.webp)
+ * 단일 HTML 용량 제한 때문에 인라인하지 않고 게임 옆 파일로 둔다 (상대 경로). */
+const HAVE = new Set(manifest as string[]);
 
 export function eventScene(id: string, gender: Gender): string | undefined {
-  return IMG[`${id}_${gender}`];
+  const key = `${id}_${gender}`;
+  return HAVE.has(key) ? `events/${key}.webp` : undefined;
 }
 
 /** 사진첩 사진(제목으로 저장됨) → 그 이벤트의 장면 그림 */

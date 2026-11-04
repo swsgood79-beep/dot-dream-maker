@@ -1,4 +1,5 @@
-"""이벤트 장면 시트 (assets-src/events/event-e01~e21.png, 2×2 패널, 마지막 장은 1패널)
+"""[예전 방식 — v0.24부터 scripts/build-event-hd.py 사용, 이 스크립트 결과는 게임에서 쓰지 않음]
+이벤트 장면 시트 (assets-src/events/event-e01~e21.png, 2×2 패널, 마지막 장은 1패널)
 → src/assets/events/{이벤트ID}_{SON|DAUGHTER}.webp
 실행: python3 scripts/build-event-scenes.py SON   (딸 시트는 assets-src/events-daughter/ 에 두고 DAUGHTER)
 칸 순서는 scripts/make-event-scene-requests.py 의 장면 목록 순서 그대로."""

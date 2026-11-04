@@ -115,7 +115,7 @@ export function TitleScreen({ onStart, onOpening }: { onStart: () => void; onOpe
               🏅 업적 ({achCount}/{ACHIEVEMENTS.length})
             </PixelButton>
           </div>
-          <p className="mt-1 text-[10px] font-bold text-ink/60">v0.23.1 · 누끼 정리</p>
+          <p className="mt-1 text-[10px] font-bold text-ink/60">v0.24.0 · 고화질 이벤트</p>
         </div>
       )}
       {settings && <SettingsModal onClose={() => setSettings(false)} onOpening={onOpening} />}
