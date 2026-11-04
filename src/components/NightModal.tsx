@@ -3,9 +3,9 @@ import { sfx } from '../audio/sfx';
 import type { Effect } from '../data/parentingData';
 import { NIGHT_TOUCH, type NightTouch } from '../engine/parentTouch';
 import { growthStage } from '../engine/room';
-import { frameName } from '../render/spriteCharacter';
+import { findBed } from '../engine/simulation';
 import { useGameStore } from '../store/useGameStore';
-import { Sprite } from './Sprite';
+import { SleepingInBed } from './SleepingInBed';
 import { EffectChips, PixelButton } from './ui';
 
 /** 🌙 잠든 아이 보러 가기: 부모만 아는 조용한 손길 (한 달에 한 번) */
@@ -30,8 +30,8 @@ export function NightModal({ onClose }: { onClose: () => void }) {
               z
             </span>
           ))}
-          <div className="relative mb-5" style={{ filter: 'brightness(.75) saturate(.85)' }}>
-            <Sprite name={frameName(stage, game.gender, 'sleep')} scale={2.2} />
+          <div className="relative mb-1" style={{ filter: 'brightness(.75) saturate(.85)' }}>
+            <SleepingInBed stage={stage} gender={game.gender} bedId={findBed(game.placedFurniture)?.furnitureId ?? 'basic_bed'} scale={3.4} />
           </div>
         </div>
         <div className="bg-[#1d2142] p-3 text-[#e8ecff]">
