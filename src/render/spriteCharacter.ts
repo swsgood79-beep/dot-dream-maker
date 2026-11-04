@@ -85,7 +85,17 @@ export function drawFrame(ctx: CanvasRenderingContext2D, name: string, fx: numbe
   return true;
 }
 
+/** 침대 가운데 기준 베개 위치 (머리판이 오른쪽 위인 침대 기준, 반전 시 x 반대) */
+export const PILLOW_OFFSET = { x: 7, y: -7 };
+
 export function drawCharacter(ctx: CanvasRenderingContext2D, fx: number, fy: number, o: CharacterDrawOpts) {
+  // 침대에서 잘 때: 누운 전신 그림은 침대보다 커서 어색 → 이불 위로 머리만 빼꼼
+  const head = `${o.stage}_${o.gender}_sleephead`;
+  if (o.inBed && o.pose === 'sleep' && FRAMES[head]) {
+    const flip = o.facing === 'L';
+    const breathe = Math.floor(o.time / 900) % 2 ? -0.5 : 0;
+    if (drawFrame(ctx, head, fx + (flip ? -PILLOW_OFFSET.x : PILLOW_OFFSET.x), fy + PILLOW_OFFSET.y + breathe, flip, o.alpha ?? 1)) return;
+  }
   // 그림자
   ctx.save();
   ctx.globalAlpha = 0.22 * (o.alpha ?? 1);

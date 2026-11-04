@@ -624,7 +624,7 @@ export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
       key: Math.floor(at.gx) + Math.floor(at.gy) + 2.1 + (at.lift ? 0.5 : 0),
       draw: () => {
         const [sx, sy] = project(n, at.gx, at.gy);
-        drawCharacter(ctx, sx, sy - at.lift, { stage: v.stage, gender, facing: actor.facing, pose: actor.pose, time: v.time, alpha: actor.alpha, back: actor.back, tired: v.tired, act: actor.act, mood: v.mood });
+        drawCharacter(ctx, sx, sy - at.lift, { stage: v.stage, gender, facing: actor.facing, pose: actor.pose, time: v.time, alpha: actor.alpha, back: actor.back, tired: v.tired, act: actor.act, mood: v.mood, inBed: !!actor.drawAt && actor.pose === 'sleep' });
       },
     });
   }

@@ -672,6 +672,21 @@ for name in list(sprites):
         spr[..., :3] = np.clip(spr[..., :3] * gain, 0, 255)
         sprites[name] = spr.astype(np.uint8)
 
+# 침대에 누웠을 때 얼굴만 (v0.36.2): 누운 그림이 침대보다 커서 어색 → 이불 위로 머리만 빼꼼
+# 누운 그림은 머리가 오른쪽 위 → x/w - y/h > c 인 쪽(오른쪽 위)만 남기고, 잘린 자리에 이불 주름 선
+for name in [n for n in sprites if n.endswith('_sleep') and not n.startswith('CAT')]:
+    spr = sprites[name].copy()
+    h, w, _ = spr.shape
+    yy, xx = np.mgrid[0:h, 0:w]
+    keep = (xx / w - yy / h) > 0.1
+    head = spr.copy()
+    head[~keep] = 0
+    # 잘린 경계(바로 바깥 한 줄)에 이불 가장자리 그림자
+    edge = ((xx / w - yy / h) <= 0.1) & ((xx / w - yy / h) > 0.1 - 2.2 / w) & (spr[..., 3] > 0)
+    head[edge] = [70, 40, 55, 150]
+    ys, xs = np.where(head[..., 3] > 0)
+    sprites[name.replace('_sleep', '_sleephead')] = head[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+
 # 부모님 캐릭터는 게임에서 사용하지 않음 (v0.5.17) → 아틀라스에서 제외
 for n in [n for n in sprites if n.startswith('PARENT')]:
     del sprites[n]

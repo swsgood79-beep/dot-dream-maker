@@ -64,6 +64,8 @@ export interface CharacterDrawOpts {
   act?: string | null;
   /** 상태 포즈 (기분이 나쁠 때 서기·걷기 대신, src/engine/mood.ts) */
   mood?: import('../engine/mood').MoodPose | null;
+  /** 침대에 누움: 몸은 이불 속, 베개 위로 머리만 (fx, fy = 침대 가운데) */
+  inBed?: boolean;
 }
 
 /** (fx, fy) = 발 중앙 화면 좌표 */

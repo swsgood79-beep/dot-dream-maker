@@ -2595,5 +2595,47 @@
   "w": 35,
   "h": 79,
   "ax": 17.9
+ },
+ "CHILD_SON_sleephead": {
+  "x": 17007,
+  "y": 0,
+  "w": 25,
+  "h": 26,
+  "ax": 14.5
+ },
+ "TEEN_SON_sleephead": {
+  "x": 17033,
+  "y": 0,
+  "w": 30,
+  "h": 32,
+  "ax": 17.5
+ },
+ "YOUTH_SON_sleephead": {
+  "x": 17064,
+  "y": 0,
+  "w": 33,
+  "h": 35,
+  "ax": 19.6
+ },
+ "TEEN_DAUGHTER_sleephead": {
+  "x": 17098,
+  "y": 0,
+  "w": 29,
+  "h": 29,
+  "ax": 16.3
+ },
+ "YOUTH_DAUGHTER_sleephead": {
+  "x": 17128,
+  "y": 0,
+  "w": 33,
+  "h": 34,
+  "ax": 18.0
+ },
+ "CHILD_DAUGHTER_sleephead": {
+  "x": 17162,
+  "y": 0,
+  "w": 29,
+  "h": 24,
+  "ax": 13.4
  }
 }
