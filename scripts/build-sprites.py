@@ -610,6 +610,27 @@ for g in ('SON', 'DAUGHTER'):
                 Image.fromarray(defringe(cut(img_a, b, 1.0))).save(f'src/assets/acts/{st}_{g}_{key}.webp', quality=90, method=6)
         print(f'  활동 포즈: {path} → 12동작')
 
+# 상태(기분) 포즈 (v0.26): 나이대·성별마다 3×4 = 12동작 → {STAGE}_{G}_mood_{키}
+# 아이 상태가 나쁠 때 방 안에서 서 있거나 걷는 모습 (src/engine/mood.ts 가 상황에 맞는 키를 고름)
+MOOD_KEYS = ['sad', 'angry', 'cry', 'stressed', 'sulk', 'back_sulk', 'sick', 'phone', 'rebel', 'mope_walkA', 'mope_walkB', 'sigh']
+for g in ('SON', 'DAUGHTER'):
+    for st in ('CHILD', 'TEEN', 'YOUTH'):
+        path = f'assets-src/mood-{st.lower()}-{g.lower()}.png'
+        if not os.path.exists(path):
+            continue
+        img_m = np.asarray(Image.open(path).convert('RGB')).astype(np.int32)
+        rows_m = comp_rows(img_m)
+        if [len(rows_m.get(r, [])) for r in range(3)] != [4, 4, 4]:
+            print('  상태 포즈 칸 수가 맞지 않음:', path, {r: len(v) for r, v in rows_m.items()})
+            continue
+        boxes_m = {MOOD_KEYS[r * 4 + k]: tight_box(img_m, rows_m[r][k]) for r in range(3) for k in range(4)}
+        # 크기: 앉은 포즈(웅크리기)를 뺀 서 있는 포즈 키의 중앙값 = 그 단계 서기 키
+        tall = [b[3] - b[1] for k, b in boxes_m.items() if k != 'sulk']
+        blk = float(np.median(tall)) / sprites[f'{st}_{g}_stand'].shape[0]
+        for key, b in boxes_m.items():
+            sprites[f'{st}_{g}_mood_{key}'] = defringe(cut(img_m, b, blk))
+        print(f'  상태 포즈: {path} → 12동작')
+
 # 부모님 캐릭터는 게임에서 사용하지 않음 (v0.5.17) → 아틀라스에서 제외
 for n in [n for n in sprites if n.startswith('PARENT')]:
     del sprites[n]

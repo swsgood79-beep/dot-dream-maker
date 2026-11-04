@@ -66,6 +66,7 @@ export interface RoomView {
   actor?: { actor: Actor; gender: Gender } | null;
   actorHalo?: string | null; // 행동 중 발밑 하이라이트 색
   tired?: boolean; // 스트레스 80 이상
+  mood?: import('../engine/mood').MoodPose | null; // 기분이 나쁠 때 상태 포즈
   cat?: CatActor | null; // 반려묘 (반려묘 쿠션이 있으면 쿠션 그림 속에서 잠)
   home?: HomeClass; // 집 형편 (방 꾸밈)
 }
@@ -620,7 +621,7 @@ export function renderRoom(ctx: CanvasRenderingContext2D, v: RoomView) {
       key: Math.floor(at.gx) + Math.floor(at.gy) + 2.1 + (at.lift ? 0.5 : 0),
       draw: () => {
         const [sx, sy] = project(n, at.gx, at.gy);
-        drawCharacter(ctx, sx, sy - at.lift, { stage: v.stage, gender, facing: actor.facing, pose: actor.pose, time: v.time, alpha: actor.alpha, back: actor.back, tired: v.tired, act: actor.act });
+        drawCharacter(ctx, sx, sy - at.lift, { stage: v.stage, gender, facing: actor.facing, pose: actor.pose, time: v.time, alpha: actor.alpha, back: actor.back, tired: v.tired, act: actor.act, mood: v.mood });
       },
     });
   }

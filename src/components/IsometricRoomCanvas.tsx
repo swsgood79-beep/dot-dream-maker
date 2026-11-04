@@ -8,7 +8,7 @@ import { furnitureFlipped, hasFurnitureSprite } from '../render/furnitureSprites
 import { characterHeight, RES } from '../render/spriteCharacter';
 import { besideCells, CharacterSim, doorCell, nearestFreeCell, type Step } from '../render/characterSim';
 import { isColdRoom } from '../engine/psyche';
-import { childMood, MOOD_STYLE } from '../engine/mood';
+import { childMood, moodPose, MOOD_STYLE } from '../engine/mood';
 import { CatSim } from '../render/catSim';
 import { project } from '../render/isoRenderer';
 import { sfx } from '../audio/sfx';
@@ -267,7 +267,10 @@ export function IsometricRoomCanvas({
           }
           haloRef.current = HALO[w.outcome];
           // 집에서 하는 활동도 활동 포즈 그림이 있으면 그 동작으로 (예: 집안일 → 빗자루질)
-          sim.actor.act = w.outcome !== 'FAIL' && w.outcome !== 'STRIKE' && pose !== 'sleep' ? (sceneFor(w)?.act ?? null) : null;
+          sim.actor.act =
+            w.outcome === 'STRIKE' && pose !== 'sleep' ? 'mood_angry' // 학원 거부: 팔짱 끼고 씩씩
+            : w.outcome === 'SICK' ? 'mood_sick'
+            : w.outcome !== 'FAIL' && pose !== 'sleep' ? (sceneFor(w)?.act ?? null) : null;
           setBubble(w.outcome === 'STRIKE' ? '💢 학원 싫어!!' : w.outcome === 'GREAT' ? '✨' : POSE_BUBBLE[pose] ?? ACT_BUBBLE[w.actionType]);
           setCaption(sceneLine(w) || null);
           const sc = sceneFor(w);
@@ -337,6 +340,8 @@ export function IsometricRoomCanvas({
     placingCells,
     actor: { actor: simRef.current.actor, gender: game.gender },
     tired: game.status.stress >= 80,
+    // 스케줄 연출 중에는 그 주 활동 모습, 평소엔 지금 기분에 맞는 모습
+    mood: playback || scene ? null : moodPose(game),
     // 반려묘 쿠션이 있으면 고양이는 쿠션 그림 속에서 잠 (쿠션 그림에 고양이가 그려져 있음)
     cat: game.placedFurniture.some((p) => p.furnitureId === 'cat_cushion') ? null : catRef.current.actor,
     ghost:
@@ -367,6 +372,7 @@ export function IsometricRoomCanvas({
         const catOn = !!v.cat;
         const union = (...sets: Set<string>[]) => new Set(sets.flatMap((x) => [...x]));
         const here = (gx: number, gy: number) => new Set([`${Math.floor(gx)},${Math.floor(gy)}`]);
+        child.actor.slow = !!v.mood?.mope;
         child.update(dt, { n: v.n, placed: v.placed, avoid: catOn ? here(cat.actor.gx, cat.actor.gy) : new Set() });
         if (catOn) cat.update(dt, v.n, v.placed, union(child.occupied()));
         renderRoom(ctx, { ...v, time: t, actorHalo: haloRef.current });

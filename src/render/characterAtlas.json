@@ -2105,5 +2105,509 @@
   "w": 42,
   "h": 78,
   "ax": 22.8
+ },
+ "CHILD_SON_mood_sad": {
+  "x": 14271,
+  "y": 0,
+  "w": 33,
+  "h": 65,
+  "ax": 15.0
+ },
+ "CHILD_SON_mood_angry": {
+  "x": 14305,
+  "y": 0,
+  "w": 36,
+  "h": 67,
+  "ax": 15.9
+ },
+ "CHILD_SON_mood_cry": {
+  "x": 14342,
+  "y": 0,
+  "w": 34,
+  "h": 66,
+  "ax": 16.8
+ },
+ "CHILD_SON_mood_stressed": {
+  "x": 14377,
+  "y": 0,
+  "w": 36,
+  "h": 66,
+  "ax": 17.6
+ },
+ "CHILD_SON_mood_sulk": {
+  "x": 14414,
+  "y": 0,
+  "w": 33,
+  "h": 52,
+  "ax": 16.0
+ },
+ "CHILD_SON_mood_back_sulk": {
+  "x": 14448,
+  "y": 0,
+  "w": 33,
+  "h": 67,
+  "ax": 17.3
+ },
+ "CHILD_SON_mood_sick": {
+  "x": 14482,
+  "y": 0,
+  "w": 38,
+  "h": 65,
+  "ax": 19.9
+ },
+ "CHILD_SON_mood_phone": {
+  "x": 14521,
+  "y": 0,
+  "w": 32,
+  "h": 64,
+  "ax": 15.6
+ },
+ "CHILD_SON_mood_rebel": {
+  "x": 14554,
+  "y": 0,
+  "w": 31,
+  "h": 66,
+  "ax": 14.9
+ },
+ "CHILD_SON_mood_mope_walkA": {
+  "x": 14586,
+  "y": 0,
+  "w": 33,
+  "h": 64,
+  "ax": 16.2
+ },
+ "CHILD_SON_mood_mope_walkB": {
+  "x": 14620,
+  "y": 0,
+  "w": 32,
+  "h": 64,
+  "ax": 15.2
+ },
+ "CHILD_SON_mood_sigh": {
+  "x": 14653,
+  "y": 0,
+  "w": 33,
+  "h": 65,
+  "ax": 15.8
+ },
+ "TEEN_SON_mood_sad": {
+  "x": 14687,
+  "y": 0,
+  "w": 35,
+  "h": 77,
+  "ax": 16.3
+ },
+ "TEEN_SON_mood_angry": {
+  "x": 14723,
+  "y": 0,
+  "w": 40,
+  "h": 77,
+  "ax": 17.6
+ },
+ "TEEN_SON_mood_cry": {
+  "x": 14764,
+  "y": 0,
+  "w": 40,
+  "h": 77,
+  "ax": 20.0
+ },
+ "TEEN_SON_mood_stressed": {
+  "x": 14805,
+  "y": 0,
+  "w": 43,
+  "h": 77,
+  "ax": 21.8
+ },
+ "TEEN_SON_mood_sulk": {
+  "x": 14849,
+  "y": 0,
+  "w": 38,
+  "h": 62,
+  "ax": 17.1
+ },
+ "TEEN_SON_mood_back_sulk": {
+  "x": 14888,
+  "y": 0,
+  "w": 35,
+  "h": 75,
+  "ax": 17.3
+ },
+ "TEEN_SON_mood_sick": {
+  "x": 14924,
+  "y": 0,
+  "w": 46,
+  "h": 76,
+  "ax": 25.0
+ },
+ "TEEN_SON_mood_phone": {
+  "x": 14971,
+  "y": 0,
+  "w": 35,
+  "h": 75,
+  "ax": 17.4
+ },
+ "TEEN_SON_mood_rebel": {
+  "x": 15007,
+  "y": 0,
+  "w": 35,
+  "h": 77,
+  "ax": 17.3
+ },
+ "TEEN_SON_mood_mope_walkA": {
+  "x": 15043,
+  "y": 0,
+  "w": 37,
+  "h": 75,
+  "ax": 18.7
+ },
+ "TEEN_SON_mood_mope_walkB": {
+  "x": 15081,
+  "y": 0,
+  "w": 38,
+  "h": 75,
+  "ax": 18.6
+ },
+ "TEEN_SON_mood_sigh": {
+  "x": 15120,
+  "y": 0,
+  "w": 33,
+  "h": 77,
+  "ax": 15.6
+ },
+ "YOUTH_SON_mood_sad": {
+  "x": 15154,
+  "y": 0,
+  "w": 39,
+  "h": 84,
+  "ax": 19.4
+ },
+ "YOUTH_SON_mood_angry": {
+  "x": 15194,
+  "y": 0,
+  "w": 43,
+  "h": 85,
+  "ax": 17.8
+ },
+ "YOUTH_SON_mood_cry": {
+  "x": 15238,
+  "y": 0,
+  "w": 45,
+  "h": 83,
+  "ax": 22.5
+ },
+ "YOUTH_SON_mood_stressed": {
+  "x": 15284,
+  "y": 0,
+  "w": 48,
+  "h": 84,
+  "ax": 24.1
+ },
+ "YOUTH_SON_mood_sulk": {
+  "x": 15333,
+  "y": 0,
+  "w": 42,
+  "h": 65,
+  "ax": 18.2
+ },
+ "YOUTH_SON_mood_back_sulk": {
+  "x": 15376,
+  "y": 0,
+  "w": 39,
+  "h": 84,
+  "ax": 19.1
+ },
+ "YOUTH_SON_mood_sick": {
+  "x": 15416,
+  "y": 0,
+  "w": 53,
+  "h": 84,
+  "ax": 28.6
+ },
+ "YOUTH_SON_mood_phone": {
+  "x": 15470,
+  "y": 0,
+  "w": 40,
+  "h": 82,
+  "ax": 18.8
+ },
+ "YOUTH_SON_mood_rebel": {
+  "x": 15511,
+  "y": 0,
+  "w": 38,
+  "h": 84,
+  "ax": 19.7
+ },
+ "YOUTH_SON_mood_mope_walkA": {
+  "x": 15550,
+  "y": 0,
+  "w": 44,
+  "h": 82,
+  "ax": 23.1
+ },
+ "YOUTH_SON_mood_mope_walkB": {
+  "x": 15595,
+  "y": 0,
+  "w": 44,
+  "h": 82,
+  "ax": 23.4
+ },
+ "YOUTH_SON_mood_sigh": {
+  "x": 15640,
+  "y": 0,
+  "w": 46,
+  "h": 85,
+  "ax": 20.1
+ },
+ "CHILD_DAUGHTER_mood_sad": {
+  "x": 15687,
+  "y": 0,
+  "w": 37,
+  "h": 67,
+  "ax": 19.0
+ },
+ "CHILD_DAUGHTER_mood_angry": {
+  "x": 15725,
+  "y": 0,
+  "w": 39,
+  "h": 67,
+  "ax": 19.6
+ },
+ "CHILD_DAUGHTER_mood_cry": {
+  "x": 15765,
+  "y": 0,
+  "w": 41,
+  "h": 67,
+  "ax": 20.2
+ },
+ "CHILD_DAUGHTER_mood_stressed": {
+  "x": 15807,
+  "y": 0,
+  "w": 42,
+  "h": 67,
+  "ax": 20.1
+ },
+ "CHILD_DAUGHTER_mood_sulk": {
+  "x": 15850,
+  "y": 0,
+  "w": 38,
+  "h": 58,
+  "ax": 18.7
+ },
+ "CHILD_DAUGHTER_mood_back_sulk": {
+  "x": 15889,
+  "y": 0,
+  "w": 42,
+  "h": 66,
+  "ax": 21.3
+ },
+ "CHILD_DAUGHTER_mood_sick": {
+  "x": 15932,
+  "y": 0,
+  "w": 42,
+  "h": 67,
+  "ax": 20.6
+ },
+ "CHILD_DAUGHTER_mood_phone": {
+  "x": 15975,
+  "y": 0,
+  "w": 41,
+  "h": 66,
+  "ax": 19.9
+ },
+ "CHILD_DAUGHTER_mood_rebel": {
+  "x": 16017,
+  "y": 0,
+  "w": 36,
+  "h": 66,
+  "ax": 18.4
+ },
+ "CHILD_DAUGHTER_mood_mope_walkA": {
+  "x": 16054,
+  "y": 0,
+  "w": 38,
+  "h": 66,
+  "ax": 18.6
+ },
+ "CHILD_DAUGHTER_mood_mope_walkB": {
+  "x": 16093,
+  "y": 0,
+  "w": 38,
+  "h": 66,
+  "ax": 18.5
+ },
+ "CHILD_DAUGHTER_mood_sigh": {
+  "x": 16132,
+  "y": 0,
+  "w": 50,
+  "h": 67,
+  "ax": 21.4
+ },
+ "TEEN_DAUGHTER_mood_sad": {
+  "x": 16183,
+  "y": 0,
+  "w": 34,
+  "h": 76,
+  "ax": 17.5
+ },
+ "TEEN_DAUGHTER_mood_angry": {
+  "x": 16218,
+  "y": 0,
+  "w": 34,
+  "h": 76,
+  "ax": 18.0
+ },
+ "TEEN_DAUGHTER_mood_cry": {
+  "x": 16253,
+  "y": 0,
+  "w": 38,
+  "h": 76,
+  "ax": 18.0
+ },
+ "TEEN_DAUGHTER_mood_stressed": {
+  "x": 16292,
+  "y": 0,
+  "w": 40,
+  "h": 76,
+  "ax": 19.3
+ },
+ "TEEN_DAUGHTER_mood_sulk": {
+  "x": 16333,
+  "y": 0,
+  "w": 39,
+  "h": 62,
+  "ax": 17.8
+ },
+ "TEEN_DAUGHTER_mood_back_sulk": {
+  "x": 16373,
+  "y": 0,
+  "w": 34,
+  "h": 74,
+  "ax": 17.2
+ },
+ "TEEN_DAUGHTER_mood_sick": {
+  "x": 16408,
+  "y": 0,
+  "w": 43,
+  "h": 76,
+  "ax": 21.8
+ },
+ "TEEN_DAUGHTER_mood_phone": {
+  "x": 16452,
+  "y": 0,
+  "w": 39,
+  "h": 75,
+  "ax": 19.1
+ },
+ "TEEN_DAUGHTER_mood_rebel": {
+  "x": 16492,
+  "y": 0,
+  "w": 34,
+  "h": 75,
+  "ax": 17.9
+ },
+ "TEEN_DAUGHTER_mood_mope_walkA": {
+  "x": 16527,
+  "y": 0,
+  "w": 34,
+  "h": 73,
+  "ax": 17.5
+ },
+ "TEEN_DAUGHTER_mood_mope_walkB": {
+  "x": 16562,
+  "y": 0,
+  "w": 36,
+  "h": 73,
+  "ax": 17.6
+ },
+ "TEEN_DAUGHTER_mood_sigh": {
+  "x": 16599,
+  "y": 0,
+  "w": 34,
+  "h": 73,
+  "ax": 17.7
+ },
+ "YOUTH_DAUGHTER_mood_sad": {
+  "x": 16634,
+  "y": 0,
+  "w": 36,
+  "h": 82,
+  "ax": 18.3
+ },
+ "YOUTH_DAUGHTER_mood_angry": {
+  "x": 16671,
+  "y": 0,
+  "w": 42,
+  "h": 82,
+  "ax": 18.6
+ },
+ "YOUTH_DAUGHTER_mood_cry": {
+  "x": 16714,
+  "y": 0,
+  "w": 39,
+  "h": 81,
+  "ax": 18.7
+ },
+ "YOUTH_DAUGHTER_mood_stressed": {
+  "x": 16754,
+  "y": 0,
+  "w": 44,
+  "h": 80,
+  "ax": 21.7
+ },
+ "YOUTH_DAUGHTER_mood_sulk": {
+  "x": 16799,
+  "y": 0,
+  "w": 42,
+  "h": 65,
+  "ax": 17.7
+ },
+ "YOUTH_DAUGHTER_mood_back_sulk": {
+  "x": 16842,
+  "y": 0,
+  "w": 37,
+  "h": 81,
+  "ax": 18.5
+ },
+ "YOUTH_DAUGHTER_mood_sick": {
+  "x": 16880,
+  "y": 0,
+  "w": 46,
+  "h": 81,
+  "ax": 23.1
+ },
+ "YOUTH_DAUGHTER_mood_phone": {
+  "x": 16927,
+  "y": 0,
+  "w": 37,
+  "h": 80,
+  "ax": 18.8
+ },
+ "YOUTH_DAUGHTER_mood_rebel": {
+  "x": 16965,
+  "y": 0,
+  "w": 33,
+  "h": 80,
+  "ax": 17.3
+ },
+ "YOUTH_DAUGHTER_mood_mope_walkA": {
+  "x": 16999,
+  "y": 0,
+  "w": 36,
+  "h": 79,
+  "ax": 17.6
+ },
+ "YOUTH_DAUGHTER_mood_mope_walkB": {
+  "x": 17036,
+  "y": 0,
+  "w": 36,
+  "h": 77,
+  "ax": 18.9
+ },
+ "YOUTH_DAUGHTER_mood_sigh": {
+  "x": 17073,
+  "y": 0,
+  "w": 35,
+  "h": 79,
+  "ax": 17.9
  }
 }

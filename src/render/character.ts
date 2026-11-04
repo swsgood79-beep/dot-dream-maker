@@ -62,6 +62,8 @@ export interface CharacterDrawOpts {
   tired?: boolean; // 스트레스 높음 → 평소 지친 모습
   /** 활동 포즈 (빵 쟁반·빗자루·기타 등) — 그림이 있으면 pose 대신 사용 */
   act?: string | null;
+  /** 상태 포즈 (기분이 나쁠 때 서기·걷기 대신, src/engine/mood.ts) */
+  mood?: import('../engine/mood').MoodPose | null;
 }
 
 /** (fx, fy) = 발 중앙 화면 좌표 */

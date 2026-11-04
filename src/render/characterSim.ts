@@ -15,6 +15,8 @@ export interface Actor {
   drawAt?: { gx: number; gy: number; lift: number } | null;
   /** 활동 포즈 이름 (있으면 그 그림으로) */
   act?: string | null;
+  /** 기분이 나빠 터덜터덜 (걷는 속도 60%) */
+  slow?: boolean;
 }
 
 export type Step =
@@ -255,7 +257,7 @@ export class CharacterSim {
       const dx = tx - a.gx;
       const dy = ty - a.gy;
       const dist = Math.hypot(dx, dy);
-      const stepLen = (SPEED * dt) / 1000;
+      const stepLen = (SPEED * (a.slow ? 0.6 : 1) * dt) / 1000;
       const look = lookDirection(a.gx, a.gy, this.path);
       if (look.sdx > 0.3) a.facing = 'R';
       else if (look.sdx < -0.3) a.facing = 'L';

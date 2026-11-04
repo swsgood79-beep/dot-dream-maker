@@ -101,6 +101,11 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, fx: number, fy: num
   const has = (k: string) => !!FRAMES[`${o.stage}_${o.gender}_${k}`];
   switch (o.pose) {
     case 'walk': {
+      // 기분이 나쁘면 고개 숙이고 터덜터덜 (2장을 천천히 번갈아). 방 안쪽으로 걸을 때는 뒷모습 그대로
+      if (o.mood?.mope && !o.back && has('mood_mope_walkA') && has('mood_mope_walkB')) {
+        const f = Math.floor(t / 260) % 2 ? 'mood_mope_walkB' : 'mood_mope_walkA';
+        if (drawFrame(ctx, `${o.stage}_${o.gender}_${f}`, fx, fy + (Math.floor(t / 260) % 2 ? 0 : -0.5), o.facing === 'L', o.alpha ?? 1)) return;
+      }
       // 걷기 4프레임 사이클 (왼발 → 교차 → 오른발 → 교차). 방 안쪽으로 걸으면 뒷모습 사이클
       const walk = (o.back && walkFrame(`${o.stage}_${o.gender}_back`, t)) || walkFrame(`${o.stage}_${o.gender}`, t);
       if (walk && drawFrame(ctx, walk, fx, fy, o.facing === 'L', o.alpha ?? 1)) return;
@@ -144,7 +149,8 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, fx: number, fy: num
       dy = Math.floor(t / 160) % 2 ? -1.5 : 0;
       break;
     case 'tired':
-      kind = has('tired') ? 'tired' : 'stand';
+      // 유년기는 지친 그림이 없어 상태 포즈의 한숨으로
+      kind = has('tired') ? 'tired' : has('mood_sigh') ? 'mood_sigh' : 'stand';
       dy = Math.floor(t / 1200) % 2 ? 0.5 : 0;
       break;
   }
@@ -153,10 +159,27 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, fx: number, fy: num
     kind = o.act;
     dy = Math.floor(t / 280) % 2 ? -1 : 0;
   }
+  // 상태 포즈: 가만히 서 있을 때 기분에 맞는 모습 + 작은 움직임 (몇 초마다 다른 포즈와 번갈아)
+  let dx = 0;
+  let moodOn = false;
+  if (o.mood && o.pose === 'idle' && !o.act) {
+    const m = o.mood;
+    const key = m.alt && has(`mood_${m.alt}`) && Math.floor(t / 5200) % 3 === 2 ? m.alt : m.key;
+    if (has(`mood_${key}`)) {
+      kind = `mood_${key}`;
+      moodOn = true;
+      if (m.anim === 'cry') dy = Math.floor(t / 140) % 2 ? -1 : 0; // 흐느낌
+      else if (m.anim === 'shake') dx = Math.floor(t / 2400) % 2 ? (Math.floor(t / 70) % 2 ? 0.5 : -0.5) : 0; // 몸서리 (간간이)
+      else if (m.anim === 'stomp') dy = Math.floor(t / 420) % 3 === 0 ? -1.5 : 0; // 발 구르기
+      else if (m.anim === 'sway') dx = Math.sin(t / 700) * 0.6; // 비틀
+      else dy = Math.floor(t / 1100) % 2 ? 0.5 : 0; // 한숨 섞인 숨쉬기
+    }
+  }
   const backStand = `${o.stage}_${o.gender}_back_stand`;
-  const name = o.pose === 'idle' && o.back && FRAMES[backStand] ? backStand : frameName(o.stage, o.gender, kind);
+  const name = o.pose === 'idle' && o.back && FRAMES[backStand] && !moodOn ? backStand : frameName(o.stage, o.gender, kind);
   // 시트 캐릭터는 오른쪽을 보고 있으므로 왼쪽으로 갈 때 좌우 반전
-  const ok = drawFrame(ctx, name, fx, fy + dy, o.facing === 'L', o.alpha ?? 1);
+  const ok = drawFrame(ctx, name, fx + dx, fy + dy, o.facing === 'L', o.alpha ?? 1);
+  if (ok && moodOn && o.mood?.fx) drawMoodFx(ctx, fx, fy, characterHeight(o.stage, o.gender), o.mood.fx, t, o.facing === 'L');
   if (!ok) drawCharacterProcedural(ctx, fx, fy, o);
 }
 
@@ -195,3 +218,27 @@ export function walkFrame(base: string, t: number): string | null {
   return `${base}_walk${Math.floor(t / WALK_FRAME_MS) % n}`; // 4장·8장 모두 같은 프레임 간격
 }
 
+/** 상태 포즈 위 작은 효과: 눈물 방울이 양옆으로 떨어짐 / 식은땀 한 방울이 흘러내림 */
+function drawMoodFx(ctx: CanvasRenderingContext2D, fx: number, fy: number, h: number, kind: 'tears' | 'sweat', t: number, flip: boolean) {
+  ctx.save();
+  if (kind === 'tears') {
+    for (const side of [-1, 1]) {
+      const p = ((t / 700) + (side > 0 ? 0.5 : 0)) % 1; // 0→1
+      const x = fx + side * (4 + p * 5);
+      const y = fy - h * 0.72 + p * p * 10;
+      ctx.globalAlpha = 1 - p;
+      ctx.fillStyle = '#7cc8ff';
+      ctx.fillRect(Math.round(x * 4) / 4, Math.round(y * 4) / 4, 1.25, 1.75);
+    }
+  } else {
+    const p = (t / 1600) % 1;
+    const x = fx + (flip ? -1 : 1) * 5;
+    const y = fy - h * 0.86 + p * 6;
+    ctx.globalAlpha = p < 0.8 ? 1 : (1 - p) * 5;
+    ctx.fillStyle = '#9fdcff';
+    ctx.fillRect(x, y, 1.5, 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x + 0.25, y + 0.25, 0.5, 0.5);
+  }
+  ctx.restore();
+}
