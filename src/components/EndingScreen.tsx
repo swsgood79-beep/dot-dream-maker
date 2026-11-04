@@ -17,6 +17,7 @@ import { buildLetter } from '../data/letterData';
 import { TEMPERAMENT_MAP } from '../data/temperamentData';
 import { ACHIEVEMENTS, epilogueLines } from '../data/legacyData';
 import { DiaryRecap, PhoneEnding } from './EndingExtras';
+import { EndingBackdrop, Ribbon } from './EndingBackdrop';
 import { relationEnding } from '../engine/psyche';
 import { endingArt } from '../render/endingArt';
 
@@ -76,7 +77,8 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
   const jobFrame = `JOB_${ending.id}_${game.gender}`;
 
   return (
-    <div className="relative flex h-full flex-col items-center justify-center gap-3 overflow-hidden bg-gradient-to-b from-[#1b1f3b] to-[#4a3b6b] p-4 text-center text-white">
+    <div className="ending-root relative flex h-full flex-col items-center justify-center gap-3 overflow-hidden bg-[#0d1030] p-4 text-center text-white">
+      <EndingBackdrop step={step} tier={ending.tier} art={endingArt(ending.id, game.gender, 'BRIGHT')} sky={scene.sky} rel={relationEnding(game)} />
       {step === 'intro' && (
         <div className="pop-in flex flex-col items-center gap-4">
           <p className="text-sm text-gold">🎓 19세 12월</p>
@@ -253,9 +255,10 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
       )}
 
       {step === 'reveal' && (
-        <div className="pop-in flex w-full flex-col items-center gap-3">
+        <div className="flex w-full flex-col items-center gap-3">
+          <Ribbon text={ending.tier === 'C' ? '🎓 진로 발표' : ending.tier === 'B' ? '🎉 축하해요!' : `🏆 ${ending.tier}급 엔딩 달성!`} color={ending.tier === 'SS' ? '#ffd84d' : ending.tier === 'S' ? '#ffe08a' : ending.tier === 'A' ? '#9fe0ff' : '#fff6e5'} />
           {/* 직업 엔딩 일러스트 카드 */}
-          <div className="wood-frame w-full overflow-hidden rounded-md">
+          <div className={`card-reveal w-full overflow-hidden rounded-md ${ending.tier === 'S' || ending.tier === 'SS' ? 'gold-frame' : 'wood-frame'}`}>
             <div
               className="relative flex h-56 items-end justify-center overflow-hidden"
               style={{ background: `linear-gradient(${scene.sky[0]}, ${scene.sky[1]})` }}
