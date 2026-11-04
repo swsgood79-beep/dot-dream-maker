@@ -19,7 +19,7 @@ export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => 
   const ev = EVENT_MAP[id];
   // 손님(첫째)은 선택 뒤에도 계속 보이도록 처음 모습을 기억
   const [visitor] = useState(() => ev?.visitor?.(game) ?? null);
-  const sceneImg = eventScene(id, game.gender);
+  const sceneImg = eventScene(id, game.gender, game.age);
   if (!ev) return null;
   const stage = growthStage(game.age);
   const moodPose = game.status.stress >= 60 ? 'tired' : 'stand';

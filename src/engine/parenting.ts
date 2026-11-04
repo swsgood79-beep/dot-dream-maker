@@ -1,3 +1,4 @@
+import { sceneStage, STAGE_AGES } from '../data/sceneStage';
 import {
   EVENT_MAP,
   PARENTING_EVENTS,
@@ -81,13 +82,22 @@ function arcReady(s: SaveState, e: ParentingEvent) {
   return !e.arc.variant || st.result === e.arc.variant;
 }
 
+/** 이벤트가 나오는 나이: 장면 그림의 나이대와 겹치는 부분으로 좁힌다 (연속 이야기는 그대로) */
+export function eventAgeRange(e: { id: string; minAge: number; maxAge: number; arc?: unknown }): [number, number] {
+  const st = sceneStage(e.id);
+  if (!st || e.arc) return [e.minAge, e.maxAge];
+  const [a, b] = STAGE_AGES[st];
+  const lo = Math.max(e.minAge, a), hi = Math.min(e.maxAge, b);
+  return lo <= hi ? [lo, hi] : [e.minAge, e.maxAge];
+}
+
 export function eligibleEvents(s: SaveState) {
   const seen = s.seenEvents ?? [];
   return PARENTING_EVENTS.filter(
     (e) =>
       !seen.includes(e.id) &&
-      s.age >= e.minAge &&
-      s.age <= e.maxAge &&
+      s.age >= eventAgeRange(e)[0] &&
+      s.age <= eventAgeRange(e)[1] &&
       (!e.months || e.months.includes(s.month)) &&
       (!e.cond || e.cond(s)) &&
       arcReady(s, e),
@@ -98,6 +108,18 @@ export function eligibleEvents(s: SaveState) {
 export function rollParentingEvent(s: SaveState, rng: Rng) {
   if (s.pendingEvent) return;
   const pool = eligibleEvents(s);
+  // 청소년(12세)·청년(17세)이 된 첫 달: 그 나이대 이야기를 바로 하나 보여 준다
+  if (s.month === 1 && (s.age === 12 || s.age === 17)) {
+    const st = s.age === 12 ? 'TEEN' : 'YOUTH';
+    const fresh = pool.filter((e) => !e.arc && sceneStage(e.id) === st);
+    if (fresh.length) {
+      // 그 나이에 막 시작하는 이야기(최소 나이 = 지금 나이)를 우선
+      const first = fresh.filter((e) => eventAgeRange(e)[0] === s.age);
+      const pick = (first.length ? first : fresh)[Math.floor(rng() * (first.length || fresh.length))];
+      s.pendingEvent = pick.id;
+      return;
+    }
+  }
   // 이어지는 이야기의 다음 단계는 때가 되면 바로 나온다
   const due = pool.find((e) => e.arc && e.arc.step > 1);
   if (due) {
