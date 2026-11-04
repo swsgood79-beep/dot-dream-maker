@@ -49,4 +49,23 @@ for n, chunk in enumerate(chunks, 1):
             crop = crop.resize((W, round(crop.height * W / crop.width)), Image.LANCZOS)
         crop.save(f'{OUT}/{gid}_{GENDER}.webp', quality=86, method=6)
         done += 1
+# 다시 받은 장면: assets-src/event-overrides/sheet-*.webp 의 지정 칸으로 덮어쓰기
+OVERRIDES = {
+    # 파일: [(칸 번호 0~3, 장면 ID), ...]  칸 번호: 0 왼위 1 오른위 2 왼아래 3 오른아래
+    'SON': {'assets-src/event-overrides/sheet-cs-son.webp': [(0, 'CS_SCHOOL')]},
+    'DAUGHTER': {'assets-src/event-overrides/sheet-cs-daughter.webp': [(0, 'CS_SCHOOL')]},
+}
+for path, picks in OVERRIDES.get(GENDER, {}).items():
+    if not os.path.exists(path):
+        continue
+    img = np.asarray(Image.open(path).convert('RGB')).astype(np.int32)
+    h, w = img.shape[:2]
+    for q, gid in picks:
+        box = cut(img, (q // 2) * h // 2, (q // 2 + 1) * h // 2, (q % 2) * w // 2, (q % 2 + 1) * w // 2)
+        if not box:
+            print('  패널을 못 찾음:', path, q)
+            continue
+        crop = Image.fromarray(img[box[1]:box[3], box[0]:box[2]].astype(np.uint8))
+        crop.save(f'{OUT}/{gid}_{GENDER}.webp', quality=86, method=6)
+        print(f'  교체: {gid}_{GENDER} ← {path} #{q} {crop.size}')
 print(f'{done} scenes → {OUT} ({GENDER})')
