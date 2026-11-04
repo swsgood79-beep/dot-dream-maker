@@ -106,11 +106,13 @@ export function eligibleEvents(s: SaveState) {
 
 /** 월말에 호출: 다음 달 시작 전에 부모가 대응할 상황을 정한다 (이미 남아 있으면 그대로) */
 export function rollParentingEvent(s: SaveState, rng: Rng) {
-  if (s.pendingEvent) return;
+  const turning = s.month === 1 && (s.age === 12 || s.age === 17);
+  const st = s.age === 12 ? 'TEEN' : 'YOUTH';
+  // 청소년·청년이 된 첫 달: 지난 단계의 상황이 남아 있어도 새 나이대 이야기로 바꾼다
+  if (s.pendingEvent && !(turning && sceneStage(s.pendingEvent) !== st)) return;
   const pool = eligibleEvents(s);
   // 청소년(12세)·청년(17세)이 된 첫 달: 그 나이대 이야기를 바로 하나 보여 준다
-  if (s.month === 1 && (s.age === 12 || s.age === 17)) {
-    const st = s.age === 12 ? 'TEEN' : 'YOUTH';
+  if (turning) {
     const fresh = pool.filter((e) => !e.arc && sceneStage(e.id) === st);
     if (fresh.length) {
       // 그 나이에 막 시작하는 이야기(최소 나이 = 지금 나이)를 우선
