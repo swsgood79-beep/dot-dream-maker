@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { sfx } from '../audio/sfx';
 import type { Effect } from '../data/parentingData';
-import { ACTING_INFO, REC_CHOICES } from '../engine/psyche';
+import { ACTING_INFO, REC_CHOICES, REC_CLUES } from '../engine/psyche';
 import { recBg } from './ActingAlertModal';
 import { growthStage } from '../engine/room';
 import { frameName, hasFrame } from '../render/spriteCharacter';
@@ -18,6 +18,8 @@ export function RecModal({ onClose }: { onClose: () => void }) {
   const [act] = useState(() => game.acting!);
   const [phase, setPhase] = useState<'outer' | 'crack' | 'inner'>('outer');
   const [res, setRes] = useState<{ reply: string; delta: Effect } | null>(null);
+  // 단서 찾기: 뷰파인더 속 수상한 곳을 눌러 찾는다 (다 찾으면 황금 처방 효과 ×1.3)
+  const [found, setFound] = useState<number[]>([]);
   if (!act) return null;
   const set = REC_CHOICES[act.kind];
   const stage = growthStage(game.age);
@@ -36,7 +38,7 @@ export function RecModal({ onClose }: { onClose: () => void }) {
     }, 750);
   };
   const choose = (c: 'gold' | 0 | 1) => {
-    const r = resolve(c);
+    const r = resolve(c, found.length);
     if (r) {
       setRes(r);
       sfx(c === 'gold' ? 'happy' : 'sad');
@@ -59,6 +61,28 @@ export function RecModal({ onClose }: { onClose: () => void }) {
         <p className="absolute top-5 right-6 text-[11px] font-bold text-white/80">OBSERVATION MODE · D+{monthIndex(game)}</p>
         <p className="absolute bottom-5 left-6 text-[10px] text-white/60">🔋 ▮▮▮▯</p>
 
+        {/* 단서 찾기: 수상한 곳 */}
+        {phase === 'outer' &&
+          !res &&
+          REC_CLUES[act.kind].map((c, i) => {
+            const got = found.includes(i);
+            return (
+              <button
+                key={i}
+                onClick={() => {
+                  if (got) return;
+                  sfx('chime');
+                  setFound((f) => [...f, i]);
+                }}
+                className={`absolute z-10 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-xl ${got ? 'bg-[#5bd6a8]/40 ring-2 ring-[#5bd6a8]' : 'clue-pulse bg-white/15 ring-2 ring-white/50'}`}
+                style={{ left: `${c.x}%`, top: `${c.y}%` }}
+                aria-label="수상한 곳 살펴보기"
+              >
+                <span style={{ opacity: got ? 1 : 0.55, filter: got ? undefined : 'blur(1.5px)' }}>{c.emoji}</span>
+                {got && <span className="absolute -top-1 -right-1 text-xs">✔</span>}
+              </button>
+            );
+          })}
         {/* 아이 클로즈업 */}
         <div className="absolute bottom-[12%] left-1/2 -translate-x-1/2">
           <div className={phase !== 'outer' ? 'rec-zoom origin-bottom' : ''}>
@@ -86,9 +110,23 @@ export function RecModal({ onClose }: { onClose: () => void }) {
           <>
             <FirstTip id="rec" text="아이의 겉말 뒤에는 진짜 마음이 숨어 있어요. 관찰하면 속마음이 보이고, 그 마음에 맞는 황금 처방이 열려요." />
             {phase === 'outer' && (
-              <PixelButton className="mb-2 w-full" color="bg-[#ff5b5b] !text-white" onClick={observe}>
-                🔍 가만히 관찰하기
-              </PixelButton>
+              <>
+                <p className="mb-1 text-[11px] font-bold">🔎 방 안의 수상한 곳을 눌러 단서를 찾아보세요 ({found.length}/3)</p>
+                <div className="mb-2 grid gap-1">
+                  {found.map((i) => (
+                    <p key={i} className="pop-in rounded border-2 border-ink bg-[#fff6e5] px-2 py-1 text-[11px] leading-snug">
+                      {REC_CLUES[act.kind][i].emoji} {REC_CLUES[act.kind][i].text}
+                    </p>
+                  ))}
+                  {found.length === 3 && <p className="pop-in rounded bg-gold px-2 py-0.5 text-center text-[11px] font-bold">✨ 단서를 모두 찾았어요! 황금 처방 효과 ×1.3</p>}
+                </div>
+                <PixelButton className="mb-2 w-full" color="bg-[#ff5b5b] !text-white" onClick={observe}>
+                  🔍 속마음 들여다보기{found.length < 3 ? ` (단서 ${found.length}/3)` : ''}
+                </PixelButton>
+              </>
+            )}
+            {phase === 'inner' && found.length > 0 && (
+              <p className="mb-1 text-[10px] opacity-70">찾은 단서: {found.map((i) => REC_CLUES[act.kind][i].emoji).join(' ')}{found.length === 3 ? ' · 처방 효과 ×1.3' : ''}</p>
             )}
             {phase === 'inner' && (
               <button className="pixel-btn pop-in mb-2 w-full bg-gold px-2 py-2.5 text-left text-xs font-bold" onClick={() => choose('gold')}>

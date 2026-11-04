@@ -134,6 +134,35 @@ const ACT_TEXT: Record<ActingKind, { outer: Record<'CHILD' | 'TEEN' | 'YOUTH', s
   },
 };
 
+/** 관찰 카메라 단서 찾기: 방 화면의 수상한 곳 3군데 (x%, y%는 뷰파인더 안 위치) */
+export const REC_CLUES: Record<ActingKind, { emoji: string; x: number; y: number; text: string }[]> = {
+  STRIKE: [
+    { emoji: '📄', x: 16, y: 70, text: '구겨진 쪽지시험지. 빨간 줄이 가득하고 구석에 "또 틀렸다"라고 적혀 있다.' },
+    { emoji: '🎒', x: 80, y: 74, text: '현관에 내팽개친 학원 가방. 문제집은 펼쳐 보지도 않았다.' },
+    { emoji: '📱', x: 74, y: 34, text: '학원 단톡방 알림 99+. "숙제 안 한 사람 남아" 메시지에서 멈춰 있다.' },
+  ],
+  LOCKED: [
+    { emoji: '🍽️', x: 18, y: 78, text: '문 앞에 그대로 놓인 저녁밥. 숟가락도 대지 않았다.' },
+    { emoji: '🎧', x: 78, y: 40, text: '문틈으로 이어폰 소리가 크게 새어 나온다. 아무 소리도 듣고 싶지 않은 걸까.' },
+    { emoji: '📒', x: 70, y: 76, text: '찢겨 나온 일기장 한 장. "아무도 내 편이 아니야"라고 적혀 있다.' },
+  ],
+  DELINQ: [
+    { emoji: '🧾', x: 20, y: 72, text: '주머니에서 나온 PC방 영수증. 새벽 2시에 찍혀 있다.' },
+    { emoji: '📱', x: 78, y: 36, text: '모르는 형들에게 온 메시지. "오늘도 나올 거지?"' },
+    { emoji: '🎒', x: 76, y: 78, text: '가방 속에 숨겨 둔 낯선 물건들. 집에서는 한 번도 본 적 없다.' },
+  ],
+  SILENT: [
+    { emoji: '💊', x: 18, y: 66, text: '책상 서랍 속 두통약. 벌써 반이나 비었다.' },
+    { emoji: '📚', x: 80, y: 70, text: '새벽까지 켜져 있던 스탠드와 산더미 문제집. 오늘도 거의 못 잤다.' },
+    { emoji: '✏️', x: 72, y: 34, text: '공책 구석에 지우개로 문지른 낙서. 희미하게 "힘들다"가 보인다.' },
+  ],
+  COLD: [
+    { emoji: '🖼️', x: 20, y: 38, text: '엎어 놓은 가족사진. 먼지가 쌓인 걸 보니 꽤 오래됐다.' },
+    { emoji: '🎁', x: 78, y: 76, text: '뜯지 않은 지난 생일 선물. 리본도 그대로다.' },
+    { emoji: '📝', x: 16, y: 76, text: '보내지 못한 쪽지. "엄마 아빠, 나 좀 봐 줘"라고 썼다가 지운 자국.' },
+  ],
+};
+
 /** 관찰 후 해금되는 황금 처방 + 일반 대응 */
 export const REC_CHOICES: Record<ActingKind, { gold: { label: string; fx: Effect; reply: string; easeSchedule?: boolean }; others: { label: string; style: ParentStyle; fx: Effect; reply: string }[] }> = {
   STRIKE: {

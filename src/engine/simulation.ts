@@ -17,6 +17,7 @@ import { computeActiveCombos, computeAura, findFreeSpot, roomSizeForAge, STARTER
 import { rollParentingEvent, updateWish } from './parenting';
 import { BDAY_MARK, writeDiary, type DiaryEntry } from './diary';
 import { dominantAttitude, monthlyPsyche, type Acting, type Attitude } from './psyche';
+import { lunchBonus, makeHomework } from './parentTouch';
 import { MASTERY_PER_LV, MASTERY_TITLE, masteryLevel, masteryMul } from './mastery';
 import type { ParentStyle } from '../data/parentingData';
 import { TEMPERAMENT_MAP, type TemperamentId } from '../data/temperamentData';
@@ -63,6 +64,9 @@ export interface SaveState extends GameState {
   wishesFailed?: number;
   parenting?: Record<ParentStyle, number>; // 양육 스타일 선택 횟수
   talkKind?: 'talk' | 'praise' | 'scold' | null; // 이번 달 대화 종류
+  nightVisited?: boolean; // 이번 달 잠든 아이를 보러 갔는지
+  homeworkAsk?: { q: string; options: string[]; answer: number } | null; // 숙제 도와 달라는 부탁
+  lunchbox?: 'MEAT' | 'NUT' | 'CHARA' | null; // 이번 달 대회 도시락
   // ── v0.9 기질·기억·사진첩
   temperament?: TemperamentId; // 타고난 기질 (없으면 기질 효과 없음: 옛 저장)
   temperRevealed?: boolean; // 부모가 기질을 알아챘는지
@@ -75,7 +79,7 @@ export interface SaveState extends GameState {
   pendingCutscene?: string | null;
   seenCutscenes?: string[];
   pendingReport?: boolean; // 이번 달 성적표 확인 대기
-  pendingContest?: { id: ContestId; age: number } | null; // v0.11 미니게임 대기 중인 대회 (열린 해의 나이)
+  pendingContest?: { id: ContestId; age: number; lunch?: 'MEAT' | 'NUT' | 'CHARA' | null } | null; // v0.11 미니게임 대기 중인 대회 (열린 해의 나이, 싸 준 도시락)
   parent?: ParentProfile; // v0.13 부모 직업·능력치
   // ── v0.14 살아있는 방·일기장
   pettedThisMonth?: boolean;
@@ -504,10 +508,10 @@ export const perfFactor = (perf: number) => 0.85 + Math.max(0, Math.min(1, perf)
  * 대회 판정: 해당 스탯 × factor vs 연령별 기준치 → 보상 적용.
  * factor는 미니게임 성적(perfFactor) 또는 무작위(0.85~1.15)
  */
-export function finishContest(s: SaveState, id: ContestId, factor: number, events: string[] = [], age = s.age): ContestResult {
+export function finishContest(s: SaveState, id: ContestId, factor: number, events: string[] = [], age = s.age, lunch = s.lunchbox): ContestResult {
   const def = CONTESTS[id];
   const threshold = contestThreshold(age);
-  const score = Math.round(s.stats[def.stat] * factor);
+  const score = Math.round(s.stats[def.stat] * factor * lunchBonus(lunch, def.stat)); // 맞는 도시락이면 +8%
   const win = score >= threshold;
   const rank = win ? 1 : score >= threshold * 0.85 ? 2 : score >= threshold * 0.7 ? 3 : 0;
   const rewards: string[] = [];
@@ -542,7 +546,7 @@ function monthEvents(s: SaveState, rng: Rng, events: string[], interactive: bool
   if (cid) {
     // 직접 플레이: 대회를 미뤄 두고 미니게임 뒤에 판정 (마지막 달은 엔딩 판정 전에 바로 처리)
     if (interactive && !(s.age === 19 && s.month === 12)) {
-      s.pendingContest = { id: cid, age: s.age };
+      s.pendingContest = { id: cid, age: s.age, lunch: s.lunchbox ?? null };
       events.push(`${CONTESTS[cid].emoji} ${CONTESTS[cid].title}이 열린다! 응원하러 가자`);
       return;
     }
@@ -621,6 +625,8 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
   const contestResult = monthEvents(s, rng, events, !!opts.interactiveContest);
 
   writeDiary(s, weeks, contestResult, rng);
+  // 공부 스케줄이 있던 달엔 가끔 숙제를 들고 온다 (다음 달 동안 방에서 [숙제 봐주기])
+  s.homeworkAsk = weeks.some((w) => w.actionType === 'EDUCATION' && w.outcome !== 'STRIKE') && rng() < 0.4 ? makeHomework(s, rng) : null;
 
   // STEP 5. 재화 정산 (부모 월급)
   const allowance = Math.round(monthlyAllowance(s.age) * parentAllowanceMul(s.parent?.points));
@@ -631,6 +637,8 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
   monthlyPsyche(s, weeks, events, monthIndex(s));
   s.talkedThisMonth = false;
   s.talkKind = null;
+  s.nightVisited = false;
+  s.lunchbox = null;
   s.allowanceThisMonth = false;
   s.pettedThisMonth = false;
   if (s.month === 12 && s.age === 19) {

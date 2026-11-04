@@ -500,7 +500,7 @@ describe('contest minigames', () => {
     s.month = 5;
     const r = runMonth_(s, () => 0.5, { interactiveContest: true });
     expect(r.contest).toBeUndefined();
-    expect(r.state.pendingContest).toEqual({ id: 'SPORTS', age: 8 });
+    expect(r.state.pendingContest).toEqual({ id: 'SPORTS', age: 8, lunch: null });
   });
 
   it('better minigame play gives a higher score', () => {
@@ -769,5 +769,26 @@ describe('birthday diary hint order', () => {
       const hint = !!st.diaryNew?.lines.some((l) => l.startsWith('곧 내 생일'));
       if (st.month === 5) expect(hint).toBe(false); // 생일 달: 선물 창보다 늦게 읽히는 바람은 없음
     }
+  });
+});
+
+describe('parent touch', () => {
+  it('homework quiz always has 3 distinct options with the answer inside (even with a fixed rng)', async () => {
+    const { makeHomework } = await import('../engine/parentTouch');
+    for (const age of [8, 13, 18]) {
+      const s = newGame_('t', 'SON', 'INT');
+      s.age = age;
+      const hw = makeHomework(s, () => 0.5);
+      expect(new Set(hw.options).size).toBe(3);
+      expect(hw.answer).toBeGreaterThanOrEqual(0);
+    }
+  });
+  it('matching lunchbox adds 8% to the contest score', async () => {
+    const { finishContest } = await import('../engine/simulation');
+    const a = newGame_('t', 'SON', 'STR');
+    const b = newGame_('t', 'SON', 'STR');
+    const ra = finishContest(a, 'SPORTS', 1, [], 8, null);
+    const rb = finishContest(b, 'SPORTS', 1, [], 8, 'MEAT');
+    expect(rb.score).toBe(Math.round(ra.score * 1.08));
   });
 });

@@ -16,6 +16,9 @@ import { Tutorial } from './Tutorial';
 import { RecModal } from './RecModal';
 import { ActingAlertModal } from './ActingAlertModal';
 import { UnlockModal } from './UnlockModal';
+import { NightModal } from './NightModal';
+import { HomeworkModal, LunchModal } from './ParentTouchModals';
+import { CONTESTS } from '../engine/simulation';
 import { WISH_MAP } from '../data/parentingData';
 import { sfx } from '../audio/sfx';
 import type { ContestId, MonthResult } from '../engine/simulation';
@@ -65,6 +68,11 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const [bdayShown, setBdayShown] = useState(false);
   const [diaryOpen, setDiaryOpen] = useState(false);
   const [recOpen, setRecOpen] = useState(false);
+  const [nightOpen, setNightOpen] = useState(false);
+  const [hwOpen, setHwOpen] = useState(false);
+  const [lunchOpen, setLunchOpen] = useState(false);
+  // 이번 달 대회 (도시락)
+  const contestThisMonth = (Object.keys(CONTESTS) as (keyof typeof CONTESTS)[]).find((k) => CONTESTS[k].month === game.month);
   const tutorialDone = useGameStore((s) => s.tutorialDone);
   const setTutorialDone = useGameStore((s) => s.setTutorialDone);
   // 첫 판의 첫 달에만 튜토리얼 (옛 저장으로 이어하는 중이면 보이지 않음)
@@ -206,6 +214,26 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
             <span className="animate-bounce text-base">📔</span> 일기장이 놓여 있다
           </button>
         )}
+        {/* 부모의 손길: 잠든 아이 · 숙제 · 도시락 (선택, 방 왼쪽 아래) */}
+        {!playing && !placingId && !lastResult && (
+          <div className="absolute bottom-2 left-2 z-10 flex flex-col items-start gap-1">
+            {contestThisMonth && !game.lunchbox && (
+              <button onClick={() => { sfx('page'); setLunchOpen(true); }} className="pop-in flex items-center gap-1 rounded border-2 border-ink bg-[#fff1c2] px-2 py-1 text-[11px] font-bold text-ink shadow-[2px_2px_0_rgba(0,0,0,.35)]">
+                🍱 {CONTESTS[contestThisMonth].title} 도시락 싸 주기
+              </button>
+            )}
+            {game.homeworkAsk && (
+              <button onClick={() => { sfx('page'); setHwOpen(true); }} className="pop-in flex items-center gap-1 rounded border-2 border-ink bg-white px-2 py-1 text-[11px] font-bold text-ink shadow-[2px_2px_0_rgba(0,0,0,.35)]">
+                <span className="animate-bounce">✏️</span> 숙제를 들고 서성인다
+              </button>
+            )}
+            {!game.nightVisited && (
+              <button onClick={() => { sfx('page'); setNightOpen(true); }} className="pop-in flex items-center gap-1 rounded border-2 border-ink bg-[#2a2f5c] px-2 py-1 text-[11px] font-bold text-white shadow-[2px_2px_0_rgba(0,0,0,.35)]">
+                🌙 잠든 아이 보러 가기
+              </button>
+            )}
+          </div>
+        )}
         {game.activeCombos.length > 0 && !playing && (
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {game.activeCombos.map((id) => (
@@ -318,6 +346,9 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
         />
       )}
       {recOpen && <RecModal onClose={() => setRecOpen(false)} />}
+      {nightOpen && <NightModal onClose={() => setNightOpen(false)} />}
+      {hwOpen && <HomeworkModal onClose={() => setHwOpen(false)} />}
+      {lunchOpen && contestThisMonth && <LunchModal contest={contestThisMonth} onClose={() => setLunchOpen(false)} />}
       {diaryOpen && <DiaryModal onClose={() => setDiaryOpen(false)} />}
       {openCut && <CutsceneModal key={openCut} id={openCut} />}
       {openUnlock && <UnlockModal onClose={() => {}} />}

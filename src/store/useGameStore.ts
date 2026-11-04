@@ -10,6 +10,7 @@ import { DEFAULT_PARENT, parentTalkBonus, type ParentProfile } from '../data/par
 import { canPlace, findFreeSpot } from '../engine/room';
 import { applyEffect, recordStyle, resolveParentingEvent, type EventOutcome } from '../engine/parenting';
 import { REC_CHOICES, bumpAttitude, dominantAttitude } from '../engine/psyche';
+import { visitNight, type HomeworkWay, type Lunch, type NightTouch } from '../engine/parentTouch';
 import { resolveReport } from '../engine/school';
 import { readDiary as readDiaryEngine, respondCaught as respondCaughtEngine, skipDiary as skipDiaryEngine } from '../engine/diary';
 import { CUTSCENE_MAP } from '../data/cutsceneData';
@@ -83,9 +84,12 @@ interface GameStore {
   reactReport: (style: ParentStyle) => { reply: string; delta: Effect } | null;
   giveAllowance: () => void;
   /** 관찰 카메라 대응: 'gold' = 관찰 후 해금되는 공감 코칭, 0/1 = 일반 대응 */
-  resolveActing: (choice: 'gold' | 0 | 1) => { reply: string; delta: Effect } | null;
+  resolveActing: (choice: 'gold' | 0 | 1, clues?: number) => { reply: string; delta: Effect } | null;
   markActingSeen: () => void;
   dismissUnlock: () => void;
+  visitNight: (kind: NightTouch) => { delta: Effect; talk: string | null } | null;
+  helpHomework: (way: HomeworkWay, pick?: number) => { delta: Effect; reply: string; correct?: boolean } | null;
+  packLunch: (kind: Lunch) => Effect | null;
   clearNew: (ids: string[]) => void;
   finishEnding: () => void;
   quitToTitle: () => void;
@@ -350,6 +354,51 @@ export const useGameStore = create<GameStore>()(
             }
           }),
 
+        visitNight: (kind) => {
+          let out: { delta: Effect; talk: string | null } | null = null;
+          mutate((g) => {
+            out = visitNight(g, kind);
+            if (!out) return false;
+          });
+          return out;
+        },
+        helpHomework: (way, pick) => {
+          let out: { delta: Effect; reply: string; correct?: boolean } | null = null;
+          mutate((g) => {
+            const hw = g.homeworkAsk;
+            if (!hw) return false;
+            let fx: Effect;
+            let reply: string;
+            let correct: boolean | undefined;
+            if (way === 'TOGETHER') {
+              correct = pick === hw.answer;
+              fx = correct ? { INT: 5, affection: 3, selfEsteem: 2 } : { INT: 2, affection: 2 };
+              reply = correct ? '와 맞았다! 엄마 아빠랑 하니까 쉽다!' : '어? 엄마 아빠도 틀렸네ㅋㅋ 그래도 같이 하니까 재밌어!';
+              recordStyle(g, 'WARM');
+            } else if (way === 'TELL') {
+              fx = { INT: 3, autonomy: -2 };
+              reply = '아 그렇구나. ...다음에도 알려 줘!';
+              recordStyle(g, 'PROTECT');
+            } else {
+              fx = { INT: 1, autonomy: 3, stress: 2 };
+              reply = '치... 알았어. 혼자 해 볼게. (끙끙)';
+              recordStyle(g, 'FREE');
+            }
+            const delta = applyEffect(g, fx);
+            g.homeworkAsk = null;
+            out = { delta, reply, correct };
+          });
+          return out;
+        },
+        packLunch: (kind) => {
+          let out: Effect | null = null;
+          mutate((g) => {
+            if (g.lunchbox) return false;
+            g.lunchbox = kind;
+            out = applyEffect(g, { affection: 2, stress: -3 });
+          });
+          return out;
+        },
         dismissUnlock: () =>
           mutate((g) => {
             if (!g.pendingUnlock) return false;
@@ -367,7 +416,7 @@ export const useGameStore = create<GameStore>()(
             g.acting = { ...g.acting, seen: true };
           }),
 
-        resolveActing: (choice) => {
+        resolveActing: (choice, clues = 0) => {
           let out: { reply: string; delta: Effect } | null = null;
           mutate((g) => {
             const act = g.acting;
@@ -376,7 +425,11 @@ export const useGameStore = create<GameStore>()(
             let delta: Effect;
             let reply: string;
             if (choice === 'gold') {
-              delta = applyEffect(g, set.gold.fx);
+              // 단서를 모두 찾았으면 속마음을 더 정확히 알아서 처방이 더 잘 듣는다 (좋은 효과 ×1.3)
+              const boost = clues >= 3 ? 1.3 : 1;
+              const goodWay = (k: string, v: number) => (k === 'stress' || k === 'delinquency' ? v < 0 : v > 0 && k !== 'gold');
+              const fx = Object.fromEntries(Object.entries(set.gold.fx).map(([k, v]) => [k, goodWay(k, v as number) ? Math.round((v as number) * boost) : v])) as Effect;
+              delta = applyEffect(g, fx);
               recordStyle(g, 'WARM');
               bumpAttitude(g, 'COACHING', 2); // 관찰 후 공감 코칭은 코칭형으로 크게 기울어진다
               g.actionCounts.REC_GOLD = (g.actionCounts.REC_GOLD ?? 0) + 1;
@@ -404,7 +457,7 @@ export const useGameStore = create<GameStore>()(
           mutate((g) => {
             const pc = g.pendingContest;
             if (!pc) return false;
-            out = finishContest(g, pc.id, perf === null ? 0.85 + Math.random() * 0.3 : perfFactor(perf), [], pc.age);
+            out = finishContest(g, pc.id, perf === null ? 0.85 + Math.random() * 0.3 : perfFactor(perf), [], pc.age, pc.lunch);
             g.pendingContest = null;
           });
           return out;

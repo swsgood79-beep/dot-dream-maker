@@ -120,6 +120,8 @@ export function IsometricRoomCanvas({
   const [catBubble, setCatBubble] = useState<string | null>(null);
   // 스케줄 연출: 바깥 활동 장면 · 이번 주 한 줄 · 집 안 활동 효과
   const [scene, setScene] = useState<WeekResult | null>(null);
+  // 한 주 = 하루: 아침(출발) → 낮(활동) → 저녁(귀가) 방 조명
+  const [dayTime, setDayTime] = useState<'morning' | 'day' | 'evening' | null>(null);
   const [caption, setCaption] = useState<string | null>(null);
   const [fx, setFx] = useState<string[] | null>(null);
   const fxRef = useRef<HTMLDivElement>(null);
@@ -213,6 +215,7 @@ export function IsometricRoomCanvas({
         kind: 'call',
         fn: () => {
           setBanner(`${w.week + 1}주차 · ${w.emoji} ${w.actionName}`);
+          setDayTime('morning');
           sim.actor.act = null;
           setCaption(null);
           setFx(null);
@@ -228,9 +231,21 @@ export function IsometricRoomCanvas({
         if (sceneFor(w)) {
           // 밖에 있는 동안 그 장소 장면: 도착 → 활동 → 결과 도장 (ActivitySceneView가 단계별로 보여 줌)
           steps.push({ kind: 'wait', ms: 250, pose: 'idle', onStart: () => setBubble(null) });
-          steps.push({ kind: 'call', fn: () => setScene(w) });
+          steps.push({
+            kind: 'call',
+            fn: () => {
+              setScene(w);
+              setDayTime('day');
+            },
+          });
           steps.push({ kind: 'wait', ms: SCENE_MS, pose: 'idle' });
-          steps.push({ kind: 'call', fn: () => setScene(null) });
+          steps.push({
+            kind: 'call',
+            fn: () => {
+              setScene(null);
+              setDayTime('evening');
+            },
+          });
           // 매주 집으로 돌아옴: 문으로 들어와 "다녀왔어요!" + 그 주 결과 표정, 방 안으로 몇 걸음
           steps.push({ kind: 'call', fn: () => sfx('door') });
           steps.push({ kind: 'fade', to: 1, ms: 350 });
@@ -267,6 +282,7 @@ export function IsometricRoomCanvas({
           },
         });
         steps.push({ kind: 'wait', ms: 2000, pose, onStart: () => {
+          setDayTime('day');
           // 침대에서 휴식: 침대 위로 올라가 눕는다
           const v = viewRef.current!;
           const bed = v.placed.find((p) => p.instanceId === w.targetInstanceId);
@@ -299,6 +315,7 @@ export function IsometricRoomCanvas({
         setBanner(null);
         setBubble(null);
         setScene(null);
+        setDayTime(null);
         setCaption(null);
         setFx(null);
         haloRef.current = null;
@@ -623,7 +640,28 @@ export function IsometricRoomCanvas({
             </span>
           ))}
         </div>
-        {scene && <ActivitySceneView key={scene.week} week={scene} stage={growthStage(game.age)} gender={game.gender} />}
+        {/* 하루 조명: 아침 햇살 · 저녁 노을 */}
+        <div
+          className="pointer-events-none absolute inset-0 z-10 transition-[background] duration-700"
+          style={{
+            background:
+              dayTime === 'morning'
+                ? 'linear-gradient(160deg, rgba(255,226,160,.28), rgba(255,246,220,.06) 60%)'
+                : dayTime === 'evening'
+                  ? 'linear-gradient(160deg, rgba(255,140,70,.30), rgba(120,60,140,.18))'
+                  : 'transparent',
+          }}
+        />
+        {/* 바깥 활동: 방 위에 엽서처럼 (부모는 집에서 아이의 하루를 본다) */}
+        {scene && (
+          <>
+            <div className="pointer-events-none absolute inset-0 z-20 bg-[#1b1f3b]/45" />
+            <div key={scene.week} className="postcard-in absolute top-[5%] right-[5%] bottom-[13%] left-[5%] z-20 overflow-hidden rounded-md border-[6px] border-[#fffaf0] shadow-[6px_8px_0_rgba(0,0,0,.4)]">
+              <ActivitySceneView week={scene} stage={growthStage(game.age)} gender={game.gender} />
+              <span className="pointer-events-none absolute top-1.5 right-1.5 z-30 rotate-6 rounded-sm border-2 border-dashed border-[#c0392b] bg-[#fff1c2] px-1 text-[10px] font-bold text-[#c0392b]">📮 {scene.week + 1}주</span>
+            </div>
+          </>
+        )}
         {banner && (
           <div className="pop-in pointer-events-none absolute top-2 left-1/2 z-30 -translate-x-1/2 border-3 border-ink bg-gold px-3 py-1 text-xs font-bold whitespace-nowrap shadow-[3px_3px_0_#000]">
             {banner}

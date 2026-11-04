@@ -64,7 +64,7 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
   const bg = sceneBg(week.outcome === 'RUNAWAY' ? 'RUNAWAY' : week.actionId);
 
   return (
-    <div className="scene-in absolute inset-0 z-20 overflow-hidden" style={{ background: `linear-gradient(${sc.sky[0]}, ${sc.sky[1]})` }}>
+    <div className="absolute inset-0 overflow-hidden" style={{ background: `linear-gradient(${sc.sky[0]}, ${sc.sky[1]})` }}>
       {bg ? (
         <>
           <img src={bg} alt="" className="absolute inset-0 h-full w-full object-cover" />
