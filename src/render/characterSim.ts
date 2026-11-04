@@ -182,12 +182,20 @@ export class CharacterSim {
   private current: (Step & { elapsed: number; from?: number }) | null = null;
   private idleTimer = 1500;
   scripted = false;
+  /** 자유 행동 때 할 일을 고르는 함수 (캔버스가 넣어 줌): 가구로 놀기·고양이 쓰다듬기·혼잣말 */
+  onIdlePick?: () => { goal: Cell[]; pose: Pose; act?: string; ms: number; face?: Cell; start?: () => void; end?: () => void } | null;
+  private hobby: { pose: Pose; act?: string; ms: number; face?: Cell; start?: () => void; end?: () => void } | null = null;
+  private hobbyLeft = 0;
 
   cell(): Cell {
     return { x: Math.floor(this.actor.gx), y: Math.floor(this.actor.gy) };
   }
 
   runScript(steps: Step[]) {
+    if (this.hobby) this.hobby.end?.();
+    this.hobby = null;
+    this.hobbyLeft = 0;
+    this.actor.act = null;
     this.queue = [...steps];
     this.current = null;
     this.path = [];
@@ -195,6 +203,8 @@ export class CharacterSim {
   }
 
   stopScript() {
+    this.hobby = null;
+    this.hobbyLeft = 0;
     this.queue = [];
     this.current = null;
     this.path = [];
@@ -288,11 +298,46 @@ export class CharacterSim {
         if (this.path.length) return;
       }
     }
-    // 자유 행동: 가끔 근처를 돌아다님
+    // 가구에 도착: 혼자 놀기 시작
+    if (this.hobby && this.hobbyLeft <= 0) {
+      this.hobbyLeft = this.hobby.ms;
+      if (this.hobby.face) {
+        const fx = this.hobby.face.x + 0.5 - a.gx;
+        const fy = this.hobby.face.y + 0.5 - a.gy;
+        const sx = fx - fy; // 화면 가로 방향
+        if (Math.abs(sx) > 0.2) a.facing = sx > 0 ? 'R' : 'L';
+        a.back = fx + fy < -0.2;
+      }
+      this.hobby.start?.();
+    }
+    if (this.hobby) {
+      this.hobbyLeft -= dt;
+      a.pose = this.hobby.pose;
+      a.act = this.hobby.act ?? null;
+      if (this.hobbyLeft <= 0) {
+        this.hobby.end?.();
+        this.hobby = null;
+        a.pose = 'idle';
+        a.act = null;
+        a.back = false;
+        this.idleTimer = 1500 + rng() * 2000;
+      }
+      return;
+    }
+    // 자유 행동: 가끔 근처를 돌아다니거나, 가구로 놀거나, 고양이를 쓰다듬음
     a.pose = 'idle';
     this.idleTimer -= dt;
     if (this.idleTimer <= 0) {
       this.idleTimer = 2200 + rng() * 3000;
+      const pick = rng() < 0.55 ? this.onIdlePick?.() : null;
+      if (pick) {
+        this.walkTo(w, pick.goal);
+        if (this.path.length || pick.goal.some((g) => g.x === this.cell().x && g.y === this.cell().y)) {
+          this.hobby = { pose: pick.pose, act: pick.act, ms: pick.ms, face: pick.face, start: pick.start, end: pick.end };
+          this.hobbyLeft = 0;
+          return;
+        }
+      }
       const goal = { x: Math.floor(rng() * w.n), y: Math.floor(rng() * w.n) };
       this.walkTo(w, [goal]);
     }

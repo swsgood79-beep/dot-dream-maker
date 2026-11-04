@@ -5,8 +5,10 @@ import { canPlace, computeActiveCombos, footprint, growthStage } from '../engine
 import { canvasSize, COMBO_COLORS, depthSorted, furnitureBounds, renderRoom, unproject, type RoomView } from '../render/isoRenderer';
 import { FURNITURE_BODY, pixelIconUrl } from '../render/sprites';
 import { furnitureFlipped, hasFurnitureSprite } from '../render/furnitureSprites';
-import { characterHeight, RES } from '../render/spriteCharacter';
+import { characterHeight, hasFrame, RES } from '../render/spriteCharacter';
+import { WISH_MAP } from '../data/parentingData';
 import { besideCells, CharacterSim, doorCell, nearestFreeCell, type Step } from '../render/characterSim';
+import { FURNITURE_HOBBY, IDLE_THOUGHTS } from '../render/hobby';
 import { isColdRoom } from '../engine/psyche';
 import { childMood, moodPose, MOOD_STYLE } from '../engine/mood';
 import { CatSim } from '../render/catSim';
@@ -303,6 +305,59 @@ export function IsometricRoomCanvas({
     sim.runScript(steps);
     return () => sim.stopScript();
   }, [playback]);
+
+  // 화면이 살아 있게: 평소엔 아이가 스스로 가구로 놀고, 고양이를 쓰다듬고, 혼잣말을 한다
+  const lifeRef = useRef({ game, playing: !!playback, placing: !!placingId });
+  lifeRef.current = { game, playing: !!playback, placing: !!placingId };
+  useEffect(() => {
+    const sim = simRef.current;
+    sim.onIdlePick = () => {
+      const { game: g, playing, placing } = lifeRef.current;
+      const v = viewRef.current;
+      if (!v || playing || placing || moodPose(g)) return null; // 기분이 나쁘면 상태 포즈로 (놀지 않음)
+      const say = (texts: string[]) => () => setBubble(texts[Math.floor(Math.random() * texts.length)]);
+      const quiet = () => setBubble(null);
+      const r = Math.random();
+      // 고양이 쓰다듬기
+      const cat = v.cat;
+      if (cat && r < 0.18) {
+        const cc = { x: Math.floor(cat.gx), y: Math.floor(cat.gy) };
+        const spot = nearestFreeCell(v.n, v.placed, cc, new Set([`${cc.x},${cc.y}`]));
+        if (spot)
+          return {
+            goal: [spot], pose: 'cheer' as Pose, ms: 2600, face: cc,
+            start: () => {
+              setBubble('❤️ 착하다~');
+              setCatBubble('😻');
+            },
+            end: () => {
+              setBubble(null);
+              setCatBubble(null);
+            },
+          };
+      }
+      // 혼잣말 (원하는 것 · 꿈 · 계절)
+      if (r < 0.3) {
+        const wish = g.wish ? WISH_MAP[g.wish.id] : null;
+        const extra = [wish ? `💭 ${wish.emoji} ${wish.text.slice(0, 14)}${wish.text.length > 14 ? '…' : ''}` : null, g.month >= 6 && g.month <= 8 ? '🍉 덥다~' : g.month === 12 || g.month <= 2 ? '⛄ 눈 오면 좋겠다' : null].filter(Boolean) as string[];
+        const here = { x: Math.floor(sim.actor.gx), y: Math.floor(sim.actor.gy) };
+        return { goal: [here], pose: 'idle' as Pose, ms: 2400, start: say([...IDLE_THOUGHTS, ...extra, ...extra]), end: quiet };
+      }
+      // 가구로 놀기
+      const toys = v.placed.filter((p) => FURNITURE_HOBBY[p.furnitureId]);
+      if (!toys.length) return null;
+      const t = toys[Math.floor(Math.random() * toys.length)];
+      const h = FURNITURE_HOBBY[t.furnitureId];
+      const cells = besideCells(v.n, v.placed, t);
+      if (!cells.length) return null;
+      const stage = growthStage(g.age);
+      const act = h.act && hasFrame(`${stage}_${g.gender}_${h.act}`) ? h.act : undefined;
+      return { goal: cells, pose: act ? 'idle' : h.pose, act, ms: h.ms, face: footprint(t)[0], start: say(h.bubbles), end: quiet };
+    };
+    return () => {
+      sim.onIdlePick = undefined;
+    };
+  }, []);
 
   // 거리감: 새 달이 시작되면 친밀도가 높은 아이는 문 쪽으로 마중 나오고, 낮은 아이는 등을 돌려 구석으로 간다
   useEffect(() => {
