@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { sfx } from '../audio/sfx';
 import type { Effect } from '../data/parentingData';
-import { REC_CHOICES } from '../engine/psyche';
+import { ACTING_INFO, REC_CHOICES } from '../engine/psyche';
+import { recBg } from './ActingAlertModal';
 import { growthStage } from '../engine/room';
-import { frameName } from '../render/spriteCharacter';
+import { frameName, hasFrame } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
 import { EffectChips, PixelButton } from './ui';
@@ -20,7 +21,11 @@ export function RecModal({ onClose }: { onClose: () => void }) {
   if (!act) return null;
   const set = REC_CHOICES[act.kind];
   const stage = growthStage(game.age);
-  const pose = act.kind === 'STRIKE' || act.kind === 'SILENT' ? 'tired' : 'stand';
+  // 겉으로는 화나고 웅크린 모습 → 속마음이 보이면 그 안의 슬픈 모습으로 (상태 포즈 그림이 있으면)
+  const info = ACTING_INFO[act.kind];
+  const want = res ? (res.delta.affection ?? 0) > 0 ? 'cheer' : info.innerPose : phase === 'inner' ? info.innerPose : info.pose;
+  const pose = hasFrame(`${stage}_${game.gender}_${want}`) ? want : act.kind === 'STRIKE' || act.kind === 'SILENT' ? 'tired' : 'stand';
+  const bg = recBg(act.kind, res && (res.delta.affection ?? 0) > 0 ? 'after' : 'view');
 
   const observe = () => {
     sfx('page');
@@ -42,7 +47,7 @@ export function RecModal({ onClose }: { onClose: () => void }) {
     <div className="absolute inset-0 z-50 flex flex-col bg-black">
       {/* 뷰파인더 */}
       <div className="relative flex-1 overflow-hidden bg-[#20242e]">
-        <div className="room-bg absolute inset-0 opacity-60" />
+        {bg ? <img src={bg} alt="" className="absolute inset-0 h-full w-full object-cover opacity-80" /> : <div className="room-bg absolute inset-0 opacity-60" />}
         <div className="absolute inset-0 bg-[repeating-linear-gradient(transparent_0_3px,rgba(0,0,0,.18)_3px_4px)]" />
         {/* 모서리 프레임 */}
         {['top-3 left-3 border-t-4 border-l-4', 'top-3 right-3 border-t-4 border-r-4', 'bottom-3 left-3 border-b-4 border-l-4', 'bottom-3 right-3 border-b-4 border-r-4'].map((c) => (

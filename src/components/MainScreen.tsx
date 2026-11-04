@@ -14,6 +14,7 @@ import { BirthdayModal } from './BirthdayModal';
 import { SeasonFx } from './SeasonFx';
 import { Tutorial } from './Tutorial';
 import { RecModal } from './RecModal';
+import { ActingAlertModal } from './ActingAlertModal';
 import { WISH_MAP } from '../data/parentingData';
 import { sfx } from '../audio/sfx';
 import type { ContestId, MonthResult } from '../engine/simulation';
@@ -79,6 +80,9 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const openReport = idle && !openCut && !eventShown && !bdayShown && (reportShown || !!game.pendingReport);
   const openBday = idle && !openCut && !openReport && !eventShown && (bdayShown || !!game.pendingBirthday);
   const openEvent = idle && !openCut && !openReport && !openBday ? (eventShown ?? game.pendingEvent ?? null) : null;
+  // 이상행동 안내: 새 달 창들이 다 끝난 뒤 한 번
+  const markActingSeen = useGameStore((s) => s.markActingSeen);
+  const openAlert = idle && !openCut && !openReport && !openBday && !openEvent && !recOpen && !!game.acting && !game.acting.seen;
   const showContest = !!(lastResult && !playing && lastResult.contest && contestSeen !== lastResult);
 
   const stress = game.status.stress;
@@ -299,6 +303,15 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
             setTutorialDone(true);
             setTab('schedule');
           }}
+        />
+      )}
+      {openAlert && (
+        <ActingAlertModal
+          onWatch={() => {
+            markActingSeen();
+            setRecOpen(true);
+          }}
+          onLater={() => markActingSeen()}
         />
       )}
       {recOpen && <RecModal onClose={() => setRecOpen(false)} />}

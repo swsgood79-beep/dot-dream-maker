@@ -84,6 +84,7 @@ interface GameStore {
   giveAllowance: () => void;
   /** 관찰 카메라 대응: 'gold' = 관찰 후 해금되는 공감 코칭, 0/1 = 일반 대응 */
   resolveActing: (choice: 'gold' | 0 | 1) => { reply: string; delta: Effect } | null;
+  markActingSeen: () => void;
   finishEnding: () => void;
   quitToTitle: () => void;
   pushToast: (text: string) => void;
@@ -345,6 +346,12 @@ export const useGameStore = create<GameStore>()(
               recordStyle(g, 'STRICT');
               get().pushToast('☝️ 타일렀어요. 비행 -6, 도덕 +4, 친밀도 -3, 자존감↓');
             }
+          }),
+
+        markActingSeen: () =>
+          mutate((g) => {
+            if (!g.acting || g.acting.seen) return false;
+            g.acting = { ...g.acting, seen: true };
           }),
 
         resolveActing: (choice) => {

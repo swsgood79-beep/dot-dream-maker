@@ -20,6 +20,9 @@ SHEETS = {
     's5': ['REST_01', 'REST_02', 'OUT_SHOP', 'OUT_BOOK'],
     's6': ['OUT_SCI', 'OUT_ARCADE', 'OUT_RUINS', 'OUT_ALLEY'],
     's7': ['RUNAWAY', 'CONTEST_SPORTS', 'CONTEST_ARTFEST', 'CONTEST_EXAM'],
+    # 관찰 카메라 (v0.27): 이상행동 장면 + 화해 장면
+    's8': ['REC_STRIKE', 'REC_LOCKED', 'REC_DELINQ', 'REC_SILENT'],
+    's9': ['REC_COLD', 'REC_DOOR', 'REC_WARM', 'REC_LETTER'],
 }
 OUT = 'src/assets/scenes'
 W = 1000  # 이보다 크면 줄임 (원본 해상도 유지)

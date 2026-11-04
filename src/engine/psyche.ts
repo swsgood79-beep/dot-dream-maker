@@ -63,7 +63,53 @@ export interface Acting {
   kind: ActingKind;
   outer: string; // 겉말
   inner: string; // 속마음
+  seen?: boolean; // 안내 창을 이미 봤는지
 }
+
+/** 관찰 안내 창 내용 (무슨 일이 있었나 · 왜 · 그냥 두면) */
+export const ACTING_INFO: Record<ActingKind, { emoji: string; title: string; story: string; cause: (s: SaveState) => string; risk: string; pose: string; innerPose: string }> = {
+  STRIKE: {
+    emoji: '💢', title: '학원 파업 선언',
+    story: '이번 달, {name}(이)가 학원 가방을 내던지고 침대에 드러누웠어요. 학원비는 이미 냈는데, 한 걸음도 움직이지 않았어요.',
+    cause: (s) =>
+      s.status.stress >= 80
+        ? `너무 지쳤어요 (스트레스 ${s.status.stress}). 스트레스 80 이상이면 학원 주에 가끔 버텨요.`
+        : `마음이 멀어졌어요 (친밀도 ${s.status.affection}). 친밀도 30 이하면 학원 주에 가끔 버텨요.`,
+    risk: '억지로 보내면 스트레스와 반감만 쌓이고, 계속되면 자존감이 떨어져요.',
+    pose: 'mood_angry', innerPose: 'mood_sad',
+  },
+  LOCKED: {
+    emoji: '🔒', title: '굳게 닫힌 방문',
+    story: '철컥. {name}(이)가 방문을 잠갔어요. 노크를 해도 대답이 없고, 문틈으로 불빛만 새어 나와요.',
+    cause: (s) =>
+      s.status.affection <= 30
+        ? `마음이 많이 멀어졌어요 (친밀도 ${s.status.affection}). 친밀도 30 이하면 문을 잠가요.`
+        : `공부 가구만 가득한 숨 막히는 방에서 스트레스가 쌓였어요 (스트레스 ${s.status.stress}).`,
+    risk: '문이 잠긴 동안은 대화·칭찬 효과가 절반이에요. 친밀도 45 이상, 스트레스 60 미만이 되면 다시 열려요.',
+    pose: 'mood_sulk', innerPose: 'mood_back_sulk',
+  },
+  DELINQ: {
+    emoji: '😈', title: '삐딱해진 아이',
+    story: '요즘 {name}(이)가 늦게 들어오고, 말투가 거칠어졌어요. 처음 보는 친구들과 어울린다는 이야기도 들려요.',
+    cause: (s) => `비행 수치가 ${s.status.delinquency}까지 올랐어요. 외롭거나 집에 자리가 없다고 느끼면 밖에서 자리를 찾아요.`,
+    risk: '그냥 두면 비행이 계속 올라 진로가 좁아지고, 엄하게만 다그치면 더 멀어질 수 있어요.',
+    pose: 'mood_rebel', innerPose: 'mood_sad',
+  },
+  SILENT: {
+    emoji: '😶', title: '말이 없어진 아이',
+    story: '{name}(이)가 “괜찮아”라는 말만 반복해요. 밤늦게까지 불이 켜져 있고, 밥도 잘 먹지 않아요.',
+    cause: (s) => `스트레스가 ${s.status.stress}까지 차올랐어요. 힘들다는 말을 꺼내지 못하고 혼자 버티고 있어요.`,
+    risk: '스트레스가 100이 되면 몸져눕거나 가출할 수 있어요.',
+    pose: 'mood_stressed', innerPose: 'mood_cry',
+  },
+  COLD: {
+    emoji: '🧊', title: '차가워진 마음',
+    story: '“...몰라.” {name}(이)가 눈도 마주치지 않아요. 같은 집에 있는데도 멀리 있는 것 같아요.',
+    cause: (s) => `친밀도가 ${s.status.affection}까지 떨어졌어요. 한동안 마음을 나눌 시간이 부족했어요.`,
+    risk: '이대로 어른이 되면 연락이 끊길 수도 있어요 (친밀도 35 이하로 끝나면 절연 엔딩).',
+    pose: 'mood_back_sulk', innerPose: 'mood_sad',
+  },
+};
 
 const ACT_TEXT: Record<ActingKind, { outer: Record<'CHILD' | 'TEEN' | 'YOUTH', string>; inner: Record<'CHILD' | 'TEEN' | 'YOUTH', string> }> = {
   STRIKE: {
