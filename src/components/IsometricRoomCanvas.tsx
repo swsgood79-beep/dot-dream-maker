@@ -199,8 +199,11 @@ export function IsometricRoomCanvas({
       setTimeout(() => setPopups((p) => p.filter((x) => !ids.has(x.id))), 1800 + items.length * 220);
     };
     const steps: Step[] = [];
-    // 방에서 휴식(REST_01)만 집 안, 가족 캠핑 같은 바깥 휴식은 밖으로
-    const isOut = (w: WeekResult) => w.actionType === 'RUNAWAY' || (!w.targetInstanceId && w.actionId !== 'REST_01' && w.outcome !== 'STRIKE' && w.outcome !== 'SICK' && w.outcome !== 'NO_GOLD');
+    // 집 안: 방에서 휴식, 파업·병·돈 부족으로 쉰 주. 나머지(학원·알바·외출·캠핑)는 방에 맞는 가구가 있어도 밖으로
+    // (가구 오라 효과는 그대로 받음 — 예전엔 가구가 있으면 집 안 활동으로 처리돼 청소년기엔 거의 밖에 안 나갔음)
+    const HOME_ACTIONS = new Set(['REST_01']);
+    const isOut = (w: WeekResult) =>
+      w.actionType === 'RUNAWAY' || (!HOME_ACTIONS.has(w.actionId) && w.outcome !== 'STRIKE' && w.outcome !== 'SICK' && w.outcome !== 'NO_GOLD' && !!sceneFor(w));
     playback.weeks.forEach((w, wi) => {
       const outside = isOut(w);
       // 바깥 활동이 연달아 있으면 집에 들르지 않고 장면에서 장면으로 바로 넘어간다
