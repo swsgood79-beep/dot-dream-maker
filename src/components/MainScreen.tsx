@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { COMBO_MAP } from '../data/furnitureData';
-import { growthStage } from '../engine/room';
+import { displayStage } from '../engine/displayStage';
 import { STAT_KEYS } from '../engine/simulation';
 import { useGameStore } from '../store/useGameStore';
 import { MonthResultModal } from './MonthResultModal';
@@ -122,7 +122,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
                 <span className="truncate font-bold">
                   {game.age}세 <span className="text-gold">{game.month}월</span> · {game.childName}
                 </span>
-                <Icon name={season(game.month)} size={20} title={STAGE_ICON[growthStage(game.age)]} />
+                <Icon name={season(game.month)} size={20} title={STAGE_ICON[displayStage(game)]} />
               </div>
               <div className="hud-slot flex items-center gap-1 rounded px-2 py-1 font-bold" data-tut="gold">
                 <Icon name="GOLD" size={18} />

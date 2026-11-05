@@ -3,6 +3,7 @@ import { useGameStore } from '../../store/useGameStore';
 import { Sprite } from '../Sprite';
 import { frameName } from '../../render/spriteCharacter';
 import { growthStage } from '../../engine/room';
+import { displayStage } from '../../engine/displayStage';
 import { WISH_MAP } from '../../data/parentingData';
 import { PixelButton } from '../ui';
 
@@ -24,7 +25,7 @@ export function TalkPanel() {
   const talk = useGameStore((s) => s.talk);
   const give = useGameStore((s) => s.giveAllowance);
   const { stress, affection, delinquency } = game.status;
-  const stage = growthStage(game.age);
+  const stage = displayStage(game);
   const wish = game.wish ? WISH_MAP[game.wish.id] : null;
   const done = game.talkedThisMonth;
   return (

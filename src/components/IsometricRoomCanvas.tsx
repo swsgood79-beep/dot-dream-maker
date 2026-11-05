@@ -3,7 +3,8 @@ import deskSeatFrames from '../render/deskSeat.json';
 import { parentClass } from '../data/parentData';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FURNITURE_MAP } from '../data/furnitureData';
-import { canPlace, computeActiveCombos, footprint, growthStage } from '../engine/room';
+import { canPlace, computeActiveCombos, footprint } from '../engine/room';
+import { displayStage } from '../engine/displayStage';
 import { canvasSize, COMBO_COLORS, depthSorted, furnitureBounds, renderRoom, unproject, type RoomView } from '../render/isoRenderer';
 import { FURNITURE_BODY, pixelIconUrl } from '../render/sprites';
 import { furnitureFlipped, hasFurnitureSprite } from '../render/furnitureSprites';
@@ -349,7 +350,7 @@ export function IsometricRoomCanvas({
           // 책상 공부·컴퓨터: 책상 앞 가운데 의자에 앉기
           const desk = v.placed.find((p) => p.instanceId === w.targetInstanceId);
           if ((pose === 'desk' || pose === 'pc') && desk && SEAT_FURNITURE.has(desk.furnitureId)) {
-            sitAtDesk(sim.actor, desk, deskInSprite(growthStage(lifeRef.current.game.age), lifeRef.current.game.gender, pose));
+            sitAtDesk(sim.actor, desk, deskInSprite(displayStage(lifeRef.current.game), lifeRef.current.game.gender, pose));
           }
           haloRef.current = HALO[w.outcome];
           // 집에서 하는 활동도 활동 포즈 그림이 있으면 그 동작으로 (예: 집안일 → 빗자루질)
@@ -464,7 +465,7 @@ export function IsometricRoomCanvas({
       const h = FURNITURE_HOBBY[t.furnitureId];
       const cells = besideCells(v.n, v.placed, t);
       if (!cells.length) return null;
-      const stage = growthStage(g.age);
+      const stage = displayStage(g);
       const act = h.act && hasFrame(`${stage}_${g.gender}_${h.act}`) ? h.act : undefined;
       const sit = !act && (h.pose === 'desk' || h.pose === 'pc') && SEAT_FURNITURE.has(t.furnitureId);
       return {
@@ -530,7 +531,7 @@ export function IsometricRoomCanvas({
   viewRef.current = {
     n,
     placed: game.placedFurniture,
-    stage: growthStage(game.age),
+    stage: displayStage(game),
     home: parentClass(game.parent),
     comboTint,
     selectedId: playback ? null : selected,
@@ -623,7 +624,7 @@ export function IsometricRoomCanvas({
       return lx >= sx - width / 2 && lx <= sx + width / 2 && ly >= sy - height && ly <= sy + 3;
     };
     const ch = simRef.current.actor;
-    if (!sel && onActor(ch.gx, ch.gy, characterHeight(growthStage(game.age), game.gender), 24) && distant) {
+    if (!sel && onActor(ch.gx, ch.gy, characterHeight(displayStage(game), game.gender), 24) && distant) {
       // 마음이 멀어진 아이: 휙 등을 돌려 구석으로
       simRef.current.runScript([
         { kind: 'goto', resolve: (wd) => nearestFreeCell(wd.n, wd.placed, { x: wd.n - 1, y: 0 }, new Set()) },
@@ -635,7 +636,7 @@ export function IsometricRoomCanvas({
       tapTimer.current = setTimeout(() => setBubble(null), 1800);
       return;
     }
-    if (!sel && onActor(ch.gx, ch.gy, characterHeight(growthStage(game.age), game.gender), 24)) {
+    if (!sel && onActor(ch.gx, ch.gy, characterHeight(displayStage(game), game.gender), 24)) {
       const r = childTapLine(game);
       const petted = petChild();
       simRef.current.runScript([{ kind: 'wait', ms: 1600, pose: r.pose }]);
@@ -774,7 +775,7 @@ export function IsometricRoomCanvas({
           <>
             <div className="pointer-events-none absolute inset-0 z-20 bg-[#1b1f3b]/45" />
             <div key={scene.week} className="postcard-in absolute top-[5%] right-[5%] bottom-[13%] left-[5%] z-20 overflow-hidden rounded-md border-[6px] border-[#fffaf0] shadow-[6px_8px_0_rgba(0,0,0,.4)]">
-              <ActivitySceneView week={scene} stage={growthStage(game.age)} gender={game.gender} />
+              <ActivitySceneView week={scene} stage={displayStage(game)} gender={game.gender} />
               <span className="pointer-events-none absolute top-1.5 right-1.5 z-30 rounded-sm border-2 border-dashed border-[#c0392b] bg-[#fff1c2] px-1 text-[10px] font-bold text-[#c0392b]">📮 {scene.week + 1}주</span>
             </div>
           </>

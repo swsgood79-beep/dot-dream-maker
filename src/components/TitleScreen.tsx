@@ -14,7 +14,7 @@ import { ParentPicker } from './ParentPicker';
 import { SettingsModal } from './SettingsModal';
 import { ArtBackdrop, GameLogo } from './ArtBackdrop';
 import { frameName } from '../render/spriteCharacter';
-import { growthStage } from '../engine/room';
+import { displayStage } from '../engine/displayStage';
 
 const WISHES: { stat: StatKey; text: string }[] = [
   { stat: 'INT', text: '똑똑한 아이로' },
@@ -87,7 +87,7 @@ export function TitleScreen({ onStart, onOpening }: { onStart: () => void; onOpe
               className="pixel-btn flex items-center gap-3 bg-gradient-to-b from-[#ffe27a] to-[#f2b632] px-3 py-2 text-left text-ink"
             >
               <span className="flex h-12 w-12 shrink-0 items-end justify-center overflow-hidden rounded-full border-2 border-ink bg-[#fff6e0]">
-                <Sprite name={frameName(growthStage(game.age), game.gender, 'cheer')} scale={0.7} />
+                <Sprite name={frameName(displayStage(game), game.gender, 'cheer')} scale={0.7} />
               </span>
               <span className="min-w-0 flex-1">
                 <b className="block text-base">▶ 이어하기</b>
@@ -114,7 +114,7 @@ export function TitleScreen({ onStart, onOpening }: { onStart: () => void; onOpe
               </button>
             ))}
           </div>
-          <p className="mt-1 text-[10px] font-bold text-white/45">v0.37.1 · 특별한 하루</p>
+          <p className="mt-1 text-[10px] font-bold text-white/45">v0.37.2 · 특별한 하루</p>
         </div>
       )}
       {settings && <SettingsModal onClose={() => setSettings(false)} onOpening={onOpening} />}
