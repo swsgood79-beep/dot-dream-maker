@@ -47,7 +47,7 @@ export function TownModal({ onClose }: { onClose: () => void }) {
   const vars = useMemo(() => townNames(game), [game]);
   const T = (t: string) => townText(t, vars);
   const stage = displayStage(game);
-  const childH = ((atlas as Record<string, { h: number }>)[frameName(stage, game.gender, 'stand')]?.h ?? 60) * 1.6;
+  const childH = ((atlas as Record<string, { h: number }>)[frameName(stage, game.gender, 'stand')]?.h ?? 60) * 2;
   const open = availableLocs(game).map((l) => l.id);
   const visited = log.map((l) => l.loc);
   const time = TIMES[Math.min(slot, 2)];
@@ -133,7 +133,7 @@ export function TownModal({ onClose }: { onClose: () => void }) {
               </span>
               {!(view === 'enc' && enc.e.game && enc.e.game.kind !== 'pick') && (
                 <div className="absolute inset-x-0 bottom-3 flex items-end justify-center gap-6">
-                  <Sprite name={frameName(stage, game.gender, view === 'res' && out && (out.rel?.tierUp || out.rel?.perk) ? 'cheer' : 'stand')} scale={1.6} />
+                  <Sprite name={frameName(stage, game.gender, view === 'res' && out && (out.rel?.tierUp || out.rel?.perk) ? 'cheer' : 'stand')} scale={2} />
                   {npc ? (
                     <div className={`flex flex-col items-center ${npcArt(enc.e.npc!, stage, game.gender) ? 'relative' : ''}`}>
                       {npcArt(enc.e.npc!, stage, game.gender) ? (
