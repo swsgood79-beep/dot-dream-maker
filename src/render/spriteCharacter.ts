@@ -193,6 +193,26 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, fx: number, fy: num
   if (!ok) drawCharacterProcedural(ctx, fx, fy, o);
 }
 
+/**
+ * 창·장면(UI)에 크게 띄울 때 바깥 검은 테두리를 한 겹 걷어 낸다.
+ * 방 안의 작은 캐릭터에는 굵은 테두리가 잘 보이지만, 크게 띄우면 테두리가 너무 두꺼워 그림이 뭉개져 보임.
+ */
+function thinOutline(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  const img = ctx.getImageData(0, 0, w, h);
+  const d = img.data;
+  const op = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h && d[(y * w + x) * 4 + 3] > 0;
+  const kill: number[] = [];
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      if (!d[i + 3]) continue;
+      if (op(x - 1, y) && op(x + 1, y) && op(x, y - 1) && op(x, y + 1)) continue;
+      if ((d[i] + d[i + 1] + d[i + 2]) / 3 < 90) kill.push(i);
+    }
+  for (const i of kill) d[i + 3] = 0;
+  ctx.putImageData(img, 0, 0);
+}
+
 const urlCache = new Map<string, string>();
 /** UI용 프레임 dataURL (대화 창 초상화 등). 시트 로딩 전이면 '' */
 export function spriteUrl(name: string): string {
@@ -208,6 +228,7 @@ export function spriteUrl(name: string): string {
   const ctx = cv.getContext('2d');
   if (!ctx) return '';
   ctx.drawImage(sheet, g.x, g.y, g.w, g.h, 0, 0, g.w, g.h);
+  thinOutline(ctx, g.w, g.h);
   const url = cv.toDataURL();
   urlCache.set(name, url);
   return url;
