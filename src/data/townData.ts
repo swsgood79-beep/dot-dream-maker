@@ -4,10 +4,10 @@ import type { SpStep } from './specialDays';
 /**
  * 🗺️ 주말 나들이 (v0.38) — 한 달에 한 번, 아이와 동네를 돌아다니며 사람을 만나고 작은 일을 겪는다.
  * 오전 · 오후 · 저녁 세 번 장소를 고르고, 장소마다 만남(동네 사람) 또는 작은 사건·놀이가 생긴다.
- * 글 안의 {name} {friend} {rival} {teacher} {crush} {mentor} 는 이름으로, '{x}이(가)'처럼 쓰면 받침에 맞춰 조사가 붙는다.
+ * 글 안의 {name} {friend} {rival} {teacher} {mentor} 는 이름으로, '{x}이(가)'처럼 쓰면 받침에 맞춰 조사가 붙는다.
  */
 
-export type NpcId = 'FRIEND' | 'RIVAL' | 'TEACHER' | 'GRANNY' | 'CRUSH' | 'MENTOR';
+export type NpcId = 'FRIEND' | 'RIVAL' | 'TEACHER' | 'GRANNY' | 'MENTOR';
 
 export interface Npc {
   id: NpcId;
@@ -27,7 +27,6 @@ export const NPCS: Record<NpcId, Npc> = {
   RIVAL: { id: 'RIVAL', role: '라이벌', emoji: '😤', minAge: 9, homes: ['SCHOOL', 'PCROOM'], tiers: ['신경 쓰이는 애', '라이벌', '최고의 라이벌'], perk50: '라이벌이자 친구 — 대회 점수 +5%', perk100: '서로를 키운 사이 (지력·체력 +4)' },
   TEACHER: { id: 'TEACHER', role: '선생님', emoji: '🧑‍🏫', minAge: 8, homes: ['SCHOOL', 'LIBRARY'], tiers: ['담임 선생님', '믿어 주는 선생님', '인생의 은사'], perk50: '선생님의 책 선물 (지력 +5)', perk100: '은사님의 편지 (자존감 +6)' },
   GRANNY: { id: 'GRANNY', role: '빵집 할머니', emoji: '👵', minAge: 8, homes: ['MARKET'], tiers: ['빵집 할머니', '단골 손님', '손주 같은 아이'], perk50: '비밀 레시피 (기술 +4)', perk100: '할머니의 용돈 (200G)' },
-  CRUSH: { id: 'CRUSH', role: '좋아하는 아이', emoji: '💘', minAge: 13, homes: ['LIBRARY', 'DOWNTOWN'], tiers: ['자꾸 눈이 가는 애', '썸', '첫사랑'], perk50: '첫 데이트 (매력 +4)', perk100: '서로의 첫사랑 (자존감 +6)' },
   MENTOR: { id: 'MENTOR', role: '대학생 선배', emoji: '🧑‍🎓', minAge: 15, homes: ['RIVER', 'CAMPUS'], tiers: ['동네 대학생', '고민 상담 선배', '인생 선배'], perk50: '캠퍼스 구경 (💡+6)', perk100: '선배의 응원 (자존감 +5, 스트레스 -10)' },
 };
 
@@ -132,18 +131,6 @@ export const TOWN_ENCS: TownEnc[] = [
     choices: [C('집에서 같이 만들어 보기', { TEC: 4 }, '처음 만든 소보로가 제법 그럴듯했다!')] },
   { id: 'GR_100', loc: 'MARKET', npc: 'GRANNY', milestone: 100, emoji: '🧧', title: '할머니의 용돈', text: '할머니가 꼭 쥐여 주신 봉투. "맛있는 거 사 먹어. 우리 손주."',
     choices: [C('"할머니 오래오래 건강하세요!"', { gold: 200, MOR: 2 }, '할머니가 {name}을(를) 꼭 안아 주셨다.')] },
-
-  // ───────── 좋아하는 아이 ─────────
-  { id: 'CR_0', loc: 'ANY_HOME', npc: 'CRUSH', tier: 0, emoji: '💘', title: '{crush}', text: '자꾸 눈이 마주치는 아이가 있다. 이름은 {crush}. {name}의 귀가 빨개졌다.',
-    choices: [C('"말 걸어 봐!" 슬쩍 부추기기', { CHA: 2, stress: 2 }, '"...안녕." 그 한마디에 하루 종일 싱글벙글.', 9), C('모른 척 해 주기', { INT: 1 }, '{name}이(가) 책만 뚫어지게 봤다. 한 장도 안 넘기고.', 3)] },
-  { id: 'CR_1', loc: 'ANY_HOME', npc: 'CRUSH', tier: 1, emoji: '💘', title: '{crush}', text: '{crush}: "어? {name}! 여기 자주 와?"',
-    choices: [C('"같이 떡볶이 먹을래?" 용돈 쥐여 주기', { stress: -4, gold: -30 }, '둘이 떡볶이를 먹으며 한참 수다를 떨었다.', 10), C('멀리서 지켜보기', { CHA: 1 }, '"응! 자주 와!" (사실 처음 옴)', 6)] },
-  { id: 'CR_2', loc: 'ANY_HOME', npc: 'CRUSH', tier: 2, emoji: '💘', title: '{crush}', text: '{crush}와(과) 나란히 걷는 길. 심장 소리가 여기까지 들린다.',
-    choices: [C('용기 내라고 응원하기', { selfEsteem: 4, stress: 2 }, '{name}: "...나 너 좋아해." {crush}: "...나도."', 10), C('천천히 가도 괜찮다고 하기', { stress: -5 }, '그냥 같이 걷는 것만으로도 좋았다.', 5)] },
-  { id: 'CR_50', loc: 'ANY_HOME', npc: 'CRUSH', milestone: 50, emoji: '🎡', title: '첫 데이트', text: '{name}: "엄마 아빠... 나 주말에 {crush}랑 놀이공원 가도 돼?"',
-    choices: [C('옷도 골라 주고 보내 준다', { CHA: 4, gold: -50 }, '돌아온 {name}이(가) 하루 종일 실실 웃었다.')] },
-  { id: 'CR_100', loc: 'ANY_HOME', npc: 'CRUSH', milestone: 100, emoji: '💌', title: '서로의 첫사랑', text: '{crush}에게서 손편지가 왔다. {name}이(가) 몰래 서랍 깊숙이 넣었다.',
-    choices: [C('모른 척, 흐뭇하게', { selfEsteem: 6 }, '첫사랑은 오래오래 기억에 남는다.')] },
 
   // ───────── 대학생 선배 ─────────
   { id: 'MT_0', loc: 'ANY_HOME', npc: 'MENTOR', tier: 0, emoji: '🧑‍🎓', title: '{mentor} 선배', text: '조깅하던 대학생 {mentor}이(가) 말을 건다. "너 달리는 자세 좋은데?"',

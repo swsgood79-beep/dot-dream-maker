@@ -50,9 +50,6 @@ PEOPLE = [
      "3 rows x 2 columns = 6 full-body sprites of a RIVAL classmate at three ages. Row 1 = child age 8-11, Row 2 = teenager age 12-16 in school uniform, "
      "Row 3 = young adult age 17-19. Left column = boy, right column = girl. Confident smirk, arms crossed or hand on hip, neat smart-looking style, "
      "black or dark navy hair."),
-    ('town-people-crush.png', '좋아하는 아이 (2행 x 2열)', '첫사랑. 1행 청소년, 2행 청년 / 왼쪽 남자, 오른쪽 여자. 수줍게 웃는 얼굴.',
-     "2 rows x 2 columns = 4 full-body sprites of a gentle CRUSH (first love). Row 1 = teenager age 13-16 in school uniform, Row 2 = young adult age 17-19 in "
-     "soft casual clothes. Left column = boy, right column = girl. Shy kind smile, slightly blushing, holding a book or a drink."),
     ('town-people-adults.png', '동네 어른들 (1행 x 4열)', '왼쪽부터: 담임 선생님(여), 빵집 할머니, 대학생 선배(남), 대학생 선배(여).',
      "1 row x 4 columns = 4 full-body sprites of neighborhood adults: (1) a kind female elementary school teacher with glasses, cardigan and a book, "
      "(2) a warm smiling grandmother baker with an apron, white hair bun and a tray of bread, (3) a friendly male university student in a hoodie with a backpack, "
@@ -89,12 +86,12 @@ ws.sheet_view.showGridLines = False
 ws.column_dimensions['A'].width = 4
 ws.column_dimensions['B'].width = 110
 lines = [
-    ('🗺️ 주말 나들이 그림 요청서 (총 7장)', 't'), ('', None),
+    ('🗺️ 주말 나들이 그림 요청서 (총 6장)', 't'), ('', None),
     ('무엇에 쓰나요?', 'h'),
     ('v0.38 "주말 나들이"는 지금 동네 지도·장소·동네 사람들이 이모지와 색으로만 그려져 있습니다. 이 그림들이 들어오면 일러스트로 바뀝니다.', None),
     ('• 동네 지도 1장 — 나들이 첫 화면 (장소 8곳 위치가 정해져 있어 프롬프트대로 배치)', None),
     ('• 장소 배경 2장 (한 장에 4곳) — 장소에 들어가면 위쪽 장면. 가운데 아래는 아이와 동네 사람이 서므로 비워 둠', None),
-    ('• 동네 사람 4장 — 단짝·라이벌(나이별)·좋아하는 아이·어른들. 아이 옆에 서서 이야기하는 모습', None),
+    ('• 동네 사람 3장 — 단짝·라이벌(나이별)·어른들. 아이 옆에 서서 이야기하는 모습', None),
     ('', None),
     ('만드는 순서', 'h'),
     ('1. "요청 목록"에서 한 줄씩. [프롬프트]를 통째로 붙여 넣습니다.', None),

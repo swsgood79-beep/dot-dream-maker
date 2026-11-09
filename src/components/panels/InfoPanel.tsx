@@ -257,7 +257,7 @@ function PeopleBox() {
         {met.map((id) => {
           const p = person(game, id);
           const n = NPCS[id];
-          const label = id === 'FRIEND' ? vars.friend : id === 'RIVAL' ? vars.rival : id === 'TEACHER' ? `${vars.teacher} 선생님` : id === 'GRANNY' ? '빵집 할머니' : id === 'CRUSH' ? vars.crush : `${vars.mentor} 선배`;
+          const label = id === 'FRIEND' ? vars.friend : id === 'RIVAL' ? vars.rival : id === 'TEACHER' ? `${vars.teacher} 선생님` : id === 'GRANNY' ? '빵집 할머니' : `${vars.mentor} 선배`;
           return (
             <div key={id} className="flex items-center gap-1.5">
               <span className="w-24 shrink-0 truncate text-[11px] font-bold">

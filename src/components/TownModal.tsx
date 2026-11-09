@@ -20,10 +20,9 @@ const PLACE_BG: Partial<Record<LocId, string>> = Object.fromEntries(
 const PEOPLE_ART: Record<string, string> = Object.fromEntries(
   Object.entries(import.meta.glob('../assets/people/*.webp', { eager: true, import: 'default' }) as Record<string, string>).map(([k, v]) => [k.split('/').pop()!.replace('.webp', ''), v]),
 );
-/** 단짝·라이벌은 아이와 같은 성별, 좋아하는 아이는 반대 성별, 나이대는 아이와 같게 */
+/** 단짝·라이벌은 아이와 같은 성별·같은 나이대 */
 function npcArt(id: NpcId, stage: string, gender: 'SON' | 'DAUGHTER'): string | undefined {
-  const g = id === 'CRUSH' ? (gender === 'SON' ? 'DAUGHTER' : 'SON') : gender;
-  return PEOPLE_ART[`${id}-${stage}-${g}`] ?? PEOPLE_ART[`${id}-ADULT`];
+  return PEOPLE_ART[`${id}-${stage}-${gender}`] ?? PEOPLE_ART[`${id}-ADULT`];
 }
 
 const TIMES = [
@@ -221,7 +220,6 @@ function npcLabel(id: NpcId, vars: Record<string, string>) {
   if (id === 'RIVAL') return vars.rival;
   if (id === 'TEACHER') return `${vars.teacher} 선생님`;
   if (id === 'GRANNY') return '빵집 할머니';
-  if (id === 'CRUSH') return vars.crush;
   return `${vars.mentor} 선배`;
 }
 

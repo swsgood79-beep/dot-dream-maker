@@ -10,7 +10,6 @@ export interface Person {
 }
 
 const RIVALS = { SON: ['태오', '준서', '건우', '현우'], DAUGHTER: ['다은', '지민', '소율', '예린'] };
-const CRUSHES = { SON: ['하은', '유나', '서윤', '채아'], DAUGHTER: ['은우', '서준', '이안', '도현'] };
 const MENTORS = ['지환', '수빈', '연우', '민재'];
 const TEACHERS = ['김', '이', '박', '최', '정'];
 
@@ -29,7 +28,6 @@ export function townNames(s: Pick<SaveState, 'childName' | 'gender' | 'friend'>)
     name: s.childName,
     friend: s.friend ?? '서연',
     rival: pick(RIVALS[s.gender], 1),
-    crush: pick(CRUSHES[s.gender], 2),
     mentor: pick(MENTORS, 3),
     teacher: TEACHERS[h % TEACHERS.length],
   };
