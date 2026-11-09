@@ -17,6 +17,7 @@ import { RecModal } from './RecModal';
 import { ActingAlertModal } from './ActingAlertModal';
 import { UnlockModal } from './UnlockModal';
 import { NightModal } from './NightModal';
+import { TownModal } from './TownModal';
 import { SpecialDayModal } from './SpecialDayModal';
 import { HomeworkModal, LunchModal } from './ParentTouchModals';
 import { CONTESTS } from '../engine/simulation';
@@ -71,6 +72,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const [diaryOpen, setDiaryOpen] = useState(false);
   const [recOpen, setRecOpen] = useState(false);
   const [nightOpen, setNightOpen] = useState(false);
+  const [townOpen, setTownOpen] = useState(false);
   const [hwOpen, setHwOpen] = useState(false);
   const [lunchOpen, setLunchOpen] = useState(false);
   // 이번 달 대회 (도시락)
@@ -221,6 +223,11 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
         {/* 부모의 손길: 잠든 아이 · 숙제 · 도시락 (선택, 방 왼쪽 아래) */}
         {!playing && !placingId && !lastResult && (
           <div className="absolute bottom-2 left-2 z-10 flex flex-col items-start gap-1">
+            {!game.outingDone && (
+              <button onClick={() => { sfx('door'); setTownOpen(true); }} className="pop-in flex items-center gap-1 rounded border-2 border-ink bg-[#8cc56f] px-2 py-1 text-[11px] font-bold text-ink shadow-[2px_2px_0_rgba(0,0,0,.35)]">
+                <span className="animate-bounce">🗺️</span> 주말 나들이 가기
+              </button>
+            )}
             {contestThisMonth && !game.lunchbox && (
               <button onClick={() => { sfx('page'); setLunchOpen(true); }} className="pop-in flex items-center gap-1 rounded border-2 border-ink bg-[#fff1c2] px-2 py-1 text-[11px] font-bold text-ink shadow-[2px_2px_0_rgba(0,0,0,.35)]">
                 🍱 {CONTESTS[contestThisMonth].title} 도시락 싸 주기
@@ -350,6 +357,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
         />
       )}
       {recOpen && <RecModal onClose={() => setRecOpen(false)} />}
+      {townOpen && <TownModal onClose={() => setTownOpen(false)} />}
       {nightOpen && <NightModal onClose={() => setNightOpen(false)} />}
       {hwOpen && <HomeworkModal onClose={() => setHwOpen(false)} />}
       {lunchOpen && contestThisMonth && <LunchModal contest={contestThisMonth} onClose={() => setLunchOpen(false)} />}

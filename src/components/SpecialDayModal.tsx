@@ -118,7 +118,7 @@ export function SpecialDayModal({ id, onStart, onClose }: { id: string; onStart:
 /* ───────── 잡기 ───────── */
 type Item = { k: number; e: string; bad: boolean; x: number; y: number; vx: number; vy: number; ph: number };
 
-function CatchGame({ st, onDone }: { st: Extract<SpStep, { kind: 'catch' }>; onDone: (score: number, tier: 0 | 1 | 2) => void }) {
+export function CatchGame({ st, onDone }: { st: Extract<SpStep, { kind: 'catch' }>; onDone: (score: number, tier: 0 | 1 | 2) => void }) {
   const [items, setItems] = useState<Item[]>([]);
   const [score, setScore] = useState(0);
   const [left, setLeft] = useState(st.seconds);
@@ -213,7 +213,7 @@ function CatchGame({ st, onDone }: { st: Extract<SpStep, { kind: 'catch' }>; onD
 }
 
 /* ───────── 타이밍 ───────── */
-function TimingGame({ st, onDone }: { st: Extract<SpStep, { kind: 'timing' }>; onDone: (tier: 0 | 1 | 2) => void }) {
+export function TimingGame({ st, onDone }: { st: Extract<SpStep, { kind: 'timing' }>; onDone: (tier: 0 | 1 | 2) => void }) {
   const [round, setRound] = useState(0);
   const [pos, setPos] = useState(0);
   const [center, setCenter] = useState(() => 25 + Math.random() * 50);
@@ -284,7 +284,7 @@ function PickScene({ day, st, stage, gender }: { day: SpecialDay; st: Extract<Sp
   );
 }
 
-function PickButtons({ st, name, onDone }: { st: Extract<SpStep, { kind: 'pick' }>; name: string; onDone: (i: number) => void }) {
+export function PickButtons({ st, name, onDone }: { st: Extract<SpStep, { kind: 'pick' }>; name: string; onDone: (i: number) => void }) {
   // 뒤집힌 카드는 순서를 섞어 둔다 (어떤 봉투가 큰지 모르게)
   const order = useMemo(() => {
     const o = st.options.map((_, i) => i);
@@ -310,14 +310,14 @@ function PickButtons({ st, name, onDone }: { st: Extract<SpStep, { kind: 'pick' 
       {st.hidden ? (
         <div className="grid grid-cols-3 gap-2">
           {order.map((oi, slot) => (
-            <button key={slot} className={`pixel-btn flex h-20 flex-col items-center justify-center ${open === slot ? 'bg-gold' : open !== null ? 'bg-white opacity-50' : 'bg-[#e85a5a]'}`} onClick={() => choose(slot)}>
+            <button key={slot} className={`pixel-btn flex h-20 flex-col items-center justify-center ${open === slot ? 'bg-gold' : open !== null ? 'bg-white opacity-50' : st.back ? 'bg-[#8fd3ff]' : 'bg-[#e85a5a]'}`} onClick={() => choose(slot)}>
               {open === slot ? (
                 <span className="pop-in flex flex-col items-center">
                   <span className="text-3xl">{st.options[oi].emoji}</span>
                   <span className="text-xs font-bold">{st.options[oi].label}</span>
                 </span>
               ) : (
-                <span className="text-3xl">🧧</span>
+                <span className="text-3xl">{st.back ?? '🧧'}</span>
               )}
             </button>
           ))}

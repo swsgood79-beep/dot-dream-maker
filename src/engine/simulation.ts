@@ -1,4 +1,5 @@
 import { rollSpecialDay } from './specialDay';
+import { rivalBonus } from './town';
 import { COMBO_MAP, FURNITURE, FURNITURE_MAP } from '../data/furnitureData';
 import { ACTION_MAP, SCHEDULE_ACTIONS } from '../data/scheduleData';
 import { evaluateEnding } from '../data/endingData';
@@ -109,6 +110,10 @@ export interface SaveState extends GameState {
   pendingSpecial?: string | null;
   specialSeen?: string[]; // '이벤트ID:성장단계'
   lastSpecialAt?: number; // 마지막 특별한 하루의 monthIndex
+  // ── v0.38 주말 나들이·동네 인연
+  outingDone?: boolean; // 이번 달 나들이를 다녀왔는지
+  people?: Partial<Record<import('../data/townData').NpcId, import('./town').Person>>;
+  townRecent?: string[];
 }
 
 /** 게임 시작부터 센 달 수 (8세 1월 = 1) */
@@ -523,7 +528,7 @@ export const perfFactor = (perf: number) => 0.85 + Math.max(0, Math.min(1, perf)
 export function finishContest(s: SaveState, id: ContestId, factor: number, events: string[] = [], age = s.age, lunch = s.lunchbox): ContestResult {
   const def = CONTESTS[id];
   const threshold = contestThreshold(age);
-  const score = Math.round(s.stats[def.stat] * factor * lunchBonus(lunch, def.stat)); // 맞는 도시락이면 +8%
+  const score = Math.round(s.stats[def.stat] * factor * lunchBonus(lunch, def.stat) * rivalBonus(s)); // 맞는 도시락이면 +8%
   const win = score >= threshold;
   const rank = win ? 1 : score >= threshold * 0.85 ? 2 : score >= threshold * 0.7 ? 3 : 0;
   const rewards: string[] = [];
@@ -650,6 +655,7 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
   s.talkedThisMonth = false;
   s.talkKind = null;
   s.nightVisited = false;
+  s.outingDone = false;
   s.lunchbox = null;
   s.allowanceThisMonth = false;
   s.pettedThisMonth = false;

@@ -11,6 +11,7 @@ import { canPlace, findFreeSpot } from '../engine/room';
 import { applyEffect, recordStyle, resolveParentingEvent, type EventOutcome } from '../engine/parenting';
 import { REC_CHOICES, bumpAttitude, dominantAttitude } from '../engine/psyche';
 import { visitNight, type HomeworkWay, type Lunch, type NightTouch } from '../engine/parentTouch';
+import { resolveEncounter, type TownOutcome } from '../engine/town';
 import { resolveSpecial, type SpecialPlay } from '../engine/specialDay';
 import { resolveReport } from '../engine/school';
 import { readDiary as readDiaryEngine, respondCaught as respondCaughtEngine, skipDiary as skipDiaryEngine } from '../engine/diary';
@@ -91,6 +92,8 @@ interface GameStore {
   visitNight: (kind: NightTouch) => { delta: Effect; talk: string | null } | null;
   helpHomework: (way: HomeworkWay, pick?: number) => { delta: Effect; reply: string; correct?: boolean } | null;
   packLunch: (kind: Lunch) => Effect | null;
+  townResolve: (encId: string, pick: number) => TownOutcome | null;
+  finishOuting: () => void;
   playSpecial: (p: SpecialPlay) => { text: string; title: string; delta: Effect; photo: boolean } | null;
   clearNew: (ids: string[]) => void;
   finishEnding: () => void;
@@ -392,6 +395,18 @@ export const useGameStore = create<GameStore>()(
           });
           return out;
         },
+        townResolve: (encId, pick) => {
+          let out: TownOutcome | null = null;
+          mutate((g) => {
+            out = resolveEncounter(g, encId, pick);
+            if (!out) return false;
+          });
+          return out;
+        },
+        finishOuting: () =>
+          void mutate((g) => {
+            g.outingDone = true;
+          }),
         playSpecial: (p) => {
           let out: { text: string; title: string; delta: Effect; photo: boolean } | null = null;
           mutate((g) => {

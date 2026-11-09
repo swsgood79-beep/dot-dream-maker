@@ -2,6 +2,8 @@ import { useGameStore } from '../../store/useGameStore';
 import { Sprite } from '../Sprite';
 import { frameName } from '../../render/spriteCharacter';
 import { APT_KEYS, STAT_KEYS } from '../../engine/simulation';
+import { NPCS, type NpcId } from '../../data/townData';
+import { person, relTier, townNames } from '../../engine/town';
 import { displayStage } from '../../engine/displayStage';
 import { APT_META, Bar, STAT_META } from '../ui';
 import { Icon } from '../Icon';
@@ -87,6 +89,7 @@ export function InfoPanel() {
           <p className="text-[10px] text-accent">아이의 꿈을 엔딩으로 이뤄 주면 특별한 편지를 받아요</p>
         </div>
       )}
+      <PeopleBox />
       {temper && (
         <>
           <p className="mb-1 font-bold">아이의 기질</p>
@@ -237,5 +240,36 @@ export function InfoPanel() {
         업적: 체육대회 우승 {game.actionCounts.WIN_SPORTS ?? 0} · 예술제 입상 {game.actionCounts.WIN_ARTFEST ?? 0} · 기말 1등 {game.actionCounts.WIN_EXAM ?? 0}
       </p>
     </div>
+  );
+}
+
+
+/** 🗺️ 주말 나들이에서 만난 동네 사람들과의 인연 */
+function PeopleBox() {
+  const game = useGameStore((s) => s.game)!;
+  const vars = townNames(game);
+  const met = (Object.keys(NPCS) as NpcId[]).filter((id) => person(game, id).met);
+  return (
+    <>
+      <p className="mb-1 font-bold">동네 인연</p>
+      <div className="mb-3 grid gap-1 rounded border-2 border-ink bg-white p-2">
+        {met.length === 0 && <p className="text-[10px] opacity-70">🗺️ 주말 나들이에서 동네 사람들을 만나 보세요.</p>}
+        {met.map((id) => {
+          const p = person(game, id);
+          const n = NPCS[id];
+          const label = id === 'FRIEND' ? vars.friend : id === 'RIVAL' ? vars.rival : id === 'TEACHER' ? `${vars.teacher} 선생님` : id === 'GRANNY' ? '빵집 할머니' : id === 'CRUSH' ? vars.crush : `${vars.mentor} 선배`;
+          return (
+            <div key={id} className="flex items-center gap-1.5">
+              <span className="w-24 shrink-0 truncate text-[11px] font-bold">
+                {n.emoji} {label}
+              </span>
+              <span className="w-16 shrink-0 text-[10px] text-wood">{n.tiers[relTier(p.rel)]}</span>
+              <Bar value={p.rel} max={100} color="#ff8fb1" />
+              {(p.got ?? []).length > 0 && <span className="text-[10px]">🎁{p.got!.length}</span>}
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }

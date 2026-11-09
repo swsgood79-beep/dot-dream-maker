@@ -20,7 +20,7 @@ export interface SpOption {
 export type SpStep =
   | { kind: 'catch'; prompt: string; items: string[]; bad?: string[]; seconds: number; goal: number; motion: 'fall' | 'streak' | 'float' }
   | { kind: 'timing'; prompt: string; icon: string; rounds: number; speed: number; zone: number; hitText: string; missText: string }
-  | { kind: 'pick'; prompt: string; options: SpOption[]; hidden?: boolean }
+  | { kind: 'pick'; prompt: string; options: SpOption[]; hidden?: boolean; back?: string }
   | { kind: 'build'; prompt: string; slots: { label: string; options: SpOption[] }[] };
 
 export interface SpResult {
