@@ -5,6 +5,7 @@ import { displayStage } from '../engine/displayStage';
 import { availableLocs, person, pickEncounter, relTier, townNames, townText, type TownOutcome } from '../engine/town';
 import { frameName } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
+import atlas from '../render/characterAtlas.json';
 import townMapUrl from '../assets/town-map.webp';
 import { CatchGame, PickButtons, TimingGame } from './SpecialDayModal';
 import { Sprite } from './Sprite';
@@ -14,6 +15,16 @@ import { EffectChips, PixelButton } from './ui';
 const PLACE_BG: Partial<Record<LocId, string>> = Object.fromEntries(
   Object.entries(import.meta.glob('../assets/town/*.webp', { eager: true, import: 'default' }) as Record<string, string>).map(([k, v]) => [k.split('/').pop()!.replace('.webp', ''), v]),
 );
+
+/** 동네 사람 도트 그림 (src/assets/people/{NPC}-{STAGE}-{SON|DAUGHTER}.webp) */
+const PEOPLE_ART: Record<string, string> = Object.fromEntries(
+  Object.entries(import.meta.glob('../assets/people/*.webp', { eager: true, import: 'default' }) as Record<string, string>).map(([k, v]) => [k.split('/').pop()!.replace('.webp', ''), v]),
+);
+/** 단짝·라이벌은 아이와 같은 성별, 좋아하는 아이는 반대 성별, 나이대는 아이와 같게 */
+function npcArt(id: NpcId, stage: string, gender: 'SON' | 'DAUGHTER'): string | undefined {
+  const g = id === 'CRUSH' ? (gender === 'SON' ? 'DAUGHTER' : 'SON') : gender;
+  return PEOPLE_ART[`${id}-${stage}-${g}`] ?? PEOPLE_ART[`${id}-ADULT`];
+}
 
 const TIMES = [
   { label: '오전', emoji: '🌤️', tint: 'rgba(255,250,220,0)' },
@@ -36,6 +47,7 @@ export function TownModal({ onClose }: { onClose: () => void }) {
   const vars = useMemo(() => townNames(game), [game]);
   const T = (t: string) => townText(t, vars);
   const stage = displayStage(game);
+  const childH = ((atlas as Record<string, { h: number }>)[frameName(stage, game.gender, 'stand')]?.h ?? 60) * 1.6;
   const open = availableLocs(game).map((l) => l.id);
   const visited = log.map((l) => l.loc);
   const time = TIMES[Math.min(slot, 2)];
@@ -123,9 +135,20 @@ export function TownModal({ onClose }: { onClose: () => void }) {
                 <div className="absolute inset-x-0 bottom-3 flex items-end justify-center gap-6">
                   <Sprite name={frameName(stage, game.gender, view === 'res' && out && (out.rel?.tierUp || out.rel?.perk) ? 'cheer' : 'stand')} scale={1.6} />
                   {npc ? (
-                    <div className="flex flex-col items-center">
-                      <span className="sp-bob flex h-16 w-16 items-center justify-center rounded-full border-3 border-ink bg-white text-4xl shadow-[0_3px_0_rgba(0,0,0,.3)]">{npc.emoji}</span>
-                      <span className="mt-1 rounded border-2 border-ink bg-gold px-1.5 text-[10px] font-bold">{npcLabel(enc.e.npc!, vars)}</span>
+                    <div className={`flex flex-col items-center ${npcArt(enc.e.npc!, stage, game.gender) ? 'relative' : ''}`}>
+                      {npcArt(enc.e.npc!, stage, game.gender) ? (
+                        <img
+                          src={npcArt(enc.e.npc!, stage, game.gender)}
+                          alt=""
+                          draggable={false}
+                          className="drop-shadow-[0_2px_0_rgba(0,0,0,.25)]"
+                          // 아이 쪽(왼쪽)을 보도록 좌우 반전, 키는 같은 나이의 아이와 비슷하게
+                          style={{ height: childH, transform: 'scaleX(-1)' }}
+                        />
+                      ) : (
+                        <span className="sp-bob flex h-16 w-16 items-center justify-center rounded-full border-3 border-ink bg-white text-4xl shadow-[0_3px_0_rgba(0,0,0,.3)]">{npc.emoji}</span>
+                      )}
+                      <span className={`rounded border-2 border-ink bg-gold px-1.5 text-[10px] font-bold whitespace-nowrap ${npcArt(enc.e.npc!, stage, game.gender) ? 'absolute -top-6' : 'mt-1'}`}>{npcLabel(enc.e.npc!, vars)}</span>
                     </div>
                   ) : (
                     <span className="sp-bob text-5xl drop-shadow-[0_3px_0_rgba(0,0,0,.3)]">{enc.e.emoji}</span>
