@@ -5,6 +5,7 @@ import { displayStage } from '../engine/displayStage';
 import { availableLocs, person, pickEncounter, relTier, townNames, townText, type TownOutcome } from '../engine/town';
 import { frameName } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
+import townMapUrl from '../assets/town-map.webp';
 import { CatchGame, PickButtons, TimingGame } from './SpecialDayModal';
 import { Sprite } from './Sprite';
 import { EffectChips, PixelButton } from './ui';
@@ -218,33 +219,11 @@ function RelLine({ o, vars }: { o: TownOutcome; vars: Record<string, string> }) 
   );
 }
 
-/** 동네 지도: 길로 이어진 장소 아이콘. 아직 못 가는 곳은 잠금 */
+/** 동네 지도: 그림 위 건물을 누르면 그곳으로. 아직 못 가는 곳은 어둡게 잠금 */
 function TownMap({ open, visited, onGo, game, tint }: { open: LocId[]; visited: LocId[]; onGo: (l: LocId) => void; game: Parameters<typeof person>[0]; tint: string }) {
-  const roads: [LocId, LocId][] = [
-    ['PARK', 'SCHOOL'], ['SCHOOL', 'MARKET'], ['PARK', 'RIVER'], ['SCHOOL', 'LIBRARY'], ['LIBRARY', 'MARKET'],
-    ['MARKET', 'DOWNTOWN'], ['LIBRARY', 'PCROOM'], ['RIVER', 'PCROOM'], ['PCROOM', 'DOWNTOWN'], ['PARK', 'CAMPUS'], ['CAMPUS', 'RIVER'],
-  ];
   return (
-    <div className="relative h-72 overflow-hidden" style={{ background: 'radial-gradient(ellipse at 30% 30%, #b8e39b, #8cc56f 70%)' }}>
-      {/* 강 */}
-      <div className="absolute -bottom-6 -left-10 h-24 w-[130%] -rotate-6 bg-[#7cc4ea]/80" />
-      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-        {roads.map(([a, b], i) => {
-          const A = LOC_MAP[a];
-          const B = LOC_MAP[b];
-          return <line key={i} x1={A.x} y1={A.y} x2={B.x} y2={B.y} stroke="#e8d3a3" strokeWidth="3.2" strokeLinecap="round" />;
-        })}
-        {roads.map(([a, b], i) => {
-          const A = LOC_MAP[a];
-          const B = LOC_MAP[b];
-          return <line key={`d${i}`} x1={A.x} y1={A.y} x2={B.x} y2={B.y} stroke="#cdb27a" strokeWidth="0.5" strokeDasharray="1.5 1.5" />;
-        })}
-      </svg>
-      {['🌳', '🌲', '🏠', '🌳', '🏡', '🌷'].map((t, i) => (
-        <span key={i} className="absolute text-lg opacity-70" style={{ left: `${[6, 40, 70, 90, 36, 66][i]}%`, top: `${[8, 34, 14, 52, 62, 90][i]}%` }}>
-          {t}
-        </span>
-      ))}
+    <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#8cc56f]">
+      <img src={townMapUrl} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
       <div className="pointer-events-none absolute inset-0" style={{ background: tint }} />
       {LOCS.map((l) => {
         const ok = open.includes(l.id);
@@ -255,26 +234,27 @@ function TownMap({ open, visited, onGo, game, tint }: { open: LocId[]; visited: 
             key={l.id}
             disabled={!ok || been}
             onClick={() => onGo(l.id)}
-            className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center disabled:cursor-not-allowed"
+            className="group absolute flex h-[24%] w-[26%] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-end disabled:cursor-not-allowed"
             style={{ left: `${l.x}%`, top: `${l.y}%` }}
           >
+            {/* 잠긴 곳·다녀온 곳은 건물을 어둡게 */}
+            {(!ok || been) && <span className={`absolute inset-[6%] rounded-xl ${ok ? 'bg-white/35' : 'bg-[#1d1a2a]/55'}`} />}
+            {ok && !been && <span className="absolute inset-[4%] rounded-xl border-2 border-dashed border-white/0 transition group-hover:border-white/90 group-active:bg-white/20" />}
+            {ok && people.length > 0 && (
+              <span className="absolute top-0 right-0 flex rounded-full border-2 border-ink bg-white px-0.5 text-xs leading-tight">
+                {people.map((id) => (
+                  <span key={id}>{NPCS[id].emoji}</span>
+                ))}
+              </span>
+            )}
+            {!ok && <span className="absolute top-[26%] text-xl drop-shadow-[0_2px_0_rgba(0,0,0,.5)]">🔒</span>}
             <span
-              className={`relative flex h-12 w-12 items-center justify-center rounded-full border-3 border-ink text-2xl shadow-[0_3px_0_rgba(0,0,0,.35)] ${ok ? (been ? 'bg-[#d9d2c4] opacity-70' : 'sp-bob bg-white') : 'bg-[#9a9a9a] grayscale'}`}
+              className={`relative mb-[-6%] rounded-md border-2 border-ink px-1.5 py-px text-[10px] font-bold whitespace-nowrap shadow-[0_2px_0_rgba(0,0,0,.35)] ${
+                ok ? (been ? 'bg-[#d9d2c4] text-ink/60' : 'sp-bob bg-white text-ink') : 'bg-[#3a3550] text-white/80'
+              }`}
               style={ok && !been ? { animationDelay: `${(l.x + l.y) / 60}s` } : undefined}
             >
-              {ok ? l.emoji : '🔒'}
-              {been && <span className="absolute -right-1 -bottom-1 text-sm">✅</span>}
-              {ok && people.length > 0 && (
-                <span className="absolute -top-2 -right-2 flex">
-                  {people.map((id) => (
-                    <span key={id} className="-ml-1 text-sm drop-shadow-[0_1px_0_#fff]">
-                      {NPCS[id].emoji}
-                    </span>
-                  ))}
-                </span>
-              )}
-            </span>
-            <span className={`mt-0.5 rounded px-1 text-[10px] font-bold whitespace-nowrap ${ok ? 'bg-white/90 text-ink' : 'bg-black/40 text-white'}`}>
+              {been ? '✅ ' : ok ? `${l.emoji} ` : ''}
               {ok ? l.name : `${l.minAge}세부터`}
             </span>
           </button>

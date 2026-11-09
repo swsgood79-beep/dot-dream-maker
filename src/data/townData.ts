@@ -38,7 +38,7 @@ export interface Loc {
   name: string;
   emoji: string;
   minAge: number;
-  /** 지도 위치 (%) */
+  /** 지도 그림(town-map) 위 건물 가운데 위치 (%) */
   x: number;
   y: number;
   sky: [string, string];
@@ -46,14 +46,14 @@ export interface Loc {
 }
 
 export const LOCS: Loc[] = [
-  { id: 'PARK', name: '놀이터 공원', emoji: '🛝', minAge: 8, x: 20, y: 30, sky: ['#bfe6ff', '#c9efc0'], props: ['🌳', '🛝', '🌼'] },
-  { id: 'SCHOOL', name: '학교 운동장', emoji: '🏫', minAge: 8, x: 52, y: 18, sky: ['#cfe8ff', '#e9d9b8'], props: ['🏫', '⚽', '🚩'] },
-  { id: 'MARKET', name: '동네 상가', emoji: '🥐', minAge: 8, x: 78, y: 36, sky: ['#ffe8c9', '#f3d3a8'], props: ['🥐', '🏪', '🎈'] },
-  { id: 'RIVER', name: '강변 산책로', emoji: '🌊', minAge: 8, x: 30, y: 74, sky: ['#bfe2ff', '#9fd0e8'], props: ['🌊', '🚲', '🐟'] },
-  { id: 'LIBRARY', name: '구립 도서관', emoji: '📚', minAge: 10, x: 58, y: 52, sky: ['#f4ecdc', '#e3d3b5'], props: ['📚', '🪴', '🕰️'] },
-  { id: 'DOWNTOWN', name: '번화가', emoji: '🛍️', minAge: 13, x: 82, y: 70, sky: ['#ffd1e6', '#c9b8ff'], props: ['🛍️', '🎤', '🧋'] },
-  { id: 'PCROOM', name: 'PC방·노래방', emoji: '🎧', minAge: 13, x: 56, y: 84, sky: ['#271a4a', '#4a2e7a'], props: ['🖥️', '🎤', '🍜'] },
-  { id: 'CAMPUS', name: '대학가', emoji: '🎓', minAge: 17, x: 14, y: 54, sky: ['#d9f0dc', '#f6efd9'], props: ['🎓', '☕', '🌳'] },
+  { id: 'PARK', name: '놀이터 공원', emoji: '🛝', minAge: 8, x: 15, y: 17, sky: ['#bfe6ff', '#c9efc0'], props: ['🌳', '🛝', '🌼'] },
+  { id: 'SCHOOL', name: '학교 운동장', emoji: '🏫', minAge: 8, x: 52, y: 13, sky: ['#cfe8ff', '#e9d9b8'], props: ['🏫', '⚽', '🚩'] },
+  { id: 'MARKET', name: '동네 상가', emoji: '🥐', minAge: 8, x: 84, y: 28, sky: ['#ffe8c9', '#f3d3a8'], props: ['🥐', '🏪', '🎈'] },
+  { id: 'RIVER', name: '강변 산책로', emoji: '🌊', minAge: 8, x: 17, y: 81, sky: ['#bfe2ff', '#9fd0e8'], props: ['🌊', '🚲', '🐟'] },
+  { id: 'LIBRARY', name: '구립 도서관', emoji: '📚', minAge: 10, x: 53, y: 46, sky: ['#f4ecdc', '#e3d3b5'], props: ['📚', '🪴', '🕰️'] },
+  { id: 'DOWNTOWN', name: '번화가', emoji: '🛍️', minAge: 13, x: 85, y: 68, sky: ['#ffd1e6', '#c9b8ff'], props: ['🛍️', '🎤', '🧋'] },
+  { id: 'PCROOM', name: 'PC방·노래방', emoji: '🎧', minAge: 13, x: 57, y: 78, sky: ['#271a4a', '#4a2e7a'], props: ['🖥️', '🎤', '🍜'] },
+  { id: 'CAMPUS', name: '대학가', emoji: '🎓', minAge: 17, x: 17, y: 47, sky: ['#d9f0dc', '#f6efd9'], props: ['🎓', '☕', '🌳'] },
 ];
 
 export const LOC_MAP: Record<LocId, Loc> = Object.fromEntries(LOCS.map((l) => [l.id, l])) as Record<LocId, Loc>;
