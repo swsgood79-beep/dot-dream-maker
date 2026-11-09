@@ -10,6 +10,11 @@ import { CatchGame, PickButtons, TimingGame } from './SpecialDayModal';
 import { Sprite } from './Sprite';
 import { EffectChips, PixelButton } from './ui';
 
+/** 장소 배경 일러스트 (src/assets/town/{장소}.webp) */
+const PLACE_BG: Partial<Record<LocId, string>> = Object.fromEntries(
+  Object.entries(import.meta.glob('../assets/town/*.webp', { eager: true, import: 'default' }) as Record<string, string>).map(([k, v]) => [k.split('/').pop()!.replace('.webp', ''), v]),
+);
+
 const TIMES = [
   { label: '오전', emoji: '🌤️', tint: 'rgba(255,250,220,0)' },
   { label: '오후', emoji: '☀️', tint: 'rgba(255,200,120,.12)' },
@@ -101,12 +106,16 @@ export function TownModal({ onClose }: { onClose: () => void }) {
         {(view === 'enc' || view === 'res') && enc && loc && (
           <>
             <div className="relative h-56 overflow-hidden" style={{ background: `linear-gradient(${loc.sky[0]}, ${loc.sky[1]})` }}>
+              {PLACE_BG[loc.id] ? (
+                <img src={PLACE_BG[loc.id]} alt="" className="absolute inset-0 h-full w-full object-cover object-bottom" draggable={false} />
+              ) : (
+                loc.props.map((p, i) => (
+                  <span key={i} className="sp-float absolute text-3xl opacity-80" style={{ left: `${6 + i * 36}%`, top: `${10 + (i % 2) * 12}%`, animationDelay: `${i * 0.8}s` }}>
+                    {p}
+                  </span>
+                ))
+              )}
               <div className="pointer-events-none absolute inset-0" style={{ background: time.tint }} />
-              {loc.props.map((p, i) => (
-                <span key={i} className="sp-float absolute text-3xl opacity-80" style={{ left: `${6 + i * 36}%`, top: `${10 + (i % 2) * 12}%`, animationDelay: `${i * 0.8}s` }}>
-                  {p}
-                </span>
-              ))}
               <span className="absolute top-2 left-2 rounded-full border-2 border-ink bg-white px-2 py-0.5 text-[10px] font-bold">
                 📍 {loc.name}
               </span>
