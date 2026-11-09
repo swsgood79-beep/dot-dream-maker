@@ -47,3 +47,21 @@ describe('특별한 하루', () => {
     expect(new Set(s.specialSeen).size).toBe(s.specialSeen!.length);
   });
 });
+
+import { SCHEDULE_ACTIONS } from '../data/scheduleData';
+import { sceneBeats } from '../data/activityScenes';
+import type { WeekResult } from '../engine/simulation';
+
+describe('스케줄 장면 대사', () => {
+  it('바깥 활동은 모두 그 장소 전용 대사가 있음 (공통 대사로 빠지지 않음)', () => {
+    for (const a of SCHEDULE_ACTIONS) {
+      if (a.id === 'REST_01') continue;
+      for (let week = 0; week < 4; week++) {
+        const w = { week, actionId: a.id, actionType: a.type, outcome: 'SUCCESS' } as unknown as WeekResult;
+        const mid = sceneBeats(w)[1];
+        expect(mid, a.id).not.toBe('열심히 하는 중!');
+        if (a.id === 'EDU_07' || a.id === 'EDU_05' || a.id === 'EDU_06') expect(mid, a.id).not.toMatch(/받아 적|문제를 풀|손을 번쩍/);
+      }
+    }
+  });
+});

@@ -38,8 +38,16 @@ export function writeDiary(s: SaveState, weeks: WeekResult[], contest: ContestRe
   const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
   const a = top ? ACTION_MAP[top] : null;
   if (a) {
-    if (a.type === 'EDUCATION') lines.push(stage === 'CHILD' ? `이번 달은 ${a.name}에 많이 갔다. 숙제가 산더미다.` : `${a.name}. 또 ${a.name}. 내 인생은 학원이다.`);
-    else if (a.type === 'PART_TIME') lines.push(`${a.name}을(를) 했다. 돈 버는 건 생각보다 힘들다.`);
+    // 학원 종류에 맞는 한마디 (체육·예술 학원에서 '숙제'를 말하면 어색하므로 따로)
+    const eduChild: Record<string, string> = {
+      EDU_05: '연습, 연습, 또 연습. 다리가 후들후들하다.',
+      EDU_06: '손에 물감이 지워지지 않는다. 그래도 재밌다.',
+      EDU_07: '온몸이 쑤신다. 그래도 발차기가 늘었다!',
+    };
+    if (a.type === 'EDUCATION') lines.push(stage === 'CHILD' ? `이번 달은 ${a.name}에 많이 갔다. ${eduChild[a.id] ?? '숙제가 산더미다.'}` : `${a.name}. 또 ${a.name}. 내 인생은 학원이다.`);
+    else if (a.id === 'JOB_01') lines.push(stage === 'CHILD' ? '집안일을 도왔다. 걸레질은 생각보다 힘들다!' : '집안일을 거들었다. 엄마 아빠는 이걸 매일 했구나.');
+    else if (a.type === 'PART_TIME') lines.push(`${a.name}에서 일했다. 돈 버는 건 생각보다 힘들다.`);
+    else if (a.id === 'REST_02') lines.push(stage === 'CHILD' ? '가족끼리 캠핑을 갔다. 마시멜로 최고!' : '가족 캠핑. 귀찮았는데... 사실 좀 좋았다.');
     else if (a.type === 'OUTING') lines.push(`${a.name.replace('외출: ', '')}! ${stage === 'CHILD' ? '신났다!' : '오랜만에 숨통이 트였다.'}`);
     else lines.push(stage === 'CHILD' ? '하루 종일 뒹굴뒹굴했다. 최고!' : '이번 달은 좀 쉬었다. 충전 완료.');
   }
