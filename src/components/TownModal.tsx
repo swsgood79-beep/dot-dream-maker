@@ -142,8 +142,8 @@ export function TownModal({ onClose }: { onClose: () => void }) {
                           alt=""
                           draggable={false}
                           className="drop-shadow-[0_2px_0_rgba(0,0,0,.25)]"
-                          // 아이 쪽(왼쪽)을 보도록 좌우 반전, 키는 같은 나이의 아이와 비슷하게
-                          style={{ height: childH, transform: 'scaleX(-1)' }}
+                          // 그림이 이미 아이 쪽(왼쪽)을 보고 있으므로 뒤집지 않음. 키는 같은 나이의 아이와 비슷하게
+                          style={{ height: childH }}
                         />
                       ) : (
                         <span className="sp-bob flex h-16 w-16 items-center justify-center rounded-full border-3 border-ink bg-white text-4xl shadow-[0_3px_0_rgba(0,0,0,.3)]">{npc.emoji}</span>
