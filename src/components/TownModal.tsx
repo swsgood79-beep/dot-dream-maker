@@ -22,8 +22,10 @@ const PEOPLE_ART: Record<string, string> = Object.fromEntries(
 );
 /** 단짝·라이벌은 아이와 같은 성별·같은 나이대 */
 function npcArt(id: NpcId, stage: string, gender: 'SON' | 'DAUGHTER'): string | undefined {
-  return PEOPLE_ART[`${id}-${stage}-${gender}`] ?? PEOPLE_ART[`${id}-ADULT`];
+  return PEOPLE_ART[`${id}-${stage}-${gender}`] ?? PEOPLE_ART[`${id}-${gender}`] ?? PEOPLE_ART[`${id}-ADULT`];
 }
+/** 어른(선생님·할머니·대학생 선배)은 아이 나이와 상관없이 어른 키 (청년 아이 키 기준) */
+const ADULT_H: Partial<Record<NpcId, number>> = { TEACHER: 1.02, GRANNY: 0.94, MENTOR: 1.0 };
 
 const TIMES = [
   { label: '오전', emoji: '🌤️', tint: 'rgba(255,250,220,0)' },
@@ -46,6 +48,7 @@ export function TownModal({ onClose }: { onClose: () => void }) {
   const vars = useMemo(() => townNames(game), [game]);
   const T = (t: string) => townText(t, vars);
   const stage = displayStage(game);
+  const adultH = ((atlas as Record<string, { h: number }>)[frameName('YOUTH', game.gender, 'stand')]?.h ?? 84) * 2;
   const childH = ((atlas as Record<string, { h: number }>)[frameName(stage, game.gender, 'stand')]?.h ?? 60) * 2;
   const open = availableLocs(game).map((l) => l.id);
   const visited = log.map((l) => l.loc);
@@ -142,7 +145,7 @@ export function TownModal({ onClose }: { onClose: () => void }) {
                           draggable={false}
                           className="drop-shadow-[0_2px_0_rgba(0,0,0,.25)]"
                           // 그림이 이미 아이 쪽(왼쪽)을 보고 있으므로 뒤집지 않음. 키는 같은 나이의 아이와 비슷하게
-                          style={{ height: childH }}
+                          style={{ height: ADULT_H[enc.e.npc!] ? adultH * ADULT_H[enc.e.npc!]! : childH }}
                         />
                       ) : (
                         <span className="sp-bob flex h-16 w-16 items-center justify-center rounded-full border-3 border-ink bg-white text-4xl shadow-[0_3px_0_rgba(0,0,0,.3)]">{npc.emoji}</span>
