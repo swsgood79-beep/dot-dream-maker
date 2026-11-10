@@ -83,7 +83,7 @@ export function EmotionModal({ id, onStart, onClose }: { id: string; onStart: ()
         <div className="relative h-56 overflow-hidden" style={{ background: 'linear-gradient(#fbe3ea, #f3d2c2)' }}>
           {sceneBg(EMO_BG[sc.id] ?? '') && <img src={sceneBg(EMO_BG[sc.id])} alt="" className="absolute inset-0 h-full w-full object-cover object-bottom" draggable={false} />}
           {(
-            <div className="absolute top-2 right-2 left-2">
+            <div className="absolute top-2 right-2 left-2 rounded-md bg-white/80 px-1.5 pt-0.5 pb-1">
               <div className="mb-0.5 flex justify-between text-[10px] font-bold text-ink/80">
                 <span>🚪 마음의 문</span>
                 <span>{doorLabel}</span>
