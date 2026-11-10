@@ -7,6 +7,7 @@ import { growthStage } from '../engine/room';
 import { frameName } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
+import { sceneBg } from './ActivitySceneView';
 
 /** 성장 컷신: 화면을 누르면 다음 대사로 */
 export function CutsceneModal({ id }: { id: string }) {
@@ -80,8 +81,13 @@ export function CutsceneModal({ id }: { id: string }) {
           <img src={img} alt="" className="pop-in aspect-video w-full rounded border-4 border-ink object-cover shadow-[4px_4px_0_rgba(0,0,0,.3)]" />
         </div>
       ) : (
-      <div className="relative flex flex-1 items-end justify-center pb-4">
-        <span className="absolute top-6 left-1/2 -translate-x-1/2 text-[110px] leading-none opacity-30">{scene.emoji}</span>
+      <div className="relative mx-3 mt-2 flex flex-1 items-end justify-center overflow-hidden rounded pb-4">
+        {sceneBg(scene.id) ? (
+          // 성장 컷신 장소 배경 (docs/bg2_requests.xlsx)
+          <img src={sceneBg(scene.id)} alt="" className="pop-in absolute inset-0 h-full w-full rounded border-4 border-ink object-cover object-bottom" draggable={false} />
+        ) : (
+          <span className="absolute top-6 left-1/2 -translate-x-1/2 text-[110px] leading-none opacity-30">{scene.emoji}</span>
+        )}
         {line.kind === 'transform' && morphed && <div className="absolute inset-0 animate-ping bg-white/60" style={{ animationIterationCount: 1 }} />}
         <div key={spriteName} className="pop-in relative">
           <Sprite name={spriteName} scale={2.2} />
