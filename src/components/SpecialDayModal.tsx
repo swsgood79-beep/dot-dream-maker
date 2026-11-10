@@ -8,6 +8,10 @@ import { frameName } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
 import { sceneBg } from './ActivitySceneView';
+import { npcArt } from './TownModal';
+import atlas from '../render/characterAtlas.json';
+
+const frameH = (stage: string, g: string) => (atlas as Record<string, { h: number }>)[`${stage}_${g}_stand`]?.h ?? 66;
 import { EffectChips, PixelButton } from './ui';
 
 type Done = { picks: number[]; score?: number; tier?: 0 | 1 | 2 };
@@ -54,7 +58,12 @@ export function SpecialDayModal({ id, onStart, onClose }: { id: string; onStart:
           <span className="absolute top-2 left-2 rounded-full border-2 border-ink bg-gold px-2 py-0.5 text-[10px] font-bold text-ink">★ 특별한 하루</span>
           {!cur && (
             <div className="absolute inset-x-0 bottom-3 flex items-end justify-center gap-3">
-              <span className="sp-bob text-5xl drop-shadow-[0_3px_0_rgba(0,0,0,.3)]">{day.emoji}</span>
+              {day.id === 'SP_FRIEND_VISIT' && npcArt('FRIEND', stage, game.gender) ? (
+                // 친구가 놀러 온 날: 이모지 대신 단짝 도트 그림 (아이 쪽을 바라봄)
+                <img src={npcArt('FRIEND', stage, game.gender)} alt="" className="order-last" style={{ height: frameH(stage, game.gender) * 1.6 }} draggable={false} />
+              ) : (
+                <span className="sp-bob text-5xl drop-shadow-[0_3px_0_rgba(0,0,0,.3)]">{day.emoji}</span>
+              )}
               <Sprite name={frameName(stage, game.gender, step < 0 ? 'stand' : pose)} scale={1.6} />
             </div>
           )}
@@ -283,7 +292,11 @@ export function TimingGame({ st, onDone }: { st: Extract<SpStep, { kind: 'timing
 function PickScene({ day, st, stage, gender }: { day: SpecialDay; st: Extract<SpStep, { kind: 'pick' }>; stage: ReturnType<typeof growthStage>; gender: 'SON' | 'DAUGHTER' }) {
   return (
     <div className="absolute inset-x-0 bottom-3 flex items-end justify-center gap-3">
-      <span className="sp-bob text-4xl">{st.hidden ? '🧧' : day.emoji}</span>
+      {day.id === 'SP_FRIEND_VISIT' && npcArt('FRIEND', stage, gender) ? (
+        <img src={npcArt('FRIEND', stage, gender)} alt="" className="order-last" style={{ height: frameH(stage, gender) * 1.6 }} draggable={false} />
+      ) : (
+        <span className="sp-bob text-4xl">{st.hidden ? '🧧' : day.emoji}</span>
+      )}
       <Sprite name={frameName(stage, gender, 'stand')} scale={1.6} />
     </div>
   );

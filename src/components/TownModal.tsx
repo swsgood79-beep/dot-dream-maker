@@ -21,7 +21,7 @@ const PEOPLE_ART: Record<string, string> = Object.fromEntries(
   Object.entries(import.meta.glob('../assets/people/*.webp', { eager: true, import: 'default' }) as Record<string, string>).map(([k, v]) => [k.split('/').pop()!.replace('.webp', ''), v]),
 );
 /** 단짝·라이벌은 아이와 같은 성별·같은 나이대 */
-function npcArt(id: NpcId, stage: string, gender: 'SON' | 'DAUGHTER'): string | undefined {
+export function npcArt(id: NpcId, stage: string, gender: 'SON' | 'DAUGHTER'): string | undefined {
   return PEOPLE_ART[`${id}-${stage}-${gender}`] ?? PEOPLE_ART[`${id}-${gender}`] ?? PEOPLE_ART[`${id}-ADULT`];
 }
 /** 어른(선생님·할머니·대학생 선배)은 아이 나이와 상관없이 어른 키 (청년 아이 키 기준) */
