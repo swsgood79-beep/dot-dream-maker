@@ -5,6 +5,10 @@ import { computeReport, REPORT_REACTIONS } from '../engine/school';
 import { FirstTip } from './FirstTip';
 import { useGameStore } from '../store/useGameStore';
 import { EffectChips, PixelButton } from './ui';
+import { Sprite } from './Sprite';
+import { sceneBg } from './ActivitySceneView';
+import { frameName } from '../render/spriteCharacter';
+import { displayStage } from '../engine/displayStage';
 
 const GRADE_COLOR = (r: number) => (r >= 1.15 ? 'text-[#2b8a3e]' : r >= 0.9 ? 'text-[#1971c2]' : r >= 0.65 ? 'text-ink' : 'text-accent');
 
@@ -22,6 +26,12 @@ export function ReportCardModal({ onPick, onClose }: { onPick: () => void; onClo
         <p className="mb-2 text-center text-lg font-bold">
           📜 {card.school} {card.term} 성적표
         </p>
+        <div className="relative mb-2 flex h-32 items-end justify-center overflow-hidden rounded border-3 border-ink bg-[#3a3048]">
+          {sceneBg('PT_REPORT') && <img src={sceneBg('PT_REPORT')} alt="" className="absolute inset-0 h-full w-full object-cover object-bottom" draggable={false} />}
+          <span className="relative">
+            <Sprite name={frameName(displayStage(game), game.gender, res ? (res.reply && res.delta.affection && res.delta.affection > 0 ? 'cheer' : 'stand') : 'stand')} scale={1.3} />
+          </span>
+        </div>
         <table className="mb-2 w-full border-2 border-ink text-center">
           <tbody>
             {card.subjects.map((s) => (

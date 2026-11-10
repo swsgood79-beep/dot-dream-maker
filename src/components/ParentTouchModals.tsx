@@ -7,6 +7,7 @@ import { CONTESTS, type ContestId } from '../engine/simulation';
 import { frameName } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
+import { sceneBg } from './ActivitySceneView';
 import { EffectChips, PixelButton } from './ui';
 
 /** ✏️ 숙제 봐주기: 같이 풀기(퀴즈) / 정답 알려 주기 / 스스로 해 보라고 */
@@ -29,8 +30,11 @@ export function HomeworkModal({ onClose }: { onClose: () => void }) {
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-3">
       <div className="pixel-box pop-in w-full p-3 text-sm">
         <p className="mb-2 text-center text-lg font-bold">✏️ 숙제 좀 봐 줘...</p>
-        <div className="room-bg mb-2 flex h-28 items-end justify-center gap-2 border-3 border-ink">
-          <Sprite name={frameName(stage, game.gender, mode === 'done' ? (res?.correct === false ? 'stand' : 'cheer') : 'desk')} scale={1.4} />
+        <div className="room-bg relative mb-2 flex h-36 items-end justify-center gap-2 overflow-hidden border-3 border-ink">
+          {sceneBg('PT_HOMEWORK') && <img src={sceneBg('PT_HOMEWORK')} alt="" className="absolute inset-0 h-full w-full object-cover object-bottom" draggable={false} />}
+          <span className="relative">
+            <Sprite name={frameName(stage, game.gender, mode === 'done' ? (res?.correct === false ? 'stand' : 'cheer') : 'desk')} scale={1.4} />
+          </span>
         </div>
         <div className="mb-3 rounded border-2 border-ink bg-[#fffaf0] p-2 text-center">
           <p className="text-[11px] opacity-70">{game.childName}의 숙제</p>
@@ -92,7 +96,11 @@ export function LunchModal({ contest, onClose }: { contest: ContestId; onClose: 
         <p className="text-center text-[11px] font-bold text-wood">
           {def.emoji} 이번 달은 {def.title}!
         </p>
-        <p className="mb-3 text-center text-lg font-bold">🍱 도시락을 싸 줄까요?</p>
+        <p className="mb-2 text-center text-lg font-bold">🍱 도시락을 싸 줄까요?</p>
+        <div className="relative mb-3 flex h-32 items-end justify-center overflow-hidden rounded border-3 border-ink bg-[#fff1c2]">
+          {sceneBg('PT_LUNCH') && <img src={sceneBg('PT_LUNCH')} alt="" className="absolute inset-0 h-full w-full object-cover object-bottom" draggable={false} />}
+          <span className="relative mb-2 text-4xl drop-shadow-[0_2px_0_rgba(0,0,0,.3)]">{done ? LUNCH[done.kind].emoji : '🍱'}</span>
+        </div>
         {!done ? (
           <div className="grid gap-1.5">
             {(Object.keys(LUNCH) as Lunch[]).map((k) => (

@@ -7,6 +7,7 @@ import { frameName } from '../render/spriteCharacter';
 import { FirstTip } from './FirstTip';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
+import { sceneBg } from './ActivitySceneView';
 import { EffectChips, PixelButton } from './ui';
 
 /** 생일 파티: 선물 3개 중 하나 — 아이가 원하던 걸 맞히면 크게 기뻐한다 */
@@ -22,12 +23,15 @@ export function BirthdayModal({ onPick, onClose }: { onPick: () => void; onClose
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-3">
       <div className="pop-in max-h-full w-full overflow-y-auto rounded-md border-3 border-ink bg-[#fff0f6] p-3 text-xs text-ink shadow-[6px_6px_0_rgba(0,0,0,.35)]">
         <p className="text-center text-lg font-bold">🎉 {game.childName}의 생일! 🎉</p>
-        <div className="relative my-2 flex h-32 items-end justify-center gap-2 overflow-hidden rounded border-3 border-ink bg-gradient-to-b from-[#ffd6e7] to-[#fff6d6]">
+        <div className="relative my-2 flex h-40 items-end justify-center gap-2 overflow-hidden rounded border-3 border-ink bg-gradient-to-b from-[#ffd6e7] to-[#fff6d6]">
+          {sceneBg('PT_BDAY') && <img src={sceneBg('PT_BDAY')} alt="" className="absolute inset-0 h-full w-full object-cover object-bottom" draggable={false} />}
           {Array.from({ length: 10 }).map((_, i) => (
             <span key={i} className="confetti absolute top-0 h-2 w-1.5" style={{ left: `${(i * 37) % 100}%`, background: ['#ff6fae', '#ffd84d', '#5bd6ff', '#5bd66b'][i % 4], animationDelay: `${(i % 5) * 0.15}s` }} />
           ))}
-          <Sprite name={frameName(stage, game.gender, res ? (res.liked ? 'cheer' : 'stand') : 'cheer')} scale={1.4} />
-          <div className="mb-1 flex flex-col items-center">
+          <span className="relative">
+            <Sprite name={frameName(stage, game.gender, res ? (res.liked ? 'cheer' : 'stand') : 'cheer')} scale={1.4} />
+          </span>
+          <div className="relative mb-1 flex flex-col items-center">
             <span className="text-[10px] tracking-tighter">{'🕯️'.repeat(Math.min(candles, 6))}</span>
             <span className="text-4xl">🎂</span>
             <span className="text-[10px] font-bold">{game.age}살</span>
