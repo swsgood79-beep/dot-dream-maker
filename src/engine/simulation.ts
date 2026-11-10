@@ -1,5 +1,9 @@
 import { rollSpecialDay } from './specialDay';
 import { rivalBonus } from './town';
+import { rollEmotion } from './emotion';
+
+/** 감정 조절력이 높으면 파업이 줄고, 낮으면 늘어난다 */
+const strikeMul = (s: { eq?: number }) => ((s.eq ?? 40) >= 65 ? 0.5 : (s.eq ?? 40) <= 25 ? 1.4 : 1);
 import { COMBO_MAP, FURNITURE, FURNITURE_MAP } from '../data/furnitureData';
 import { ACTION_MAP, SCHEDULE_ACTIONS } from '../data/scheduleData';
 import { evaluateEnding } from '../data/endingData';
@@ -114,6 +118,12 @@ export interface SaveState extends GameState {
   outingDone?: boolean; // 이번 달 나들이를 다녀왔는지
   people?: Partial<Record<import('../data/townData').NpcId, import('./town').Person>>;
   townRecent?: string[];
+  // ── v0.39 감정 다루기
+  pendingEmotion?: string | null;
+  eq?: number; // 감정 조절력 0~100 (없으면 40)
+  emoSeen?: string[];
+  emoLog?: { age: number; id: string; good: number; total: number }[];
+  lastEmotionAt?: number;
 }
 
 /** 게임 시작부터 센 달 수 (8세 1월 = 1) */
@@ -356,7 +366,7 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
   const stress = s.status.stress;
   const attitude = dominantAttitude(s);
   // 스케줄 파업 (GDD 11.2): 지치거나 마음이 멀어진 아이는 학원에 가지 않고 버틴다
-  if (action.type === 'EDUCATION' && outcome === 'SUCCESS' && (stress >= 80 || s.status.affection <= 30) && rng() < 0.35) {
+  if (action.type === 'EDUCATION' && outcome === 'SUCCESS' && (stress >= 80 || s.status.affection <= 30) && rng() < 0.35 * strikeMul(s)) {
     s.gold += action.weeklyGoldDelta; // 학원비는 이미 냄
     s.status.stress = clamp(stress - 6, 0, 100);
     s.status.selfEsteem = clamp((s.status.selfEsteem ?? 50) - 2, 0, 100);
@@ -554,7 +564,10 @@ export function finishContest(s: SaveState, id: ContestId, factor: number, event
       caption: `${age}세, 자랑스러운 순간!`,
       pose: 'cheer',
     });
-  } else events.push(`${def.emoji} ${def.title} 결과... 아쉽게 놓쳤다 (점수 ${score}/${threshold})`);
+  } else {
+    events.push(`${def.emoji} ${def.title} 결과... 아쉽게 놓쳤다 (점수 ${score}/${threshold})`);
+    rollEmotion(s, 'CONTEST_LOSS', age);
+  }
   return { age, id, title: def.title, stat: def.stat, score, threshold, win, rank, rewards };
 }
 
@@ -614,6 +627,11 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
       s.status.stress = 60;
       s.status.autonomy = clamp((s.status.autonomy ?? 50) - 5, 0, 100);
       events.push('🚁 스트레스 폭발! 하지만 엄마 아빠가 모든 걸 대신 막아 줬다 (자율성 -5)');
+    } else if ((s.eq ?? 40) >= 65 && rng() < 0.6) {
+      // 감정 조절력이 자란 아이: 터지기 전에 부모에게 털어놓는다
+      s.status.stress = 50;
+      s.status.affection = clamp(s.status.affection + 3, 0, 100);
+      events.push('💗 스트레스가 한계였지만, 아이가 먼저 "나 요즘 너무 힘들어"라고 털어놓았다 (감정 조절력 덕분에 폭발을 막음)');
     } else {
     const sickChance = s.activeCombos.includes('CMB_06') ? 0.25 : 0.5;
     if (s.status.affection >= 60 || rng() < sickChance) {
@@ -696,5 +714,6 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
     if (s.diaryNew) s.diaryNew = { ...s.diaryNew, lines: s.diaryNew.lines.filter((l) => !l.startsWith(BDAY_MARK)) };
   }
   rollSpecialDay(s);
+  rollEmotion(s, weeks.some((w) => w.outcome === 'STRIKE') ? 'STRIKE' : 'RANDOM');
   return { state: s, weeks, events, contest: contestResult };
 }

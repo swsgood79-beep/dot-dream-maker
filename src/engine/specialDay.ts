@@ -5,7 +5,7 @@ import { growthStage } from './room';
 import { addPhoto, CONTESTS, monthIndex, type SaveState } from './simulation';
 
 /** 같은 저장·같은 달이면 늘 같은 결과 (게임 진행 난수를 건드리지 않음) */
-function hashRng(seed: string) {
+export function hashRng(seed: string) {
   let h = 2166136261;
   for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
   return () => {

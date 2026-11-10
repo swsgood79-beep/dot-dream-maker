@@ -4,6 +4,7 @@ import { frameName } from '../../render/spriteCharacter';
 import { APT_KEYS, STAT_KEYS } from '../../engine/simulation';
 import { NPCS, type NpcId } from '../../data/townData';
 import { person, relTier, townNames } from '../../engine/town';
+import { eqLabel, eqOf } from '../../engine/emotion';
 import { displayStage } from '../../engine/displayStage';
 import { APT_META, Bar, STAT_META } from '../ui';
 import { Icon } from '../Icon';
@@ -89,6 +90,16 @@ export function InfoPanel() {
           <p className="text-[10px] text-accent">아이의 꿈을 엔딩으로 이뤄 주면 특별한 편지를 받아요</p>
         </div>
       )}
+      <p className="mb-1 font-bold">감정 조절력</p>
+      <div className="mb-3 rounded border-2 border-ink bg-white p-2">
+        <div className="flex items-center gap-2">
+          <span className="w-16 shrink-0 text-[11px] font-bold">🧠 {eqOf(game)}</span>
+          <Bar value={eqOf(game)} max={100} color="#ff8fb1" />
+        </div>
+        <p className="mt-1 text-[10px] opacity-80">
+          {eqLabel(eqOf(game))} — 아이가 울거나 화낼 때 마음을 알아주고 함께 방법을 찾으면 자라요. 높으면 스트레스가 터지기 전에 먼저 털어놓고, 학원 파업이 줄어요.
+        </p>
+      </div>
       <PeopleBox />
       {temper && (
         <>

@@ -11,6 +11,7 @@ import { canPlace, findFreeSpot } from '../engine/room';
 import { applyEffect, recordStyle, resolveParentingEvent, type EventOutcome } from '../engine/parenting';
 import { REC_CHOICES, bumpAttitude, dominantAttitude } from '../engine/psyche';
 import { visitNight, type HomeworkWay, type Lunch, type NightTouch } from '../engine/parentTouch';
+import { resolveEmotion, type EmoPick, type EmoResult } from '../engine/emotion';
 import { resolveEncounter, type TownOutcome } from '../engine/town';
 import { resolveSpecial, type SpecialPlay } from '../engine/specialDay';
 import { resolveReport } from '../engine/school';
@@ -93,6 +94,7 @@ interface GameStore {
   helpHomework: (way: HomeworkWay, pick?: number) => { delta: Effect; reply: string; correct?: boolean } | null;
   packLunch: (kind: Lunch) => Effect | null;
   townResolve: (encId: string, pick: number) => TownOutcome | null;
+  playEmotion: (picks: EmoPick[], shut: boolean) => EmoResult | null;
   finishOuting: () => void;
   playSpecial: (p: SpecialPlay) => { text: string; title: string; delta: Effect; photo: boolean } | null;
   clearNew: (ids: string[]) => void;
@@ -392,6 +394,14 @@ export const useGameStore = create<GameStore>()(
             const delta = applyEffect(g, fx);
             g.homeworkAsk = null;
             out = { delta, reply, correct };
+          });
+          return out;
+        },
+        playEmotion: (picks, shut) => {
+          let out: EmoResult | null = null;
+          mutate((g) => {
+            out = resolveEmotion(g, picks, shut);
+            if (!out) return false;
           });
           return out;
         },
