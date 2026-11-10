@@ -23,6 +23,16 @@ SHEETS = {
     # 관찰 카메라 (v0.27): 이상행동 장면 + 화해 장면
     's8': ['REC_STRIKE', 'REC_LOCKED', 'REC_DELINQ', 'REC_SILENT'],
     's9': ['REC_COLD', 'REC_DOOR', 'REC_WARM', 'REC_LETTER'],
+    # 비어 있던 화면 배경 (v0.39, docs/bg2_requests.xlsx): assets-src/scene-bg2-N.png
+    'bg2-1': ['SP_SEOLLAL', 'SP_KITE', 'SP_PICNIC', 'SP_FIREFLY'],
+    'bg2-2': ['SP_BLACKOUT', 'SP_SHOOTING_STAR', 'SP_CHUSEOK', 'SP_HALLOWEEN'],
+    'bg2-3': ['SP_FIRST_SNOW', 'SP_GIMBAP', 'SP_MOVIE_NIGHT', 'SP_CLEANUP'],
+    'bg2-4': ['SP_FLEA_MARKET', 'SP_TICKETING', 'SP_RAMEN', 'SP_PHOTO_BOOTH'],
+    'bg2-5': ['SP_DRIVE', 'SP_SECRET_VISIT', 'SP_TOOTH', 'SP_FRIEND_VISIT'],
+    'bg2-6': ['SP_STRAY_DOG', 'EMO_MART', 'EMO_ROOM', 'EMO_LIVING'],
+    'bg2-7': ['EMO_CAR', 'EMO_ENTRY', 'EMO_SOFA', 'CS_SCHOOL'],
+    'bg2-8': ['CS_PUBERTY', 'CS_MIDDLE', 'CS_GROWN', 'CS_SENIOR'],
+    'bg2-9': ['PT_BDAY', 'PT_HOMEWORK', 'PT_LUNCH', 'PT_REPORT'],
 }
 OUT = 'src/assets/scenes'
 W = 1000  # 이보다 크면 줄임 (원본 해상도 유지)

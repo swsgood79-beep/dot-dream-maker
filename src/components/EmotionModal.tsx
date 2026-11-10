@@ -6,9 +6,17 @@ import { emoOptions, emoSteps, emoText, eqLabel, type EmoPick, type EmoResult } 
 import { frameName } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
+import { sceneBg } from './ActivitySceneView';
 import { EffectChips, PixelButton } from './ui';
 
 const DOOR_START = 35;
+
+/** 장면별 장소 배경 (docs/bg2_requests.xlsx · 관찰 카메라 배경과 공유) — 그림이 들어오면 자동으로 쓰임 */
+const EMO_BG: Record<string, string> = {
+  EC_TOY: 'EMO_MART', EC_TEASE: 'EMO_ROOM', EC_DRAWING: 'EMO_ROOM', EC_GAME: 'EMO_LIVING', EC_CONTEST: 'EMO_CAR', EC_STRIKE: 'REC_STRIKE',
+  ET_EXAM: 'REC_DOOR', ET_FRIEND: 'EMO_SOFA', ET_LOOKS: 'EMO_ROOM', ET_CONTEST: 'EMO_CAR', ET_STRIKE: 'REC_STRIKE',
+  EY_ANXIETY: 'REC_SILENT', EY_JOB: 'EMO_SOFA', EY_BEHIND: 'EMO_SOFA', EY_CONTEST: 'EMO_CAR', EY_STRIKE: 'EMO_ENTRY',
+};
 
 /** 💗 감정의 순간: 아이가 울거나 화낼 때, 4단계로 반응을 고른다 (감정 코칭) */
 export function EmotionModal({ id, onStart, onClose }: { id: string; onStart: () => void; onClose: () => void }) {
@@ -73,6 +81,7 @@ export function EmotionModal({ id, onStart, onClose }: { id: string; onStart: ()
 
         {/* 장면: 아이 + 감정 + 말풍선 + 마음의 문 */}
         <div className="relative h-56 overflow-hidden" style={{ background: 'linear-gradient(#fbe3ea, #f3d2c2)' }}>
+          {sceneBg(EMO_BG[sc.id] ?? '') && <img src={sceneBg(EMO_BG[sc.id])} alt="" className="absolute inset-0 h-full w-full object-cover object-bottom" draggable={false} />}
           {(
             <div className="absolute top-2 right-2 left-2">
               <div className="mb-0.5 flex justify-between text-[10px] font-bold text-ink/80">

@@ -7,6 +7,7 @@ import { fillText, type SpecialPlay } from '../engine/specialDay';
 import { frameName } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
+import { sceneBg } from './ActivitySceneView';
 import { EffectChips, PixelButton } from './ui';
 
 type Done = { picks: number[]; score?: number; tier?: 0 | 1 | 2 };
@@ -41,11 +42,15 @@ export function SpecialDayModal({ id, onStart, onClose }: { id: string; onStart:
       <div className="pop-in w-full overflow-hidden rounded-md border-3 border-ink text-sm shadow-[0_6px_0_rgba(0,0,0,.35)]">
         {/* 장면 */}
         <div className="relative h-60 overflow-hidden" style={{ background: `linear-gradient(${day.sky[0]}, ${day.sky[1]})` }}>
-          {day.deco.map((e, i) => (
-            <span key={i} className="sp-float absolute select-none text-2xl opacity-80" style={{ left: `${8 + i * 34}%`, top: `${8 + (i % 2) * 10}%`, animationDelay: `${i * 0.7}s` }}>
-              {e}
-            </span>
-          ))}
+          {sceneBg(day.id) ? (
+            <img src={sceneBg(day.id)} alt="" className="absolute inset-0 h-full w-full object-cover object-bottom" draggable={false} />
+          ) : (
+            day.deco.map((e, i) => (
+              <span key={i} className="sp-float absolute select-none text-2xl opacity-80" style={{ left: `${8 + i * 34}%`, top: `${8 + (i % 2) * 10}%`, animationDelay: `${i * 0.7}s` }}>
+                {e}
+              </span>
+            ))
+          )}
           <span className="absolute top-2 left-2 rounded-full border-2 border-ink bg-gold px-2 py-0.5 text-[10px] font-bold text-ink">★ 특별한 하루</span>
           {!cur && (
             <div className="absolute inset-x-0 bottom-3 flex items-end justify-center gap-3">
