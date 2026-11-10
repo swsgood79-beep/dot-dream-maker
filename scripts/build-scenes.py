@@ -43,6 +43,24 @@ def span(v, frac):
     return (idx.min(), idx.max() + 1) if len(idx) else None
 
 
+def trim_blank(a):
+    """패널 안에 남은 흰 빈칸·테두리 줄을 위아래에서 걷어 냄 (그림이 패널을 다 채우지 못한 경우)"""
+    def bad(row):
+        m = row.mean(axis=-1)
+        return (m > 235).mean() > 0.6
+    t, b = 0, a.shape[0]
+    while t < b - 10 and bad(a[t]):
+        t += 1
+    while b > t + 10 and bad(a[b - 1]):
+        b -= 1
+    # 흰 칸과 그림 사이 테두리 선 몇 줄 더
+    if t > 0:
+        t += 3
+    if b < a.shape[0]:
+        b -= 3
+    return a[t:b]
+
+
 os.makedirs(OUT, exist_ok=True)
 for sid, ids in SHEETS.items():
     path = f'assets-src/scene-{sid}.png'
@@ -63,7 +81,7 @@ for sid, ids in SHEETS.items():
             continue
         inset = 6
         box = (x0 + xs[0] + inset, y0 + ys[0] + inset, x0 + xs[1] - inset, y0 + ys[1] - inset)
-        crop = Image.fromarray(img[box[1]:box[3], box[0]:box[2]].astype(np.uint8))
+        crop = Image.fromarray(trim_blank(img[box[1]:box[3], box[0]:box[2]]).astype(np.uint8))
         if crop.width > W:  # 원본 해상도 유지 (폰 화면은 2~3배 밀도라 줄이면 흐려짐)
             crop = crop.resize((W, round(crop.height * W / crop.width)), Image.LANCZOS)
         crop = brighten(crop)
