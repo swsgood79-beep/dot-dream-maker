@@ -4,7 +4,7 @@ import type { Effect } from '../data/parentingData';
 import { SPECIAL_MAP, type SpStep, type SpecialDay } from '../data/specialDays';
 import { growthStage } from '../engine/room';
 import { fillText, type SpecialPlay } from '../engine/specialDay';
-import { frameName } from '../render/spriteCharacter';
+import { hasFrame, frameName } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
 import { sceneBg } from './ActivitySceneView';
@@ -39,7 +39,7 @@ export function SpecialDayModal({ id, onStart, onClose }: { id: string; onStart:
     setStep(step + 1);
   };
   const cur = step >= 0 && step < day.steps.length ? day.steps[step] : null;
-  const pose = res ? (res.title && res.delta.stress && res.delta.stress > 0 ? 'stand' : 'cheer') : 'stand';
+  const pose = res ? ((res.delta.stress ?? 0) > 0 ? (hasFrame(`${stage}_${game.gender}_mood_sigh`) ? 'mood_sigh' : 'stand') : 'cheer') : 'stand';
 
   return (
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 p-3">

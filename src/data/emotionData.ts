@@ -17,6 +17,7 @@ export interface EmoScene {
   trigger: EmoTrigger;
   emoji: string; // 장면 아이콘
   feel: string; // 아이 감정 이모지
+  pose: string; // 처음 아이 모습 (기분 포즈 그림: mood_cry · mood_angry …)
   title: string;
   scene: string; // 상황 설명
   cry: string; // 아이가 처음 터뜨리는 말
@@ -91,7 +92,7 @@ const E = (s: EmoScene) => s;
 export const EMO_SCENES: EmoScene[] = [
   // ───────── 유년기 ─────────
   E({
-    id: 'EC_TOY', stage: 'CHILD', trigger: 'RANDOM', emoji: '🧸', feel: '😭', title: '마트 장난감 코너',
+    id: 'EC_TOY', stage: 'CHILD', trigger: 'RANDOM', emoji: '🧸', feel: '😭', pose: 'mood_tantrum|mood_angry', title: '마트 장난감 코너',
     scene: '마트 장난감 코너. 사 줄 수 없다고 하자 {name}이(가) 바닥에 드러누웠다.',
     cry: '싫어싫어!! 저거 사 줘!! 다른 애들은 다 있단 말이야!!',
     empathy: ['(옆에 쪼그려 앉아 눈을 맞춘다) "저게 정말 갖고 싶었구나."', '...응. (훌쩍) 진짜 진짜 갖고 싶었어.'],
@@ -101,7 +102,7 @@ export const EMO_SCENES: EmoScene[] = [
     solve: ['"어떻게 하면 저걸 가질 수 있을까? 같이 생각해 볼까?"', '...용돈 모으면 되지? 나 저금통에 모을래!'],
   }),
   E({
-    id: 'EC_TEASE', stage: 'CHILD', trigger: 'RANDOM', emoji: '🎒', feel: '😢', title: '놀림받은 날',
+    id: 'EC_TEASE', stage: 'CHILD', trigger: 'RANDOM', emoji: '🎒', feel: '😢', pose: 'mood_cry', title: '놀림받은 날',
     scene: '{name}이(가) 학교에서 돌아오자마자 방에 들어가 엎드려 운다. 반 친구들이 "꼬맹이"라고 놀렸단다.',
     cry: '나 이제 학교 안 갈 거야... 다 미워...',
     empathy: ['(등을 쓰다듬으며) "많이 속상했구나. 엄마 아빠한테 말해 줘서 고마워."', '(엉엉) ...애들이 자꾸 꼬맹이래.'],
@@ -110,7 +111,7 @@ export const EMO_SCENES: EmoScene[] = [
     solve: ['"다음에 또 그러면 어떻게 하고 싶어? 같이 방법을 찾아보자."', '..."그렇게 부르지 마, 싫어"라고 말해 볼래. 그래도 하면 선생님한테 말할게.'],
   }),
   E({
-    id: 'EC_DRAWING', stage: 'CHILD', trigger: 'RANDOM', emoji: '🎨', feel: '😤', title: '찢어진 스케치북',
+    id: 'EC_DRAWING', stage: 'CHILD', trigger: 'RANDOM', emoji: '🎨', feel: '😤', pose: 'mood_angry', title: '찢어진 스케치북',
     scene: '그림이 마음대로 안 그려지자 {name}이(가) 스케치북을 북 찢어 버렸다.',
     cry: '이거 완전 망했어!! 난 그림 못 그려!!',
     empathy: ['(찢어진 종이를 같이 주우며) "열심히 그렸는데 마음대로 안 돼서 속상했구나."', '...고양이를 그리고 싶었는데 돼지가 됐어.'],
@@ -120,7 +121,7 @@ export const EMO_SCENES: EmoScene[] = [
     solve: ['"이번엔 어떻게 해 보면 좋을까?"', '...동그라미부터 다시 그려 볼래. 천천히!'],
   }),
   E({
-    id: 'EC_GAME', stage: 'CHILD', trigger: 'RANDOM', emoji: '🎲', feel: '😡', title: '보드게임 엎기',
+    id: 'EC_GAME', stage: 'CHILD', trigger: 'RANDOM', emoji: '🎲', feel: '😡', pose: 'mood_tantrum|mood_angry', title: '보드게임 엎기',
     scene: '가족 보드게임에서 연달아 지자 {name}이(가) 게임판을 확 엎어 버렸다. 말이 사방으로 굴러간다.',
     cry: '반칙이야!! 이거 재미없어!! 다신 안 해!!',
     empathy: ['"계속 져서 정말 분했구나."', '...응!! 나만 계속 졌잖아!'],
@@ -130,7 +131,7 @@ export const EMO_SCENES: EmoScene[] = [
     solve: ['"다음에 지면 화난 마음을 어떻게 하면 좋을까?"', '..."한 판 더!" 하고 다시 해 볼래.'],
   }),
   E({
-    id: 'EC_CONTEST', stage: 'CHILD', trigger: 'CONTEST_LOSS', emoji: '🏅', feel: '😭', title: '대회가 끝나고',
+    id: 'EC_CONTEST', stage: 'CHILD', trigger: 'CONTEST_LOSS', emoji: '🏅', feel: '😭', pose: 'mood_cry', title: '대회가 끝나고',
     scene: '대회가 끝나고 돌아오는 길. {name}이(가) 차 안에서 참았던 울음을 터뜨렸다.',
     cry: '나 진짜 열심히 했는데... 왜 나만 안 돼...',
     empathy: ['(손을 꼭 잡는다) "정말 열심히 했지. 그래서 더 속상하구나."', '(엉엉) ...매일 연습했단 말이야.'],
@@ -139,7 +140,7 @@ export const EMO_SCENES: EmoScene[] = [
     solve: ['"이번 대회에서 그래도 잘한 건 뭐였어? 다음엔 뭘 해 보고 싶어?"', '...떨지 않은 건 잘했어. 다음엔 연습 더 할래!'],
   }),
   E({
-    id: 'EC_STRIKE', stage: 'CHILD', trigger: 'STRIKE', emoji: '🎒', feel: '😫', title: '학원 가기 싫어!',
+    id: 'EC_STRIKE', stage: 'CHILD', trigger: 'STRIKE', emoji: '🎒', feel: '😫', pose: 'mood_sulk', title: '학원 가기 싫어!',
     scene: '학원 갈 시간. {name}이(가) 가방을 던지고 침대에 엎드렸다.',
     cry: '학원 가기 싫어!! 나도 놀고 싶단 말이야!!',
     empathy: ['(침대 옆에 앉는다) "요즘 학원이 많이 힘들구나."', '...매일매일 학원이잖아.'],
@@ -151,7 +152,7 @@ export const EMO_SCENES: EmoScene[] = [
 
   // ───────── 청소년기 ─────────
   E({
-    id: 'ET_EXAM', stage: 'TEEN', trigger: 'RANDOM', emoji: '📝', feel: '😤', title: '시험 망친 날',
+    id: 'ET_EXAM', stage: 'TEEN', trigger: 'RANDOM', emoji: '📝', feel: '😤', pose: 'mood_back_sulk', title: '시험 망친 날',
     scene: '성적표를 받은 날. {name}이(가) 말없이 방에 들어가더니 쾅! 문이 닫혔다.',
     cry: '(문 너머로) 아 몰라!! 다 망했어!! 들어오지 마!!',
     empathy: ['(노크하고 문 앞에 앉아) "많이 속상하구나. 들어가도 될 때 말해 줘. 여기 있을게."', '(한참 뒤 문이 살짝 열린다) ...들어와.'],
@@ -161,7 +162,7 @@ export const EMO_SCENES: EmoScene[] = [
     solve: ['"어느 과목이 제일 신경 쓰여? 어떻게 해 보고 싶은지 네 생각부터 듣고 싶어."', '...수학. 오답 노트 만들어 볼게. 모르는 건 물어봐도 돼?'],
   }),
   E({
-    id: 'ET_FRIEND', stage: 'TEEN', trigger: 'RANDOM', emoji: '💬', feel: '😞', title: '단톡방에서 빠진 날',
+    id: 'ET_FRIEND', stage: 'TEEN', trigger: 'RANDOM', emoji: '💬', feel: '😞', pose: 'mood_phone', title: '단톡방에서 빠진 날',
     scene: '{name}이(가) 휴대폰을 보다가 표정이 굳었다. 친구들이 자기만 빼고 새 단톡방을 만들었단다.',
     cry: '...아무것도 아니야. 신경 쓰지 마.',
     empathy: ['(옆에 조용히 앉는다) "아무것도 아닌 표정이 아닌데. 말하고 싶을 때 말해도 돼."', '...애들이 나만 빼고 방을 만들었어.'],
@@ -170,7 +171,7 @@ export const EMO_SCENES: EmoScene[] = [
     solve: ['"그중에 그래도 믿을 만한 친구가 있어? 어떻게 해 보고 싶어?"', '...{friend}한테는 직접 물어볼래. 왜 그랬는지.'],
   }),
   E({
-    id: 'ET_LOOKS', stage: 'TEEN', trigger: 'RANDOM', emoji: '🪞', feel: '😔', title: '거울 앞에서',
+    id: 'ET_LOOKS', stage: 'TEEN', trigger: 'RANDOM', emoji: '🪞', feel: '😔', pose: 'mood_sad', title: '거울 앞에서',
     scene: '{name}이(가) 거울 앞에서 한참을 서 있다가 한숨을 쉰다.',
     cry: '나 진짜 못생겼어. 학교 가기 싫어.',
     empathy: ['"요즘 거울 볼 때마다 마음이 무겁구나."', '...여드름도 나고, 다들 나만 쳐다보는 것 같아.'],
@@ -179,7 +180,7 @@ export const EMO_SCENES: EmoScene[] = [
     solve: ['"네가 너를 좋아하게 되는 순간은 언제야? 그런 걸 같이 찾아볼까?"', '...음, 노래 부를 때? 그때는 좀 괜찮은 것 같아.'],
   }),
   E({
-    id: 'ET_CONTEST', stage: 'TEEN', trigger: 'CONTEST_LOSS', emoji: '🏅', feel: '😡', title: '"다 그만둘래!"',
+    id: 'ET_CONTEST', stage: 'TEEN', trigger: 'CONTEST_LOSS', emoji: '🏅', feel: '😡', pose: 'mood_angry', title: '"다 그만둘래!"',
     scene: '대회에서 떨어지고 돌아온 {name}이(가) 가방을 바닥에 내던졌다.',
     cry: '다 그만둘 거야!! 해 봤자 안 되는 거잖아!!',
     empathy: ['"정말 많이 준비했는데... 그래서 더 화가 나는구나."', '(씩씩거린다) ...몇 달을 준비했는데.'],
@@ -189,7 +190,7 @@ export const EMO_SCENES: EmoScene[] = [
     solve: ['"조금 진정되면, 계속할지 그만둘지 네가 정해 봐. 어느 쪽이든 응원할게."', '...그만두진 않을래. 다음엔 다르게 준비해 볼게.'],
   }),
   E({
-    id: 'ET_STRIKE', stage: 'TEEN', trigger: 'STRIKE', emoji: '💢', feel: '😤', title: '"다 짜증나!"',
+    id: 'ET_STRIKE', stage: 'TEEN', trigger: 'STRIKE', emoji: '💢', feel: '😤', pose: 'mood_rebel', title: '"다 짜증나!"',
     scene: '학원 가방을 던져 둔 {name}이(가) 소리를 질렀다.',
     cry: '다 짜증나!! 내 시간은 하나도 없잖아!!',
     empathy: ['"요즘 많이 지쳤구나. 소리 지를 만큼 힘들었던 거지?"', '...응. 숨 막혀.'],
@@ -201,7 +202,7 @@ export const EMO_SCENES: EmoScene[] = [
 
   // ───────── 청년기 ─────────
   E({
-    id: 'EY_ANXIETY', stage: 'YOUTH', trigger: 'RANDOM', emoji: '🌙', feel: '😰', title: '새벽의 불안',
+    id: 'EY_ANXIETY', stage: 'YOUTH', trigger: 'RANDOM', emoji: '🌙', feel: '😰', pose: 'mood_cry', title: '새벽의 불안',
     scene: '새벽 2시. {name}의 방에서 작게 우는 소리가 들린다.',
     cry: '...나 입시 망하면 어떡해. 다 끝날 것 같아.',
     empathy: ['(조용히 들어가 옆에 앉는다) "많이 무섭구나. 혼자 버티게 해서 미안해."', '(눈물을 닦는다) ...잠이 안 와.'],
@@ -210,7 +211,7 @@ export const EMO_SCENES: EmoScene[] = [
     solve: ['"지금 제일 걱정되는 게 뭐야? 하나씩 같이 적어 볼까?"', '...적어 보니까 생각보다 몇 개 안 되네. 조금 나아졌어.'],
   }),
   E({
-    id: 'EY_JOB', stage: 'YOUTH', trigger: 'RANDOM', emoji: '🧾', feel: '😞', title: '알바에서 혼난 날',
+    id: 'EY_JOB', stage: 'YOUTH', trigger: 'RANDOM', emoji: '🧾', feel: '😞', pose: 'mood_sad', title: '알바에서 혼난 날',
     scene: '알바를 마치고 온 {name}이(가) 인사도 없이 방으로 들어간다. 손님에게 크게 혼났단다.',
     cry: '...나 진짜 일 못하나 봐.',
     empathy: ['"오늘 많이 힘들었구나. 고생했어."', '...손님이 사람들 앞에서 소리 질렀어.'],
@@ -219,7 +220,7 @@ export const EMO_SCENES: EmoScene[] = [
     solve: ['"다음에 그런 손님을 만나면 어떻게 하고 싶어?"', '...매니저님한테 바로 도움을 요청할래. 혼자 다 받지 말고.'],
   }),
   E({
-    id: 'EY_BEHIND', stage: 'YOUTH', trigger: 'RANDOM', emoji: '📱', feel: '😔', title: '"나만 뒤처진 것 같아"',
+    id: 'EY_BEHIND', stage: 'YOUTH', trigger: 'RANDOM', emoji: '📱', feel: '😔', pose: 'mood_phone', title: '"나만 뒤처진 것 같아"',
     scene: '친구들의 합격 소식이 단톡방에 줄줄이 올라온다. {name}이(가) 휴대폰을 엎어 놓았다.',
     cry: '다들 잘 나가는데... 나만 제자리야.',
     empathy: ['"친구들 소식 보면서 마음이 복잡했구나."', '...축하는 하는데, 나도 모르게 비교돼.'],
@@ -228,7 +229,7 @@ export const EMO_SCENES: EmoScene[] = [
     solve: ['"남 말고, 1년 전의 너랑 비교하면 어때? 뭐가 달라졌어?"', '...그러고 보니 작년보다 많이 컸네. 내 속도로 갈래.'],
   }),
   E({
-    id: 'EY_CONTEST', stage: 'YOUTH', trigger: 'CONTEST_LOSS', emoji: '🏅', feel: '😞', title: '결과 발표',
+    id: 'EY_CONTEST', stage: 'YOUTH', trigger: 'CONTEST_LOSS', emoji: '🏅', feel: '😞', pose: 'mood_sad', title: '결과 발표',
     scene: '결과 발표 후, {name}이(가) 아무렇지 않은 척 웃는다. 눈가가 빨갛다.',
     cry: '괜찮아, 괜찮아. ...원래 그런 거지 뭐.',
     empathy: ['"괜찮은 척 안 해도 돼. 여기선."', '(웃음이 무너진다) ...사실 하나도 안 괜찮아.'],
@@ -237,7 +238,7 @@ export const EMO_SCENES: EmoScene[] = [
     solve: ['"이번에 배운 게 있다면 뭘까? 천천히 생각해도 돼."', '...내가 생각보다 오래 버틸 수 있는 사람이라는 거. 다시 해 볼게.'],
   }),
   E({
-    id: 'EY_STRIKE', stage: 'YOUTH', trigger: 'STRIKE', emoji: '🚪', feel: '😠', title: '"내 인생이야!"',
+    id: 'EY_STRIKE', stage: 'YOUTH', trigger: 'STRIKE', emoji: '🚪', feel: '😠', pose: 'mood_rebel', title: '"내 인생이야!"',
     scene: '학원을 빠진 {name}이(가) 현관에서 마주치자 먼저 목소리를 높였다.',
     cry: '나도 내 인생 있어!! 언제까지 시키는 대로만 해야 해?!',
     empathy: ['"그동안 하고 싶은 말이 많았구나. 지금 다 들을게."', '(놀란 듯 멈칫) ...진짜 들어 줄 거야?'],

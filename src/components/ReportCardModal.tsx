@@ -7,7 +7,7 @@ import { useGameStore } from '../store/useGameStore';
 import { EffectChips, PixelButton } from './ui';
 import { Sprite } from './Sprite';
 import { sceneBg } from './ActivitySceneView';
-import { frameName } from '../render/spriteCharacter';
+import { frameName, hasFrame } from '../render/spriteCharacter';
 import { displayStage } from '../engine/displayStage';
 
 const GRADE_COLOR = (r: number) => (r >= 1.15 ? 'text-[#2b8a3e]' : r >= 0.9 ? 'text-[#1971c2]' : r >= 0.65 ? 'text-ink' : 'text-accent');
@@ -18,6 +18,13 @@ export function ReportCardModal({ onPick, onClose }: { onPick: () => void; onClo
   const react = useGameStore((s) => s.reactReport);
   const card = useMemo(() => computeReport(game), []); // eslint-disable-line react-hooks/exhaustive-deps
   const [res, setRes] = useState<{ reply: string; delta: Effect } | null>(null);
+  const avg = card.subjects.reduce((a, x) => a + x.ratio, 0) / card.subjects.length;
+  const mk = (k: string) => k.split('|').find((x) => hasFrame(`${displayStage(game)}_${game.gender}_${x}`)) ?? 'stand';
+  const reportPose = res
+    ? (res.delta.affection ?? 0) > 0
+      ? (res.delta.stress ?? 0) > 0 ? mk('mood_sigh') : 'cheer'
+      : (res.delta.affection ?? 0) < 0 ? mk('mood_sulk') : 'stand'
+    : avg < 0.65 ? mk('mood_nervous|mood_stressed') : avg < 0.9 ? mk('mood_nervous|mood_sigh') : 'stand';
 
   return (
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-3">
@@ -29,7 +36,7 @@ export function ReportCardModal({ onPick, onClose }: { onPick: () => void; onClo
         <div className="relative mb-2 flex h-32 items-end justify-center overflow-hidden rounded border-3 border-ink bg-[#3a3048]">
           {sceneBg('PT_REPORT') && <img src={sceneBg('PT_REPORT')} alt="" className="absolute inset-0 h-full w-full object-cover object-bottom" draggable={false} />}
           <span className="relative">
-            <Sprite name={frameName(displayStage(game), game.gender, res ? (res.reply && res.delta.affection && res.delta.affection > 0 ? 'cheer' : 'stand') : 'stand')} scale={1.3} />
+            <Sprite name={frameName(displayStage(game), game.gender, reportPose)} scale={1.3} />
           </span>
         </div>
         <table className="mb-2 w-full border-2 border-ink text-center">

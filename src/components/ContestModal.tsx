@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { sfx } from '../audio/sfx';
 import type { ContestResult } from '../engine/simulation';
 import { growthStage } from '../engine/room';
-import { frameName } from '../render/spriteCharacter';
+import { hasFrame, frameName } from '../render/spriteCharacter';
 import type { Gender } from '../types/game';
 import { Sprite } from './Sprite';
 import { PixelButton, STAT_META } from './ui';
@@ -151,7 +151,7 @@ export function ContestReveal({ contest, gender, age, onClose }: { contest: Cont
 
   const pct = (v: number) => `${Math.min(100, (v / max) * 100)}%`;
   const passed = shown >= contest.threshold;
-  const kind = phase === 'result' ? (contest.win ? 'cheer' : 'stand') : 'stand';
+  const kind = phase === 'result' ? (contest.win ? 'cheer' : hasFrame(`${stage}_${gender}_${contest.rank ? 'mood_sigh' : 'mood_sad'}`) ? (contest.rank ? 'mood_sigh' : 'mood_sad') : 'stand') : 'stand';
 
   return (
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/65 p-3" onClick={phase === 'result' ? undefined : skip}>

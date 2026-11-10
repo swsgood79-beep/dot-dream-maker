@@ -635,6 +635,26 @@ for g in ('SON', 'DAUGHTER'):
             sprites[f'{st}_{g}_mood_{key}'] = defringe(cut(img_m, b, blk))
         print(f'  상태 포즈: {path} → 12동작')
 
+# 감정 포즈 추가 (v0.39.12, docs/mood2_requests.xlsx): 성별마다 한 장, 3줄(유년·청소년·청년) × 4칸
+MOOD2_KEYS = ['tantrum', 'relieved', 'nervous', 'hug']
+for g in ('SON', 'DAUGHTER'):
+    path = f'assets-src/mood2-{g.lower()}.png'
+    if not os.path.exists(path):
+        continue
+    img_m = np.asarray(Image.open(path).convert('RGB')).astype(np.int32)
+    rows_m = comp_rows(img_m)
+    if [len(rows_m.get(r, [])) for r in range(3)] != [4, 4, 4]:
+        print('  감정 포즈 추가 칸 수가 맞지 않음:', path, {r: len(v) for r, v in rows_m.items()})
+        continue
+    for r, st in enumerate(('CHILD', 'TEEN', 'YOUTH')):
+        boxes_m = {MOOD2_KEYS[k]: tight_box(img_m, rows_m[r][k]) for k in range(4)}
+        # 크기: 서 있는 3동작(드러눕기 제외)의 키 중앙값 = 그 단계 서기 키
+        tall = [b[3] - b[1] for k, b in boxes_m.items() if k != 'tantrum']
+        blk = float(np.median(tall)) / sprites[f'{st}_{g}_stand'].shape[0]
+        for key, b in boxes_m.items():
+            sprites[f'{st}_{g}_mood_{key}'] = defringe(cut(img_m, b, blk))
+    print(f'  감정 포즈 추가: {path}')
+
 # 책상 없이 의자에만 앉은 공부 그림 (v0.34.3): 받으면 '책상 공부' 그림을 교체 → 방 책상 앞에 바로 앉힘
 # 아직 교체되지 않은(그림 안에 책상이 있는) 프레임 목록은 src/render/deskSeat.json 으로 내보냄
 DESK_IN_SPRITE = {'TEEN_DAUGHTER_desk', 'YOUTH_SON_desk', 'YOUTH_DAUGHTER_desk'}

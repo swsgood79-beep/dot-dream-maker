@@ -3,7 +3,7 @@ import { sfx } from '../audio/sfx';
 import { GIFT_PRICE, giftOptions } from '../data/birthdayData';
 import type { Effect } from '../data/parentingData';
 import { growthStage } from '../engine/room';
-import { frameName } from '../render/spriteCharacter';
+import { hasFrame, frameName } from '../render/spriteCharacter';
 import { FirstTip } from './FirstTip';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
@@ -29,7 +29,7 @@ export function BirthdayModal({ onPick, onClose }: { onPick: () => void; onClose
             <span key={i} className="confetti absolute top-0 h-2 w-1.5" style={{ left: `${(i * 37) % 100}%`, background: ['#ff6fae', '#ffd84d', '#5bd6ff', '#5bd66b'][i % 4], animationDelay: `${(i % 5) * 0.15}s` }} />
           ))}
           <span className="relative">
-            <Sprite name={frameName(stage, game.gender, res ? (res.liked ? 'cheer' : 'stand') : 'cheer')} scale={1.4} />
+            <Sprite name={frameName(stage, game.gender, res ? (res.liked ? 'cheer' : hasFrame(`${stage}_${game.gender}_mood_sulk`) ? 'mood_sulk' : 'stand') : 'cheer')} scale={1.4} />
           </span>
           <div className="relative mb-1 flex flex-col items-center">
             <span className="text-[10px] tracking-tighter">{'🕯️'.repeat(Math.min(candles, 6))}</span>

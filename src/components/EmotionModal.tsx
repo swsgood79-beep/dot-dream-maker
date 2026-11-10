@@ -3,7 +3,7 @@ import { sfx } from '../audio/sfx';
 import { EMO_MAP, STEP_META, type EmoStage } from '../data/emotionData';
 import { displayStage } from '../engine/displayStage';
 import { emoOptions, emoSteps, emoText, eqLabel, type EmoPick, type EmoResult } from '../engine/emotion';
-import { frameName } from '../render/spriteCharacter';
+import { frameName, hasFrame } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
 import { sceneBg } from './ActivitySceneView';
@@ -66,7 +66,17 @@ export function EmotionModal({ id, onStart, onClose }: { id: string; onStart: ()
   };
 
   const feel = phase === 'result' ? (res && res.good === res.total ? '🥰' : res && res.good * 2 >= res.total ? '🙂' : '😶') : door >= 70 ? '🙂' : door >= 45 ? '😌' : sc.feel;
-  const pose = phase === 'result' && res && res.good === res.total ? 'cheer' : 'stand';
+  // 아이 모습: 처음엔 그 상황의 감정(울음·화남·웅크림…) → 마음의 문이 열릴수록 한숨 → 진정 → 결과
+  // 'a|b' 는 a 그림이 있으면 a, 없으면 b (아직 안 받은 새 포즈 → 가장 가까운 기존 포즈)
+  const pick = (k: string) => k.split('|').find((x) => x === 'stand' || x === 'cheer' || hasFrame(`${stage}_${game.gender}_${x}`)) ?? 'stand';
+  const pose =
+    phase === 'result' && res
+      ? pick(res.shut ? 'mood_back_sulk' : res.good === res.total ? 'mood_relieved|cheer' : res.good * 2 >= res.total ? 'stand' : 'mood_sulk')
+      : phase === 'intro' || door < 45
+        ? pick(door <= 0 ? 'mood_back_sulk' : sc.pose)
+        : door < 70
+          ? pick('mood_sigh')
+          : 'stand';
   const doorLabel = door >= 70 ? '활짝 열림' : door >= 45 ? '조금 열림' : door > 0 ? '살짝 틈' : '닫힘';
 
   return (

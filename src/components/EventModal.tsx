@@ -22,7 +22,8 @@ export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => 
   const sceneImg = eventScene(id, game.gender, game.age);
   if (!ev) return null;
   const stage = growthStage(game.age);
-  const moodPose = game.status.stress >= 60 ? 'tired' : 'stand';
+  const moodOr = (k: string) => (hasFrame(`${stage}_${game.gender}_${k}`) ? k : 'stand');
+  const moodPose = game.status.stress >= 60 ? 'tired' : game.status.affection <= 30 ? moodOr('mood_sulk') : 'stand';
 
   return (
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-3">
@@ -39,7 +40,7 @@ export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => 
         ) : (
           <div className="room-bg mb-2 flex h-28 items-end justify-center gap-2 border-3 border-ink">
             {visitor && hasFrame(visitor) && <Sprite name={visitor} scale={1.1} />}
-            <Sprite name={frameName(stage, game.gender, result ? (result.out.delta.affection ?? 0) >= 0 ? 'cheer' : 'stand' : moodPose)} scale={1.3} />
+            <Sprite name={frameName(stage, game.gender, result ? (result.out.delta.affection ?? 0) > 0 ? 'cheer' : (result.out.delta.affection ?? 0) < 0 ? moodOr('mood_sulk') : 'stand' : moodPose)} scale={1.3} />
           </div>
         )}
 

@@ -25,7 +25,7 @@ export function RecModal({ onClose }: { onClose: () => void }) {
   const stage = growthStage(game.age);
   // 겉으로는 화나고 웅크린 모습 → 속마음이 보이면 그 안의 슬픈 모습으로 (상태 포즈 그림이 있으면)
   const info = ACTING_INFO[act.kind];
-  const want = res ? (res.delta.affection ?? 0) > 0 ? 'cheer' : info.innerPose : phase === 'inner' ? info.innerPose : info.pose;
+  const want = res ? (res.delta.affection ?? 0) > 0 ? (hasFrame(`${stage}_${game.gender}_mood_hug`) ? 'mood_hug' : 'cheer') : info.innerPose : phase === 'inner' ? info.innerPose : info.pose;
   const pose = hasFrame(`${stage}_${game.gender}_${want}`) ? want : act.kind === 'STRIKE' || act.kind === 'SILENT' ? 'tired' : 'stand';
   const bg = recBg(act.kind, res && (res.delta.affection ?? 0) > 0 ? 'after' : 'view');
 

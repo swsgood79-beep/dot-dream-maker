@@ -1,7 +1,7 @@
 import { FirstTip } from '../FirstTip';
 import { useGameStore } from '../../store/useGameStore';
 import { Sprite } from '../Sprite';
-import { frameName } from '../../render/spriteCharacter';
+import { hasFrame, frameName } from '../../render/spriteCharacter';
 import { growthStage } from '../../engine/room';
 import { displayStage } from '../../engine/displayStage';
 import { WISH_MAP } from '../../data/parentingData';
@@ -31,7 +31,7 @@ export function TalkPanel() {
   return (
     <div className="text-sm">
       <div className="mb-3 flex items-start gap-3">
-        <Sprite name={frameName(stage, game.gender, affection >= 85 ? 'cheer' : stress >= 60 ? 'tired' : 'stand')} />
+        <Sprite name={frameName(stage, game.gender, affection >= 85 ? 'cheer' : stress >= 60 ? 'tired' : affection <= 30 && hasFrame(`${stage}_${game.gender}_mood_sulk`) ? 'mood_sulk' : 'stand')} />
         <div className="pixel-box flex-1 self-center p-2 text-xs">“{childLine(stage, stress, affection, delinquency)}”</div>
       </div>
 

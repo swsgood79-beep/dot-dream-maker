@@ -8,6 +8,7 @@ from PIL import Image
 src = open('scripts/build-sprites.py', encoding='utf-8').read()
 ns = {'__name__': 'portraits'}
 exec(src[:src.index('def walk_frames')], ns)
+exec(src[src.index('def cell_box('):src.index('for g, sheets_ in JOB_SHEETS.items():')], ns)
 
 def thin_outline(a, passes=4, thr=75):
     """바깥 검은 테두리를 안쪽으로 깎아 얇게 (원본은 1도트 ≈ 6px 라 테두리가 12px 안팎 → 친구 그림처럼 얇게)"""
@@ -26,7 +27,9 @@ def thin_outline(a, passes=4, thr=75):
     ys, xs = np.where(a[..., 3] > 0)
     a = a[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
     # 머리 꼭대기에 두껍게 남은 검은 줄 (원본 시트 칸 경계에 붙어 있던 테두리) 걷어 내기
-    while a.shape[0] > 10:
+    cut_rows = 0
+    while a.shape[0] > 10 and cut_rows < 5:  # 칸 경계 줄은 몇 줄뿐 — 어두운 머리카락까지 깎지 않게 최대 5줄
+        cut_rows += 1
         row = a[0]
         op = row[:, 3] > 0
         if op.sum() and (row[op, :3].astype(int).mean(-1) < thr).mean() > 0.7:
@@ -45,3 +48,41 @@ for name in ns['NAMES']:
     out = f'src/assets/portraits/{name}.webp'
     Image.fromarray(a).save(out, 'WEBP', quality=92, alpha_quality=100)
     print(out, a.shape[1], a.shape[0], os.path.getsize(out))
+
+
+# 기분(상태) 포즈도 원본 해상도로 (assets-src/mood-{stage}-{g}.png, 3×4) — 감정의 순간 · 성적표 등 창에서 씀
+MOOD_KEYS = ['sad', 'angry', 'cry', 'stressed', 'sulk', 'back_sulk', 'sick', 'phone', 'rebel', 'mope_walkA', 'mope_walkB', 'sigh']
+for g in ('SON', 'DAUGHTER'):
+    for st in ('CHILD', 'TEEN', 'YOUTH'):
+        path = f'assets-src/mood-{st.lower()}-{g.lower()}.png'
+        if not os.path.exists(path):
+            continue
+        img_m = np.asarray(Image.open(path).convert('RGB')).astype(np.int32)
+        rows_m = ns['comp_rows'](img_m)
+        if [len(rows_m.get(r, [])) for r in range(3)] != [4, 4, 4]:
+            print('  칸 수가 맞지 않음:', path)
+            continue
+        for r in range(3):
+            for k in range(4):
+                key = MOOD_KEYS[r * 4 + k]
+                if key.startswith('mope_walk'):
+                    continue
+                a = thin_outline(ns['cut'](img_m, ns['tight_box'](img_m, rows_m[r][k]), 1.0), passes=2)
+                out = f'src/assets/portraits/{st}_{g}_mood_{key}.webp'
+                Image.fromarray(a).save(out, 'WEBP', quality=92, alpha_quality=100)
+        print('  기분 포즈:', path)
+
+MOOD2_KEYS = ['tantrum', 'relieved', 'nervous', 'hug']
+for g in ('SON', 'DAUGHTER'):
+    path = f'assets-src/mood2-{g.lower()}.png'
+    if not os.path.exists(path):
+        continue
+    img_m = np.asarray(Image.open(path).convert('RGB')).astype(np.int32)
+    rows_m = ns['comp_rows'](img_m)
+    if [len(rows_m.get(r, [])) for r in range(3)] != [4, 4, 4]:
+        continue
+    for r, st in enumerate(('CHILD', 'TEEN', 'YOUTH')):
+        for k, key in enumerate(MOOD2_KEYS):
+            a = thin_outline(ns['cut'](img_m, ns['tight_box'](img_m, rows_m[r][k]), 1.0), passes=2)
+            Image.fromarray(a).save(f'src/assets/portraits/{st}_{g}_mood_{key}.webp', 'WEBP', quality=92, alpha_quality=100)
+    print('  감정 포즈 추가:', path)
