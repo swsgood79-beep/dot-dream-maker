@@ -17,6 +17,7 @@ import { RecModal } from './RecModal';
 import { ActingAlertModal } from './ActingAlertModal';
 import { UnlockModal } from './UnlockModal';
 import { NightModal } from './NightModal';
+import { autoStopReason } from '../engine/simulation';
 import { TownModal } from './TownModal';
 import { SpecialDayModal } from './SpecialDayModal';
 import { EmotionModal } from './EmotionModal';
@@ -58,6 +59,8 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const lastResult = useGameStore((s) => s.lastResult);
   const playing = useGameStore((s) => s.playing);
   const { runMonth, dismissResult, endPlayback } = useGameStore();
+  const autoLeft = useGameStore((s) => s.autoLeft);
+  const stopAuto = useGameStore((s) => s.stopAuto);
   const [tab, setTab] = useState<Tab | null>(null);
   const [placingId, setPlacingId] = useState<string | null>(null);
   const [contestSeen, setContestSeen] = useState<MonthResult | null>(null);
@@ -105,6 +108,17 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const markActingSeen = useGameStore((s) => s.markActingSeen);
   const openAlert = idle && !openCut && !openUnlock && !openReport && !openBday && !openEvent && !openSpecial && !openEmotion && !recOpen && !!game.acting && !game.acting.seen;
   const showContest = !!(lastResult && !playing && lastResult.contest && contestSeen !== lastResult);
+  // ⏩ 연속 진행: 새 달 창(육아 상황 · 생일 · 특별한 하루 …)을 다 처리하면 같은 스케줄로 다음 달 자동 진행
+  const anyWindow =
+    !!openCut || openUnlock || openReport || openBday || !!openEvent || !!openSpecial || !!openEmotion || openAlert || recOpen || nightOpen || townOpen || hwOpen || lunchOpen || diaryOpen || tab !== null;
+  useEffect(() => {
+    if (autoLeft <= 0 || !idle || anyWindow || lastResult || playing) return;
+    const t = setTimeout(() => {
+      const st = useGameStore.getState();
+      if (st.autoLeft > 0 && !st.lastResult && !st.playing) runMonth(st.autoLeft);
+    }, 900);
+    return () => clearTimeout(t);
+  }, [autoLeft, idle, anyWindow, lastResult, playing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const stress = game.status.stress;
   const stressColor = stress >= 80 ? '#e5484d' : stress >= 50 ? '#ff9f43' : '#5bd6a8';
@@ -224,6 +238,14 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
             <span className="animate-bounce text-base">📔</span> 일기장이 놓여 있다
           </button>
         )}
+        {autoLeft > 0 && !playing && (
+          <div className="pop-in absolute top-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border-2 border-ink bg-[#d8f0ff] px-2.5 py-1 text-[11px] font-bold whitespace-nowrap shadow-[2px_2px_0_rgba(0,0,0,.35)]">
+            ⏩ 연속 진행 중 · {autoLeft}달 남음
+            <button className="rounded-full border-2 border-ink bg-white px-1.5 text-[10px]" onClick={stopAuto}>
+              멈추기
+            </button>
+          </div>
+        )}
         {/* 부모의 손길: 잠든 아이 · 숙제 · 도시락 (선택, 방 왼쪽 아래) */}
         {!playing && !placingId && !lastResult && (
           <div className="absolute bottom-2 left-2 z-10 flex flex-col items-start gap-1">
@@ -288,16 +310,28 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
           title={`${game.month}월 스케줄 편성`}
           onClose={() => setTab(null)}
           footer={
-            <PixelButton
-              className="w-full"
-              color="bg-accent !text-white"
-              onClick={() => {
-                setTab(null);
-                runMonth();
-              }}
-            >
-              ▶ 이번 달 진행하기
-            </PixelButton>
+            <div className="flex gap-1.5">
+              <PixelButton
+                className="flex-1"
+                color="bg-accent !text-white"
+                onClick={() => {
+                  setTab(null);
+                  runMonth(1);
+                }}
+              >
+                ▶ 이번 달 진행하기
+              </PixelButton>
+              <PixelButton
+                className="shrink-0 !px-2 !text-xs"
+                color="bg-[#5bb8f0] !text-white"
+                onClick={() => {
+                  setTab(null);
+                  runMonth(3);
+                }}
+              >
+                ⏩ 3달 연속
+              </PixelButton>
+            </div>
           }
         >
           <SchedulePanel />
@@ -341,7 +375,19 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
           onClose={() => setContestShown(null)}
         />
       )}
-      {lastResult && !playing && !showContest && !contestOpen && <MonthResultModal result={lastResult} onClose={dismissResult} />}
+      {lastResult && !playing && !showContest && !contestOpen && (
+        <MonthResultModal
+          key={`${game.age}-${game.month}`}
+          result={lastResult}
+          auto={autoLeft > 0 ? { left: autoLeft, stop: autoStopReason(game, lastResult), onStop: stopAuto } : undefined}
+          onClose={() => {
+            // 완전히 멈출 일이 아니면 연속 진행을 유지 → 새 달 창들을 다 본 뒤 아래 효과가 다음 달을 진행
+            const stop = autoStopReason(game, lastResult);
+            dismissResult();
+            if (stop || lastResult.ending) stopAuto();
+          }}
+        />
+      )}
       {showTutorial && (
         <Tutorial
           name={game.childName}

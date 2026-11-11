@@ -66,8 +66,14 @@ interface GameStore {
   newGame: (name: string, gender: Gender, bonus: StatKey, temperament?: TemperamentId | 'RANDOM', parent?: ParentProfile, birthMonth?: number) => void;
   giveGift: (giftId: string) => { liked: boolean; reply: string; delta: Effect } | null;
   setScheduleSlot: (slot: number, actionId: string) => void;
-  runMonth: () => void;
+  runMonth: (months?: number) => void;
   dismissResult: () => void;
+  /** 연속 진행: 이번 달 뒤에 더 진행할 달 수 (저장 안 함) */
+  autoLeft: number;
+  stopAuto: () => void;
+  /** 연출 속도 1 · 2배 */
+  speed: 1 | 2;
+  toggleSpeed: () => void;
   buyFurniture: (furnitureId: string) => boolean;
   placeFromInventory: (furnitureId: string, x: number, y: number) => boolean;
   moveFurniture: (instanceId: string, x: number, y: number) => boolean;
@@ -222,6 +228,10 @@ export const useGameStore = create<GameStore>()(
         },
         musicOn: true,
         toggleMusic: () => set({ musicOn: !get().musicOn }),
+        autoLeft: 0,
+        stopAuto: () => set({ autoLeft: 0 }),
+        speed: 1,
+        toggleSpeed: () => set({ speed: get().speed === 2 ? 1 : 2 }),
         ending: null,
         toasts: [],
         endPlayback: () => set({ playing: false }),
@@ -249,9 +259,10 @@ export const useGameStore = create<GameStore>()(
             g.monthlySchedule[slot] = actionId;
           }),
 
-        runMonth: () => {
+        runMonth: (months = 1) => {
           const g = get().game;
           if (!g) return;
+          set({ autoLeft: Math.max(0, months - 1) });
           const result = runMonth(g, Math.random, { interactiveContest: true });
           const unlocked = Array.from(new Set([...get().unlockedEndings, ...result.state.unlockedEndings]));
           set({ game: result.state, lastResult: result, unlockedEndings: unlocked, playing: true });
@@ -610,6 +621,7 @@ export const useGameStore = create<GameStore>()(
       partialize: (st) => ({
         muted: st.muted,
         musicOn: st.musicOn,
+        speed: st.speed,
         game: st.game,
         unlockedEndings: st.unlockedEndings,
         carryIdea: st.carryIdea,

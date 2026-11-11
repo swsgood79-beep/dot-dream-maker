@@ -717,3 +717,22 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
   rollEmotion(s, weeks.some((w) => w.outcome === 'STRIKE') ? 'STRIKE' : 'RANDOM');
   return { state: s, weeks, events, contest: contestResult };
 }
+
+
+/**
+ * 연속 진행(3달 등)을 완전히 멈춰야 하는 일 — 부모가 스케줄을 다시 정해야 할 만한 것.
+ * (육아 상황 · 특별한 하루 · 생일 · 성적표 같은 창은 보여 준 뒤 이어서 진행하므로 여기 없음)
+ */
+export function autoStopReason(s: SaveState, r: MonthResult): string | null {
+  if (r.ending) return '엔딩';
+  if (r.contest || s.pendingContest) return '대회';
+  // 다음 달이 대회 달이면 도시락 · 스케줄을 준비할 수 있게 멈춤
+  const next = (Object.keys(CONTESTS) as ContestId[]).find((k) => CONTESTS[k].month === s.month);
+  if (next) return `다음 달 ${CONTESTS[next].title} 준비`;
+  if (s.acting && !s.acting.seen) return '아이에게 변화가 생김';
+  if (r.weeks.some((w) => w.outcome === 'SICK' || w.outcome === 'RUNAWAY')) return '아이가 아프거나 집을 나감';
+  if (s.status.stress >= 80) return '스트레스가 너무 높음';
+  if (s.gold < 300) return '돈이 부족함';
+  if (s.pendingUnlock) return '새 스케줄·가구가 열림';
+  return null;
+}

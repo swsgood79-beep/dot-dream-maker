@@ -65,3 +65,30 @@ describe('스케줄 장면 대사', () => {
     }
   });
 });
+
+import { autoStopReason } from '../engine/simulation';
+
+describe('연속 진행', () => {
+  it('조용한 달은 계속, 대회·생일·이벤트가 생기면 멈춤', () => {
+    let s = createNewGame('연속', 'SON', 'INT');
+    s.gold = 5000;
+    let rng = 3;
+    const r = () => ((rng = (rng * 16807) % 2147483647) / 2147483647);
+    let goes = 0;
+    let stops = 0;
+    for (let m = 0; m < 36; m++) {
+      s.monthlySchedule = ['EDU_01', 'REST_01', 'EDU_01', 'REST_01'];
+      const out = runMonth(s, r, { interactiveContest: true });
+      const why = autoStopReason(out.state, out);
+      if ([5, 6, 10, 11, 12, 1].includes(out.state.month)) expect(why).not.toBeNull(); // 대회 달 직전·직후
+      if (out.state.month === 3 || out.state.month === 8) expect(why).toBeNull(); // 조용한 달
+      if (why) stops++;
+      else goes++;
+      s = out.state;
+      s.pendingEvent = null; s.pendingCutscene = null; s.pendingBirthday = false; s.pendingUnlock = null; s.pendingSpecial = null;
+      s.pendingEmotion = null; s.pendingContest = null; s.pendingReport = false; s.gold = 5000; if (s.acting) s.acting.seen = true;
+    }
+    expect(goes).toBeGreaterThan(8);
+    expect(stops).toBeGreaterThan(5);
+  });
+});

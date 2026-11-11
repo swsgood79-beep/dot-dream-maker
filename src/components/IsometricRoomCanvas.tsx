@@ -166,6 +166,8 @@ export function IsometricRoomCanvas({
   const catBubbleRef = useRef<HTMLDivElement>(null);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const petChild = useGameStore((s) => s.petChild);
+  const speed = useGameStore((s) => s.speed);
+  const toggleSpeed = useGameStore((s) => s.toggleSpeed);
   const doneRef = useRef(onPlaybackDone);
   doneRef.current = onPlaybackDone;
 
@@ -422,6 +424,8 @@ export function IsometricRoomCanvas({
   }, [playback]);
 
   // 화면이 살아 있게: 평소엔 아이가 스스로 가구로 놀고, 고양이를 쓰다듬고, 혼잣말을 한다
+  const playRef = useRef(false);
+  playRef.current = !!playback;
   const lifeRef = useRef({ game, playing: !!playback, placing: !!placingId });
   lifeRef.current = { game, playing: !!playback, placing: !!placingId };
   useEffect(() => {
@@ -573,7 +577,7 @@ export function IsometricRoomCanvas({
         const union = (...sets: Set<string>[]) => new Set(sets.flatMap((x) => [...x]));
         const here = (gx: number, gy: number) => new Set([`${Math.floor(gx)},${Math.floor(gy)}`]);
         child.actor.slow = !!v.mood?.mope;
-        child.update(dt, { n: v.n, placed: v.placed, avoid: catOn ? here(cat.actor.gx, cat.actor.gy) : new Set() });
+        child.update(dt * (playRef.current ? useGameStore.getState().speed : 1), { n: v.n, placed: v.placed, avoid: catOn ? here(cat.actor.gx, cat.actor.gy) : new Set() });
         cat.update(dt, v.n, v.placed, union(child.occupied()));
         renderRoom(ctx, { ...v, cat: cat.inCushion ? null : cat.actor, time: t, actorHalo: haloRef.current });
         // 말풍선이 캐릭터 머리 위를 따라다니도록 DOM 위치 갱신
@@ -775,14 +779,14 @@ export function IsometricRoomCanvas({
           <>
             <div className="pointer-events-none absolute inset-0 z-20 bg-[#1b1f3b]/45" />
             <div key={scene.week} className="postcard-in absolute top-[5%] right-[5%] bottom-[13%] left-[5%] z-20 overflow-hidden rounded-md border-[6px] border-[#fffaf0] shadow-[6px_8px_0_rgba(0,0,0,.4)]">
-              <ActivitySceneView week={scene} stage={displayStage(game)} gender={game.gender} />
+              <ActivitySceneView week={scene} stage={displayStage(game)} gender={game.gender} speed={speed} />
               <span className="pointer-events-none absolute top-1.5 right-1.5 z-30 rounded-sm border-2 border-dashed border-[#c0392b] bg-[#fff1c2] px-1 text-[10px] font-bold text-[#c0392b]">📮 {scene.week + 1}주</span>
             </div>
           </>
         )}
         {weekCard && (
           <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center bg-[#1b1f3b]/35">
-            <div key={weekCard.n} className="week-card flex flex-col items-center rounded-xl border-4 border-ink bg-[#fffaf0] px-7 py-3 shadow-[6px_6px_0_rgba(0,0,0,.4)]">
+            <div key={weekCard.n} style={{ animationDuration: `${1.4 / speed}s` }} className="week-card flex flex-col items-center rounded-xl border-4 border-ink bg-[#fffaf0] px-7 py-3 shadow-[6px_6px_0_rgba(0,0,0,.4)]">
               <div className="mb-1 flex gap-1.5">
                 {[1, 2, 3, 4].map((k) => (
                   <span key={k} className={`h-2.5 w-2.5 rounded-full border-2 border-ink ${k < weekCard.n ? 'bg-[#5bd6a8]' : k === weekCard.n ? 'bg-gold' : 'bg-white'}`} />
@@ -808,9 +812,14 @@ export function IsometricRoomCanvas({
       </div>
       <div className="flex h-11 shrink-0 items-center justify-center px-2 text-xs text-white">
         {playback ? (
-          <PixelButton className="!px-3 !py-1 !text-[11px]" onClick={skipPlayback}>
-            ▶▶ 건너뛰기
-          </PixelButton>
+          <div className="flex gap-1.5">
+            <PixelButton className="!px-3 !py-1 !text-[11px]" color={speed === 2 ? 'bg-[#5bb8f0]' : 'bg-white'} onClick={toggleSpeed}>
+              {speed === 2 ? '⚡ 2배속 켜짐' : '⚡ 2배속'}
+            </PixelButton>
+            <PixelButton className="!px-3 !py-1 !text-[11px]" onClick={skipPlayback}>
+              ▶▶ 건너뛰기
+            </PixelButton>
+          </div>
         ) : placingId ? (
           <span className="flex items-center gap-1">
             <img src={pixelIconUrl(placingId)} className="h-5 w-5" style={{ imageRendering: 'pixelated' }} alt="" />

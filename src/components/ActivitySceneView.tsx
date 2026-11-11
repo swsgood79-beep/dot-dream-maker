@@ -25,7 +25,7 @@ const HI = Object.fromEntries(
 export const sceneBg = (id: string): string | undefined => BG[id];
 
 /** 바깥 활동 중 방 대신 보여 주는 장소 장면 */
-export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; stage: Stage; gender: Gender }) {
+export function ActivitySceneView({ week, stage, gender, speed = 1 }: { week: WeekResult; stage: Stage; gender: Gender; speed?: number }) {
   const sc = sceneFor(week);
   const beats = sceneBeats(week);
   // 단계: 0 도착 · 1 활동 중 · 2 결과 문장 · 3 결과 도장 + 획득
@@ -39,13 +39,13 @@ export function ActivitySceneView({ week, stage, gender }: { week: WeekResult; s
         setPhase(i + 1);
         if (i + 1 < 3) setTyped(0); // 도장 단계는 결과 문장을 그대로 둔다
         if (i + 1 === 3) sfx(week.outcome === 'GREAT' ? 'great' : week.outcome === 'FAIL' || week.outcome === 'RUNAWAY' ? 'fail' : 'stat');
-      }, ms),
+      }, ms / speed),
     );
     return () => ts.forEach(clearTimeout);
-  }, [week]);
+  }, [week]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (typed >= line.length) return;
-    const t = setTimeout(() => setTyped((n) => n + 1), 26);
+    const t = setTimeout(() => setTyped((n) => n + 1), 26 / speed);
     return () => clearTimeout(t);
   }, [typed, line]);
   const bgId = week.outcome === 'RUNAWAY' ? 'RUNAWAY' : week.actionId;

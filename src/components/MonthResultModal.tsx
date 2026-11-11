@@ -16,7 +16,7 @@ const OUTCOME_LABEL = {
 };
 
 /** 1주~4주를 순차적으로 보여주는 월간 결과 모달 (팝업 텍스트가 솟아오름) */
-export function MonthResultModal({ result, onClose }: { result: MonthResult; onClose: () => void }) {
+export function MonthResultModal({ result, onClose, auto }: { result: MonthResult; onClose: () => void; auto?: { left: number; stop: string | null; onStop: () => void } }) {
   // 방 안 연출을 이미 봤으므로 주간 결과는 빠르게 펼친다
   const [shown, setShown] = useState(0);
   useEffect(() => {
@@ -25,6 +25,13 @@ export function MonthResultModal({ result, onClose }: { result: MonthResult; onC
     return () => clearTimeout(t);
   }, [shown, result.weeks.length]);
   const done = shown >= result.weeks.length;
+  // 연속 진행: 멈출 일이 없으면 잠깐 보여 주고 다음 달로
+  const going = !!auto && auto.left > 0 && !auto.stop;
+  useEffect(() => {
+    if (!going || !done) return;
+    const t = setTimeout(onClose, 2200);
+    return () => clearTimeout(t);
+  }, [going, done]); // eslint-disable-line react-hooks/exhaustive-deps
   // 부탁을 들어줬거나 못 들어줬을 때 아이 반응 소리
   useEffect(() => {
     if (!done) return;
@@ -67,6 +74,19 @@ export function MonthResultModal({ result, onClose }: { result: MonthResult; onC
             {result.events.map((e, i) => (
               <p key={i}>{ko(e)}</p>
             ))}
+          </div>
+        )}
+        {auto && auto.stop && (
+          <p className="pop-in mt-2 rounded border-2 border-ink bg-[#fff1c2] px-2 py-1 text-center text-[11px] font-bold text-ink">
+            ⏸ <b>{auto.stop}</b> — 직접 봐야 할 일이 생겨 연속 진행을 멈췄어요
+          </p>
+        )}
+        {going && (
+          <div className="pop-in mt-2 flex items-center justify-between gap-2 rounded border-2 border-ink bg-[#d8f0ff] px-2 py-1 text-[11px] font-bold text-ink">
+            <span>⏩ 연속 진행 중 · {auto!.left}달 남음 — 곧 다음 달로</span>
+            <button className="pixel-btn bg-white px-2 py-0.5 text-[10px]" onClick={auto!.onStop}>
+              ⏸ 멈추기
+            </button>
           </div>
         )}
         <PixelButton className="mt-3 w-full" color={done ? 'bg-mint' : 'bg-white'} onClick={done ? onClose : () => setShown(result.weeks.length)}>
