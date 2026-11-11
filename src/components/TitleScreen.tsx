@@ -114,7 +114,7 @@ export function TitleScreen({ onStart, onOpening }: { onStart: () => void; onOpe
               </button>
             ))}
           </div>
-          <p className="mt-1 text-[10px] font-bold text-white/45">v0.42.0 · 성장 거울</p>
+          <p className="mt-1 text-[10px] font-bold text-white/45">v0.43.0 · 인연 엔딩</p>
         </div>
       )}
       {settings && <SettingsModal onClose={() => setSettings(false)} onOpening={onOpening} />}

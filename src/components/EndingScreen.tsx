@@ -6,6 +6,8 @@ import { growthStage } from '../engine/room';
 import { STAT_KEYS, type GrowthSnapshot } from '../engine/simulation';
 import { frameName, hasFrame } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
+import { peopleEnding } from '../engine/town';
+import { PeopleEndingView } from './PeopleEndingView';
 import type { CharacterStats, StatKey } from '../types/game';
 import { Sprite } from './Sprite';
 import { Bar, PixelButton, STAT_META, TIER_COLOR } from './ui';
@@ -21,7 +23,7 @@ import { EndingBackdrop, REVEAL_RIBBON, Ribbon, revealMood } from './EndingBackd
 import { relationEnding } from '../engine/psyche';
 import { endingArt } from '../render/endingArt';
 
-type Step = 'intro' | 'album' | 'photos' | 'recap' | 'drum' | 'reveal' | 'phone' | 'letter' | 'later';
+type Step = 'intro' | 'album' | 'photos' | 'recap' | 'drum' | 'reveal' | 'phone' | 'letter' | 'people' | 'later';
 
 const STAGE_TITLE = { CHILD: '유년기', TEEN: '청소년기', YOUTH: '청년기' };
 
@@ -173,7 +175,7 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
             <br />
             <span className="opacity-70">빈 우편함 앞에서, 12년 동안 했던 말들을 하나씩 떠올려 본다.</span>
           </p>
-          <PixelButton className="w-full" color="bg-gold" onClick={() => setStep('later')}>
+          <PixelButton className="w-full" color="bg-gold" onClick={() => setStep(peopleEnding(game, ending.category).length ? 'people' : 'later')}>
             🌅 20년 후...
           </PixelButton>
         </div>
@@ -201,12 +203,14 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
                   {t.emoji} {t.label} 아이 · 들어준 부탁 {game.wishesGranted ?? 0}번 · 함께한 사건 {game.seenEvents?.length ?? 0}가지
                 </p>
               )}
-              <PixelButton className="w-full" color="bg-gold" onClick={() => setStep('later')}>
+              <PixelButton className="w-full" color="bg-gold" onClick={() => setStep(peopleEnding(game, ending.category).length ? 'people' : 'later')}>
                 🌅 20년 후...
               </PixelButton>
             </div>
           );
         })()}
+
+      {step === 'people' && <PeopleEndingView game={game} category={ending.category} onDone={() => setStep('later')} />}
 
       {step === 'later' && (
         <div className="pop-in flex min-h-0 w-full flex-1 flex-col items-center gap-2">

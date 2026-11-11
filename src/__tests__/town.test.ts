@@ -47,3 +47,16 @@ describe('주말 나들이', () => {
     expect(person(s, 'GRANNY').got).toEqual([50, 100]);
   });
 });
+
+import { peopleEnding } from '../engine/town';
+
+describe('인연 엔딩', () => {
+  it('만난 사람만, 깊은 사이 먼저, 글에 자리표시가 남지 않음', () => {
+    const s = createNewGame('민준', 'SON', 'INT');
+    s.people = { FRIEND: { rel: 100, met: true }, GRANNY: { rel: 40, met: true }, RIVAL: { rel: 10, met: true } };
+    const list = peopleEnding(s, 'BIZ');
+    expect(list.map((p) => p.npc)).toEqual(['FRIEND', 'GRANNY', 'RIVAL']);
+    expect(list[0].later).toContain('첫 투자자');
+    for (const p of list) expect(p.ceremony + p.later).not.toMatch(/[{}]|\(가\)|\(는\)|\(과\)/);
+  });
+});

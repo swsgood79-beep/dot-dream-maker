@@ -668,8 +668,8 @@ import { ACHIEVEMENTS, epilogueLines, makeHallEntry, newAchievements } from '../
 
 describe('legacy: hall of fame, visit, achievements, 20 years later', () => {
   it('there are 30 unique achievements', () => {
-    expect(ACHIEVEMENTS.length).toBe(32);
-    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(32);
+    expect(ACHIEVEMENTS.length).toBe(34);
+    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(34);
   });
 
   it('ending creates a hall entry and unlocks achievements', () => {

@@ -76,6 +76,8 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'LOVE_YES', emoji: '💑', name: '첫사랑 성공', desc: '아이의 첫사랑이 이루어졌다', check: (s) => (s.memories ?? []).includes('ARC_LOVE:YES') },
   { id: 'TEMPER_FAST', emoji: '🔍', name: '눈치 백단', desc: '10세가 되기 전에 아이의 기질을 알아챘다', check: (s) => (s.temperRevealedAge ?? 99) < 10 },
   { id: 'FRIEND_KEEP', emoji: '🤝', name: '평생 단짝', desc: '단짝 친구와 12년 내내 함께했다', check: (s) => !!s.friend && !s.flags.includes('FRIEND_AWAY') },
+  { id: 'PEOPLE_3', emoji: '🏘️', name: '온 동네가 키운 아이', desc: '동네 인연 3명 이상과 가장 깊은 사이가 됐다', check: (s) => Object.values(s.people ?? {}).filter((p) => (p?.rel ?? 0) >= 70).length >= 3 },
+  { id: 'RIVAL_FRIEND', emoji: '🔥', name: '최고의 라이벌', desc: '라이벌과 서로를 키운 사이가 됐다', check: (s) => (s.people?.RIVAL?.rel ?? 0) >= 100 },
   { id: 'PHOTO_50', emoji: '📷', name: '추억 부자', desc: '사진첩에 사진 50장 이상', check: (s) => (s.photos ?? []).length >= 50 },
   { id: 'TROPHY_10', emoji: '🏆', name: '트로피 수집가', desc: '대회 우승·입상 10번 이상', check: (s) => wins(s) >= 10 },
   { id: 'TEMPER_ALL', emoji: '🎭', name: '다섯 가지 마음', desc: '기질 5종을 모두 키워 봤다', check: (_, __, m) => new Set(m.hall.map((h) => h.temperament).filter(Boolean)).size >= 5 },

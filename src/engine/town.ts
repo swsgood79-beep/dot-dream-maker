@@ -139,3 +139,66 @@ export function resolveEncounter(s: SaveState, encId: string, pick: number): Tow
 export function rivalBonus(s: SaveState) {
   return person(s, 'RIVAL').got?.includes(50) ? 1.05 : 1;
 }
+
+/* ───────── 🎓 성인식 날 찾아온 사람들 · 20년 후 (v0.43) ───────── */
+export interface PeopleEnding {
+  npc: NpcId;
+  label: string;
+  tier: 0 | 1 | 2;
+  ceremony: string; // 성인식 날
+  later: string; // 20년 후
+}
+
+type Cat = 'ELITE' | 'TECH' | 'ENT' | 'BIZ' | 'ACTION' | 'HIDDEN' | 'DARK';
+
+const LINES: Record<NpcId, [string, string][]> = {
+  // [성인식 날, 20년 후] — 관계 단계 0 · 1 · 2
+  FRIEND: [
+    ['{friend}에게서 짧은 축하 문자가 왔어요. "성인 축하해~"', '{friend} 소식은 가끔 SNS로만 봐요. 그래도 사진에 "좋아요"는 꼭 눌러요.'],
+    ['{friend}이(가) 꽃 한 송이를 들고 잠깐 들렀어요. "우리 진짜 어른이다!"', '{friend}와(과)는 1년에 한두 번 만나는 반가운 옛 친구예요.'],
+    ['{friend}이(가) 제일 먼저 꽃다발을 들고 달려왔어요. 둘이 끌어안고 한참을 웃었어요.', '{friend}와(과)는 아직도 매주 통화해요. 서로의 결혼식에서 축사를 해 줬어요.'],
+  ],
+  RIVAL: [
+    ['{rival}은(는) 오지 않았어요. 그래도 졸업 앨범 속 둘은 나란히 서 있어요.', '{rival}의 이름을 뉴스에서 봤어요. "역시 걔는 잘할 줄 알았어."'],
+    ['{rival}이(가) 무심하게 한마디 했어요. "...축하한다. 다음엔 내가 이긴다."', '{rival}와(과)는 같은 분야에서 다시 만나 은근한 경쟁을 이어 가요.'],
+    ['{rival}이(가) 손을 내밀었어요. "너 없었으면 여기까지 못 왔어."', '{rival}와(과)는 이제 서로를 가장 먼저 추천하는 동료가 됐어요.'],
+  ],
+  TEACHER: [
+    ['{teacher} 선생님께 짧은 문자가 왔어요. "졸업 축하한다."', '{teacher} 선생님은 정년퇴임을 하셨대요.'],
+    ['{teacher} 선생님이 축하 카드를 보내 주셨어요.', '스승의 날마다 {teacher} 선생님께 안부 인사를 드려요.'],
+    ['{teacher} 선생님이 직접 오셔서 꼭 안아 주셨어요. "넌 선생님의 자랑이야."', '모교에 강연을 갔더니 {teacher} 선생님이 맨 앞줄에서 박수를 쳐 주셨어요.'],
+  ],
+  GRANNY: [
+    ['빵집 할머니가 지나가다 "다 컸네~" 하고 웃으셨어요.', '동네 빵집 간판이 바뀌었어요. 할머니는 잘 지내실까요.'],
+    ['빵집 할머니가 소보로빵 한 봉지를 쥐여 주셨어요.', '명절마다 할머니 빵집에 들러 안부를 전해요.'],
+    ['빵집 할머니가 직접 구운 케이크를 들고 오셨어요. "우리 손주 장하다!"', '할머니의 비밀 레시피는 이제 아이가 지켜요. 해마다 그 소보로를 구워 할머니께 가져가요.'],
+  ],
+  MENTOR: [
+    ['{mentor} 선배가 SNS에 축하 댓글을 남겼어요.', '{mentor} 선배는 먼 도시로 이사했대요.'],
+    ['{mentor} 선배가 "이제 진짜 후배네!" 하고 밥을 사 줬어요.', '{mentor} 선배와는 가끔 만나 진로 이야기를 나눠요.'],
+    ['{mentor} 선배가 교문 앞에서 기다리고 있었어요. "약속했잖아, 화이팅!"', '이제는 아이가 누군가의 선배가 되어, {mentor} 선배에게 받은 것을 그대로 돌려주고 있어요.'],
+  ],
+};
+
+/** 엔딩 직업에 따라 덧붙는 한 줄 (관계가 깊은 사람만) */
+const JOB_TWIST: Partial<Record<NpcId, Partial<Record<Cat, string>>>> = {
+  FRIEND: { ENT: ' 첫 무대 맨 앞줄엔 늘 {friend}이(가) 있어요.', BIZ: ' {friend}이(가) 첫 투자자가 되어 줬어요.', DARK: ' 힘든 시절에도 {friend}만은 곁을 떠나지 않았어요.' },
+  RIVAL: { ELITE: ' 같은 시험장에서 다시 만난 날, 둘 다 웃음이 터졌어요.', ACTION: ' 같은 팀 유니폼을 입게 됐어요.' },
+  GRANNY: { BIZ: ' 할머니 레시피로 연 가게가 동네 명물이 됐어요.' },
+  MENTOR: { TECH: ' 선배 회사에서 함께 일하자는 연락이 왔어요.', ELITE: ' 선배가 다니던 학교의 교수가 됐어요.' },
+};
+
+export function peopleEnding(s: SaveState, category?: string): PeopleEnding[] {
+  const vars = townNames(s);
+  const out: PeopleEnding[] = [];
+  for (const id of Object.keys(NPCS) as NpcId[]) {
+    const p = person(s, id);
+    if (!p.met) continue;
+    const tier = relTier(p.rel);
+    const [c, l] = LINES[id][tier];
+    const twist = tier === 2 && category ? (JOB_TWIST[id]?.[category as Cat] ?? '') : '';
+    const label = id === 'FRIEND' ? vars.friend : id === 'RIVAL' ? vars.rival : id === 'TEACHER' ? `${vars.teacher} 선생님` : id === 'GRANNY' ? '빵집 할머니' : `${vars.mentor} 선배`;
+    out.push({ npc: id, label, tier, ceremony: townText(c, vars), later: townText(l + twist, vars) });
+  }
+  return out.sort((a, b) => b.tier - a.tier);
+}

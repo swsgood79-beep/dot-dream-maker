@@ -1,7 +1,7 @@
 import type { Relation } from '../engine/psyche';
 
 /** 성인식 엔딩 무대: 단계마다 배경·조명·효과가 바뀐다 (내용 뒤에 깔림) */
-type Stage = 'intro' | 'album' | 'photos' | 'recap' | 'drum' | 'reveal' | 'phone' | 'letter' | 'later';
+type Stage = 'intro' | 'album' | 'photos' | 'recap' | 'drum' | 'reveal' | 'phone' | 'letter' | 'people' | 'later';
 const rnd = (i: number, k: number) => ((Math.sin(i * 127.1 + k * 311.7) * 43758.5453) % 1 + 1) % 1;
 
 const TIER_FX: Record<string, { confetti: number; fireworks: number; colors: string[] }> = {
@@ -33,7 +33,7 @@ export function EndingBackdrop({ step, tier, art: brightArt, darkArt, sky, rel, 
   const party = reveal && mood === 'festive';
   const gloomy = reveal && mood === 'gloomy';
   const shady = reveal && mood === 'shady';
-  const late = step === 'letter' || step === 'later';
+  const late = step === 'letter' || step === 'people' || step === 'later';
   const phone = step === 'phone';
   const cold = phone && rel === 'HOLLOW';
   const fx = TIER_FX[tier] ?? TIER_FX.B;
