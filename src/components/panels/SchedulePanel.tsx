@@ -5,6 +5,8 @@ import { useGameStore } from '../../store/useGameStore';
 import type { ScheduleAction } from '../../types/game';
 import { StatChip } from '../ui';
 import { WISH_MAP } from '../../data/parentingData';
+import { planMode } from '../../engine/negotiate';
+import { PlanHeader } from './PlanHeader';
 
 function actionSummary(a: ScheduleAction) {
   return (
@@ -25,6 +27,12 @@ export function SchedulePanel() {
   // 스케줄 창을 닫으면 본 스케줄의 NEW 표시를 지운다
   const clearNew = useGameStore((s) => s.clearNew);
   useEffect(() => () => clearNew(SCHEDULE_ACTIONS.map((a) => a.id)), [clearNew]);
+  // 청소년·청년: 이번 달 아이 계획을 준비
+  const preparePlan = useGameStore((s) => s.preparePlan);
+  useEffect(() => preparePlan(), [preparePlan]);
+  const setHow = useGameStore((s) => s.setNegoHow);
+  const mode = planMode(game.age);
+  const locked = mode === 'AUTONOMY' || (mode === 'NEGOTIATE' && !!game.negoDone);
   const setSlot = useGameStore((s) => s.setScheduleSlot);
   const [slot, setSlot_] = useState(0);
   // 방금 넣은 행동 (확인 표시용)
@@ -40,6 +48,7 @@ export function SchedulePanel() {
 
   return (
     <div className="text-xs">
+      <PlanHeader />
       {/* 주차 칸은 목록을 내려도 위에 고정 → 지금 몇 주차를 고르는지 항상 보임 */}
       <div className="sticky -top-3 z-10 -mx-3 -mt-3 mb-2 border-b-2 border-ink/20 bg-panel px-3 pt-3 pb-2">
       <div className="mb-2 grid grid-cols-4 gap-1">
@@ -49,14 +58,32 @@ export function SchedulePanel() {
             <button
               key={justSet?.week === i ? `${i}-${justSet.n}` : i}
               onClick={() => {
+                if (locked) return;
                 setSlot_(i);
                 setJustSet(null);
               }}
               className={`pixel-btn flex flex-col items-center px-1 py-2 ${slot === i ? 'bg-gold' : justSet?.week === i ? 'pop-in bg-[#c8f5d0]' : 'bg-white'}`}
             >
-              <span className="text-[10px] opacity-70">{i + 1}주</span>
+              <span className="text-[10px] opacity-70">
+                {i + 1}주{locked && mode === 'AUTONOMY' ? ' 🔒' : ''}
+              </span>
               <span className="text-xl">{a.emoji}</span>
               <span className="line-clamp-2 text-[10px] leading-tight">{a.name}</span>
+              {mode === 'NEGOTIATE' && !game.negoDone && game.childWant && game.childWant[i] !== id && (
+                <span
+                  role="button"
+                  className={`mt-1 rounded border border-ink px-1 text-[9px] font-bold ${(game.negoHow?.[i] ?? 'ASK') === 'FORCE' ? 'bg-[#ffd0d0]' : 'bg-[#d8f0ff]'}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setHow(i, (game.negoHow?.[i] ?? 'ASK') === 'FORCE' ? 'ASK' : 'FORCE');
+                  }}
+                >
+                  {(game.negoHow?.[i] ?? 'ASK') === 'FORCE' ? '✋ 강제' : '💬 설득'}
+                </span>
+              )}
+              {mode === 'NEGOTIATE' && !game.negoDone && game.childWant && game.childWant[i] === id && <span className="mt-1 text-[9px] font-bold text-emerald-700">✨ 원하는 것</span>}
+              {mode !== 'PARENT' && game.negoDone !== undefined && game.negoDone && game.forcedWeeks?.[i] && <span className="mt-1 text-[9px] font-bold text-accent">✋ 강제</span>}
+              {mode !== 'PARENT' && (game.negoDone || mode === 'AUTONOMY') && game.ownWeeks?.[i] && <span className="mt-1 text-[9px] font-bold text-emerald-700">✨ 자기주도</span>}
             </button>
           );
         })}
@@ -73,13 +100,18 @@ export function SchedulePanel() {
           </span>
         </p>
       ) : (
-        <p className="mt-1 text-center text-[11px] font-bold text-wood">▼ {slot + 1}주차에 할 일을 고르세요</p>
+        <p className="mt-1 text-center text-[11px] font-bold text-wood">{locked ? '' : mode === 'NEGOTIATE' ? `▼ ${slot + 1}주차를 바꾸고 싶으면 아래에서 고르세요` : `▼ ${slot + 1}주차에 할 일을 고르세요`}</p>
       )}
       </div>
       {game.forcedRestWeeks > 0 && <p className="mb-2 text-accent">🤒 이번 달 {game.forcedRestWeeks}주는 강제 요양</p>}
       {game.runawayWeeks > 0 && <p className="mb-2 text-accent">🏃 이번 달 {game.runawayWeeks}주는 가출로 취소</p>}
 
-      {types.map((t) => (
+      {locked && (
+        <p className="mb-2 rounded border-2 border-dashed border-ink/40 bg-white p-2 text-center text-[11px] font-bold text-wood">
+          {mode === 'AUTONOMY' ? '🕊️ 이번 달 스케줄은 아이가 정했어요. 아래 진행 버튼을 눌러 주세요.' : '💬 이야기를 마쳤어요. 아래 진행 버튼을 눌러 주세요.'}
+        </p>
+      )}
+      {!locked && types.map((t) => (
         <div key={t} className="mb-2">
           <p className="mb-1 text-[11px] font-bold text-wood">{ACTION_TYPE_LABEL[t]}</p>
           <div className="grid grid-cols-1 gap-1">

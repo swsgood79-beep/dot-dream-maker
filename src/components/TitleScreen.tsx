@@ -114,7 +114,7 @@ export function TitleScreen({ onStart, onOpening }: { onStart: () => void; onOpe
               </button>
             ))}
           </div>
-          <p className="mt-1 text-[10px] font-bold text-white/45">v0.40.0 · 연속 진행</p>
+          <p className="mt-1 text-[10px] font-bold text-white/45">v0.41.0 · 협상과 자율</p>
         </div>
       )}
       {settings && <SettingsModal onClose={() => setSettings(false)} onOpening={onOpening} />}

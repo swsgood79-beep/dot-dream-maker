@@ -1,6 +1,7 @@
 import { rollSpecialDay } from './specialDay';
 import { rivalBonus } from './town';
 import { rollEmotion } from './emotion';
+import { monthlyTrust, preparePlan, weekStatMul, weekStressMul } from './negotiate';
 
 /** 감정 조절력이 높으면 파업이 줄고, 낮으면 늘어난다 */
 const strikeMul = (s: { eq?: number }) => ((s.eq ?? 40) >= 65 ? 0.5 : (s.eq ?? 40) <= 25 ? 1.4 : 1);
@@ -124,6 +125,17 @@ export interface SaveState extends GameState {
   emoSeen?: string[];
   emoLog?: { age: number; id: string; good: number; total: number }[];
   lastEmotionAt?: number;
+  // ── v0.41 협상 · 자율 스케줄
+  trust?: number; // 신뢰 0~100 (없으면 50)
+  defiance?: number; // 반발 0~100
+  planFor?: number; // 아이 계획을 만든 달 (monthIndex)
+  childWant?: string[]; // 아이가 하고 싶은 4주
+  negoHow?: ('ASK' | 'FORCE')[]; // 바꾼 칸을 어떻게 말할지
+  negoDone?: boolean;
+  ownWeeks?: boolean[]; // 아이 뜻대로 하는 주 (자기주도)
+  forcedWeeks?: boolean[]; // 부모가 강제로 정한 주
+  support?: import('./negotiate').Support | null; // 청년기 이번 달 뒷받침
+  advice?: import('./negotiate').Advice | null; // 진로 상담으로 말해 준 방향
 }
 
 /** 게임 시작부터 센 달 수 (8세 1월 = 1) */
@@ -366,7 +378,7 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
   const stress = s.status.stress;
   const attitude = dominantAttitude(s);
   // 스케줄 파업 (GDD 11.2): 지치거나 마음이 멀어진 아이는 학원에 가지 않고 버틴다
-  if (action.type === 'EDUCATION' && outcome === 'SUCCESS' && (stress >= 80 || s.status.affection <= 30) && rng() < 0.35 * strikeMul(s)) {
+  if (action.type === 'EDUCATION' && outcome === 'SUCCESS' && ((stress >= 80 || s.status.affection <= 30) && rng() < 0.35 * strikeMul(s) || (!!s.forcedWeeks?.[week] && (s.defiance ?? 0) >= 40 && rng() < 0.4))) {
     s.gold += action.weeklyGoldDelta; // 학원비는 이미 냄
     s.status.stress = clamp(stress - 6, 0, 100);
     s.status.selfEsteem = clamp((s.status.selfEsteem ?? 50) - 2, 0, 100);
@@ -430,7 +442,7 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
         maxMult = Math.max(maxMult, m);
         const tm = (temper?.statMul[k] ?? 1) * parentStatMul(s.parent?.points, k) * (attitude === 'TIGER' && (k === 'INT' || k === 'TEC') ? 1.2 : 1);
         const mm = masteryMul(masteryLevel(s.actionCounts[action.id] ?? 0)); // 숙련도
-        gain = Math.round((base + auraV) * GAIN_SCALE * growthCurve(s.stats[k]) * m * conditionFactor * tm * mm);
+        gain = Math.round((base + auraV) * GAIN_SCALE * growthCurve(s.stats[k]) * m * conditionFactor * tm * mm * weekStatMul(s, week));
       }
     }
     if (gain !== 0) {
@@ -447,7 +459,7 @@ function simulateWeek(s: SaveState, week: number, rng: Rng): WeekResult {
   let stressDelta = action.weeklyStressDelta;
   if (stressDelta > 0) {
     const mul = usedCombos.reduce((m, id) => m + (COMBO_MAP[id].stressMultiplier ?? 0), 1);
-    stressDelta = Math.max(0, Math.round(stressDelta * mul * (temper?.stressMul ?? 1) * (attitude === 'HELICOPTER' ? 0.6 : 1) - aura.stressReduction));
+    stressDelta = Math.max(0, Math.round(stressDelta * mul * (temper?.stressMul ?? 1) * (attitude === 'HELICOPTER' ? 0.6 : 1) * weekStressMul(s, week) - aura.stressReduction));
   } else if (stressDelta < 0) {
     const rb = usedCombos.reduce((m, id) => m + (COMBO_MAP[id].restBonus ?? 0), 0);
     stressDelta = Math.round(stressDelta * (1 + rb) - aura.stressReduction);
@@ -611,11 +623,12 @@ export function refreshCombos(s: SaveState): string[] {
 }
 
 /** STEP 3~5: 4주 스케줄 실행 → 월말 이벤트/상태 체크 → 재화 정산 → 다음 달 */
-export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { interactiveContest?: boolean } = {}): MonthResult {
+export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { interactiveContest?: boolean; childPlans?: boolean } = {}): MonthResult {
   const s = cloneState(input);
   const events: string[] = [];
   refreshCombos(s);
 
+  if (opts.childPlans) preparePlan(s); // 청소년·청년: 이번 달 계획이 없으면 아이 계획 그대로 (연속 진행 등 협상 없이 맡김)
   const weeks: WeekResult[] = [];
   for (let w = 0; w < 4; w++) weeks.push(simulateWeek(s, w, rng));
 
@@ -669,6 +682,7 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
   events.push(`💰 부모님 지원금 +${allowance}G`);
 
   // 턴 종료
+  monthlyTrust(s, events);
   monthlyPsyche(s, weeks, events, monthIndex(s));
   s.talkedThisMonth = false;
   s.talkKind = null;

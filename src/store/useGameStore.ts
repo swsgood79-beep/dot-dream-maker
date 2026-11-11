@@ -11,6 +11,7 @@ import { canPlace, findFreeSpot } from '../engine/room';
 import { applyEffect, recordStyle, resolveParentingEvent, type EventOutcome } from '../engine/parenting';
 import { REC_CHOICES, bumpAttitude, dominantAttitude } from '../engine/psyche';
 import { visitNight, type HomeworkWay, type Lunch, type NightTouch } from '../engine/parentTouch';
+import { negotiate as negotiateEngine, planMode, preparePlan as preparePlanEngine, SUPPORT_META, type Advice, type NegoLine, type Support } from '../engine/negotiate';
 import { resolveEmotion, type EmoPick, type EmoResult } from '../engine/emotion';
 import { resolveEncounter, type TownOutcome } from '../engine/town';
 import { resolveSpecial, type SpecialPlay } from '../engine/specialDay';
@@ -20,7 +21,7 @@ import { CUTSCENE_MAP } from '../data/cutsceneData';
 import { giftOptions, giveGift } from '../data/birthdayData';
 import { makeHallEntry, newAchievements, type HallEntry } from '../data/legacyData';
 import type { Effect, ParentStyle } from '../data/parentingData';
-import { addPhoto, finishContest, perfFactor, type ContestResult, createNewGame, refreshCombos, runMonth, type MonthResult, type SaveState } from '../engine/simulation';
+import { monthIndex, addPhoto, finishContest, perfFactor, type ContestResult, createNewGame, refreshCombos, runMonth, type MonthResult, type SaveState } from '../engine/simulation';
 
 export type Toast = { id: number; text: string };
 
@@ -66,6 +67,12 @@ interface GameStore {
   newGame: (name: string, gender: Gender, bonus: StatKey, temperament?: TemperamentId | 'RANDOM', parent?: ParentProfile, birthMonth?: number) => void;
   giveGift: (giftId: string) => { liked: boolean; reply: string; delta: Effect } | null;
   setScheduleSlot: (slot: number, actionId: string) => void;
+  preparePlan: () => void;
+  setNegoHow: (slot: number, how: 'ASK' | 'FORCE') => void;
+  doNegotiate: () => NegoLine[];
+  /** 방금 한 협상 결과 (저장 안 함) */
+  negoLines: NegoLine[] | null;
+  chooseSupport: (kind: Support, advice?: Advice) => boolean;
   runMonth: (months?: number) => void;
   dismissResult: () => void;
   /** 연속 진행: 이번 달 뒤에 더 진행할 달 수 (저장 안 함) */
@@ -256,14 +263,59 @@ export const useGameStore = create<GameStore>()(
 
         setScheduleSlot: (slot, actionId) =>
           void mutate((g) => {
+            // 청년기는 아이가 정함, 청소년기는 이야기를 마친 뒤엔 못 바꿈
+            if (planMode(g.age) === 'AUTONOMY' || (planMode(g.age) === 'NEGOTIATE' && g.negoDone)) return false;
             g.monthlySchedule[slot] = actionId;
           }),
+        preparePlan: () =>
+          void mutate((g) => {
+            set({ negoLines: null });
+            if (planMode(g.age) === 'PARENT' || g.planFor === monthIndex(g)) return false;
+            preparePlanEngine(g);
+          }),
+        setNegoHow: (slot, how) =>
+          void mutate((g) => {
+            const h = [...(g.negoHow ?? ['ASK', 'ASK', 'ASK', 'ASK'])];
+            h[slot] = how;
+            g.negoHow = h;
+          }),
+        negoLines: null,
+        doNegotiate: () => {
+          let out: NegoLine[] = [];
+          mutate((g) => {
+            if (g.negoDone) return false;
+            out = negotiateEngine(g);
+          });
+          set({ negoLines: out });
+          return out;
+        },
+        chooseSupport: (kind, advice) => {
+          let ok = false;
+          mutate((g) => {
+            if (g.support) return false;
+            const cost = SUPPORT_META[kind].cost ?? 0;
+            if (g.gold < cost) {
+              get().pushToast('골드가 부족해요');
+              return false;
+            }
+            g.gold -= cost;
+            g.support = kind;
+            if (kind === 'CHEER') {
+              g.status.stress = Math.max(0, g.status.stress - 10);
+              g.status.affection = Math.min(100, g.status.affection + 3);
+              g.trust = Math.min(100, (g.trust ?? 50) + 2);
+            }
+            if (kind === 'ADVICE' && advice) g.advice = advice;
+            ok = true;
+          });
+          return ok;
+        },
 
         runMonth: (months = 1) => {
           const g = get().game;
           if (!g) return;
           set({ autoLeft: Math.max(0, months - 1) });
-          const result = runMonth(g, Math.random, { interactiveContest: true });
+          const result = runMonth(g, Math.random, { interactiveContest: true, childPlans: true });
           const unlocked = Array.from(new Set([...get().unlockedEndings, ...result.state.unlockedEndings]));
           set({ game: result.state, lastResult: result, unlockedEndings: unlocked, playing: true });
           if (result.ending) {

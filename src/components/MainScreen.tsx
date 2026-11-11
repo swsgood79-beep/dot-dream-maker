@@ -18,6 +18,7 @@ import { ActingAlertModal } from './ActingAlertModal';
 import { UnlockModal } from './UnlockModal';
 import { NightModal } from './NightModal';
 import { autoStopReason } from '../engine/simulation';
+import { planMode } from '../engine/negotiate';
 import { TownModal } from './TownModal';
 import { SpecialDayModal } from './SpecialDayModal';
 import { EmotionModal } from './EmotionModal';
@@ -61,6 +62,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const { runMonth, dismissResult, endPlayback } = useGameStore();
   const autoLeft = useGameStore((s) => s.autoLeft);
   const stopAuto = useGameStore((s) => s.stopAuto);
+  const doNegotiate = useGameStore((s) => s.doNegotiate);
   const [tab, setTab] = useState<Tab | null>(null);
   const [placingId, setPlacingId] = useState<string | null>(null);
   const [contestSeen, setContestSeen] = useState<MonthResult | null>(null);
@@ -310,6 +312,18 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
           title={`${game.month}월 스케줄 편성`}
           onClose={() => setTab(null)}
           footer={
+            planMode(game.age) === 'NEGOTIATE' && !game.negoDone ? (
+              <PixelButton
+                className="w-full"
+                color="bg-[#5bb8f0] !text-white"
+                onClick={() => {
+                  doNegotiate();
+                  sfx('page');
+                }}
+              >
+                💬 이렇게 이야기해 보기
+              </PixelButton>
+            ) : (
             <div className="flex gap-1.5">
               <PixelButton
                 className="flex-1"
@@ -332,6 +346,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
                 ⏩ 3달 연속
               </PixelButton>
             </div>
+            )
           }
         >
           <SchedulePanel />
