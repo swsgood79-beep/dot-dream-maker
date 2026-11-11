@@ -13,6 +13,8 @@ import { sceneBg } from './ActivitySceneView';
 export function CutsceneModal({ id }: { id: string }) {
   const game = useGameStore((s) => s.game)!;
   const finish = useGameStore((s) => s.finishCutscene);
+  // 지난 판에서 본 컷신은 건너뛸 수 있음 (2회차)
+  const seenBefore = useGameStore((s) => s.seenEver.includes(id));
   const scene = CUTSCENE_MAP[id];
   // 대사는 컷신이 열린 순간의 상태로 고정
   const lines = useMemo<CutLine[]>(() => (scene ? scene.lines(game) : []), [id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -70,6 +72,17 @@ export function CutsceneModal({ id }: { id: string }) {
       style={{ background: `linear-gradient(${scene.sky[0]}, ${scene.sky[1]})` }}
       onClick={next}
     >
+      {seenBefore && (
+        <button
+          className="absolute top-3 right-3 z-10 rounded-full border-2 border-ink bg-white/90 px-2 py-0.5 text-[11px] font-bold text-ink"
+          onClick={(e) => {
+            e.stopPropagation();
+            finish();
+          }}
+        >
+          ⏭ 이미 본 장면 건너뛰기
+        </button>
+      )}
       <p className="pop-in mt-6 text-center text-xs font-bold text-ink/60">
         {game.age}세 {game.month}월
       </p>

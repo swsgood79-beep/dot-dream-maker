@@ -7,6 +7,8 @@ import { StatChip } from '../ui';
 import { WISH_MAP } from '../../data/parentingData';
 import { planMode } from '../../engine/negotiate';
 import { PlanHeader } from './PlanHeader';
+import { ENDING_MAP } from '../../data/endingData';
+import { lackingStats } from '../../engine/endingGoal';
 
 function actionSummary(a: ScheduleAction) {
   return (
@@ -32,6 +34,7 @@ export function SchedulePanel() {
   useEffect(() => preparePlan(), [preparePlan]);
   const setHow = useGameStore((s) => s.setNegoHow);
   const mode = planMode(game.age);
+  const lacking = game.targetEnding && ENDING_MAP[game.targetEnding] ? lackingStats(ENDING_MAP[game.targetEnding], game) : [];
   const locked = mode === 'AUTONOMY' || (mode === 'NEGOTIATE' && !!game.negoDone);
   const setSlot = useGameStore((s) => s.setScheduleSlot);
   const [slot, setSlot_] = useState(0);
@@ -141,6 +144,7 @@ export function SchedulePanel() {
                       {flashed && <span className="ml-1 rounded border border-ink bg-mint px-1 text-[9px]">✓ {justSet!.week + 1}주에 넣음</span>}
                       {current && !flashed && <span className="ml-1 rounded border border-dashed border-ink px-1 text-[9px] opacity-70">{slot + 1}주 현재</span>}
                       {wishTarget === a.id && <span className="ml-1 rounded border border-ink bg-[#fff1c2] px-1 text-[9px]">💭 아이가 원해요</span>}
+                      {lacking.some((k) => (a.weeklyStatGains[k] ?? 0) > 0) && <span className="ml-1 rounded border border-ink bg-[#ffe08a] px-1 text-[9px]">🎯 목표 엔딩</span>}
                     </span>
                     <span className="block text-[10px] opacity-70">{actionSummary(a)}</span>
                     {!locked && (() => {

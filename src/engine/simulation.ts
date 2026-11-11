@@ -141,6 +141,8 @@ export interface SaveState extends GameState {
   yearStart?: import('./yearReview').YearStart;
   pendingYearReview?: boolean;
   yearGoal?: import('./yearReview').YearGoal | null;
+  // ── v0.44 2회차 편의
+  targetEnding?: string | null; // 🎯 노리는 엔딩
 }
 
 /** 게임 시작부터 센 달 수 (8세 1월 = 1) */

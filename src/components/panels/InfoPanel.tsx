@@ -5,6 +5,7 @@ import { APT_KEYS, STAT_KEYS } from '../../engine/simulation';
 import { NPCS, type NpcId } from '../../data/townData';
 import { person, relTier, townNames } from '../../engine/town';
 import { eqLabel, eqOf } from '../../engine/emotion';
+import { Checklist } from './EncyclopediaPanel';
 import { displayStage } from '../../engine/displayStage';
 import { APT_META, Bar, STAT_META } from '../ui';
 import { Icon } from '../Icon';
@@ -88,6 +89,13 @@ export function InfoPanel() {
           </p>
           <p className="mt-0.5 text-[10px] opacity-80">이루려면: {ENDING_MAP[game.dreamJob].conditionText}</p>
           <p className="text-[10px] text-accent">아이의 꿈을 엔딩으로 이뤄 주면 특별한 편지를 받아요</p>
+        </div>
+      )}
+      {game.targetEnding && ENDING_MAP[game.targetEnding] && (
+        <div className="mb-3 rounded border-3 border-ink bg-[#fff1c2] p-2">
+          <p className="font-bold">🎯 노리는 엔딩: {ENDING_MAP[game.targetEnding].title}</p>
+          <Checklist def={ENDING_MAP[game.targetEnding]} game={game} />
+          <p className="mt-1 text-[10px] opacity-70">스케줄에서 부족한 능력치를 올리는 활동에 🎯 표시가 붙어요. (엔딩 도감에서 바꿀 수 있어요)</p>
         </div>
       )}
       <p className="mb-1 font-bold">감정 조절력</p>

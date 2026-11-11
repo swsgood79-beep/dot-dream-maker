@@ -70,6 +70,9 @@ interface GameStore {
   setScheduleSlot: (slot: number, actionId: string) => void;
   preparePlan: () => void;
   finishYearReview: (goal: YearGoal | null) => void;
+  setTargetEnding: (id: string | null) => void;
+  /** 지난 판까지 포함해 본 적 있는 컷신 (2회차 건너뛰기용, 영구 보존) */
+  seenEver: string[];
   setNegoHow: (slot: number, how: 'ASK' | 'FORCE') => void;
   doNegotiate: () => NegoLine[];
   /** 방금 한 협상 결과 (저장 안 함) */
@@ -269,6 +272,11 @@ export const useGameStore = create<GameStore>()(
             if (planMode(g.age) === 'AUTONOMY' || (planMode(g.age) === 'NEGOTIATE' && g.negoDone)) return false;
             g.monthlySchedule[slot] = actionId;
           }),
+        setTargetEnding: (id) =>
+          void mutate((g) => {
+            g.targetEnding = g.targetEnding === id ? null : id;
+          }),
+        seenEver: [],
         finishYearReview: (goal) =>
           void mutate((g) => {
             finishYear(g, goal);
@@ -611,6 +619,7 @@ export const useGameStore = create<GameStore>()(
             if (!id) return false;
             const c = CUTSCENE_MAP[id];
             g.seenCutscenes = [...(g.seenCutscenes ?? []), id];
+            if (!get().seenEver.includes(id)) set({ seenEver: [...get().seenEver, id] });
             g.pendingCutscene = null;
             if (c) addPhoto(g, { emoji: c.emoji, title: c.title, caption: '오늘을 오래오래 기억하고 싶다.', pose: 'cheer' });
           }),
@@ -680,6 +689,7 @@ export const useGameStore = create<GameStore>()(
         muted: st.muted,
         musicOn: st.musicOn,
         speed: st.speed,
+        seenEver: st.seenEver,
         game: st.game,
         unlockedEndings: st.unlockedEndings,
         carryIdea: st.carryIdea,
