@@ -5,6 +5,7 @@ import { growthStage } from './room';
 import { hashRng } from './specialDay';
 import { monthIndex, type SaveState, type WeekResult } from './simulation';
 import { SCHEDULE_ACTIONS } from '../data/scheduleData';
+import { notPoor, owns } from './homeContext';
 import { computeReport } from './school';
 import { townNames, townText } from './town';
 
@@ -48,7 +49,7 @@ const CAUSE: Record<string, (s: SaveState, w: Wk[]) => string | null> = {
     if (!art.length) return null;
     return art.some((x) => x.outcome === 'FAIL') ? '이번 달 미술 화실에서 그림이 잘 안 된 주가 있었어요.' : s.status.stress >= 40 ? '이번 달 미술 화실을 다녀왔는데, 요즘 좀 지쳐 있어요.' : null;
   },
-  EC_GAME: (_s, w) => (w.some((x) => x.outcome === 'FAIL') && w.some((x) => x.actionType === 'REST') ? `이번 달 '${ACT_NAME(w.find((x) => x.outcome === 'FAIL')!.actionId)}'에서 잘 안 된 주가 있었고, 집에서 쉬는 날 가족 보드게임을 했어요.` : null),
+  EC_GAME: (s, w) => (!(notPoor(s) || owns(s, 'toy_box')) ? null : w.some((x) => x.outcome === 'FAIL') && w.some((x) => x.actionType === 'REST') ? `이번 달 '${ACT_NAME(w.find((x) => x.outcome === 'FAIL')!.actionId)}'에서 잘 안 된 주가 있었고, 집에서 쉬는 날 가족 보드게임을 했어요.` : null),
   EC_TEASE: (s) => ((s.month === 3 || s.month === 4) && s.stats.CHA < 120 ? '새 학년 새 반이 된 지 얼마 안 됐고, 아직 친구 사귀는 게 서툴러요 (매력이 낮음).' : (s.status.selfEsteem ?? 50) < 40 ? '요즘 자신감이 많이 떨어져 있어요 (자존감이 낮음).' : null),
   ET_EXAM: (s) => {
     if (!s.pendingReport) return null;

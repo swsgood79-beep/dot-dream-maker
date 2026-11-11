@@ -8,6 +8,7 @@ import { frameName, hasFrame } from '../render/spriteCharacter';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
 import { sceneBg } from './ActivitySceneView';
+import { notPoor } from '../engine/homeContext';
 import { EffectChips, PixelButton } from './ui';
 
 const DOOR_START = 35;
@@ -24,6 +25,8 @@ export function EmotionModal({ id, onStart, onClose }: { id: string; onStart: ()
   const game = useGameStore((s) => s.game)!;
   const play = useGameStore((s) => s.playEmotion);
   const sc = EMO_MAP[id];
+  // 차가 없는 집(가난한 집)은 '돌아오는 차 안' 대신 집 거실 배경
+  const bgId = EMO_BG[id] === 'EMO_CAR' && !notPoor(game) ? 'EMO_SOFA' : (EMO_BG[id] ?? '');
   const stage = displayStage(game) as EmoStage;
   const steps = useMemo(() => (sc ? emoSteps(sc) : []), [sc]);
   const [phase, setPhase] = useState<'intro' | 'choose' | 'reply' | 'result'>('intro');
@@ -92,7 +95,7 @@ export function EmotionModal({ id, onStart, onClose }: { id: string; onStart: ()
 
         {/* 장면: 아이 + 감정 + 말풍선 + 마음의 문 */}
         <div className="relative h-56 overflow-hidden" style={{ background: 'linear-gradient(#fbe3ea, #f3d2c2)' }}>
-          {sceneBg(EMO_BG[sc.id] ?? '') && <img src={sceneBg(EMO_BG[sc.id])} alt="" className="absolute inset-0 h-full w-full object-cover object-bottom" draggable={false} />}
+          {sceneBg(bgId) && <img src={sceneBg(bgId)} alt="" className="absolute inset-0 h-full w-full object-cover object-bottom" draggable={false} />}
           {(
             <div className="absolute top-2 right-2 left-2 rounded-md bg-white/80 px-1.5 pt-0.5 pb-1">
               <div className="mb-0.5 flex justify-between text-[10px] font-bold text-ink/80">

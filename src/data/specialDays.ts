@@ -1,3 +1,5 @@
+import type { SaveState } from '../engine/simulation';
+import { notPoor, workedJobs } from '../engine/homeContext';
 import type { Effect } from './parentingData';
 
 /**
@@ -44,6 +46,8 @@ export interface SpecialDay {
   /** 마지막 단계가 catch/timing 이면 [못함, 보통, 아주 잘함], pick 이면 고른 카드 순서대로 */
   results: SpResult[];
   weight?: number;
+  /** 이 집 사정에 맞을 때만 (형편 · 가진 물건 · 해 본 일) */
+  need?: (s: SaveState) => boolean;
 }
 
 export const SPECIAL_DAYS: SpecialDay[] = [
@@ -177,6 +181,7 @@ export const SPECIAL_DAYS: SpecialDay[] = [
   },
   {
     id: 'SP_FIREFLY', emoji: '🏕️', title: '여름밤 캠핑', months: [6], minAge: 8, maxAge: 14,
+    need: notPoor,
     sky: ['#0f2a24', '#2f5a3a'], deco: ['🌲', '🏕️', '🌙'],
     intro: ['계곡 옆에 텐트를 쳤다. 모닥불 타닥타닥.', '{name}: "저기 반짝이는 거 뭐야?" 반딧불이다!'],
     steps: [
@@ -216,6 +221,7 @@ export const SPECIAL_DAYS: SpecialDay[] = [
   },
   {
     id: 'SP_TICKETING', emoji: '🎫', title: '콘서트 티켓팅 대작전', minAge: 13, maxAge: 19, weight: 1.3,
+    need: (s) => notPoor(s) && s.gold >= 300,
     sky: ['#2a1a4a', '#d14d8b'], deco: ['🎤', '💜', '🎶'],
     intro: ['{name}: "제발 도와줘!! 오늘 8시 정각에 티켓 열려!"', '7시 59분 58초... 새로고침 손가락에 땀이 난다.'],
     steps: [
@@ -255,6 +261,7 @@ export const SPECIAL_DAYS: SpecialDay[] = [
   },
   {
     id: 'SP_MOVIE_NIGHT', emoji: '🍿', title: '거실 영화관', minAge: 8, maxAge: 19,
+    need: notPoor,
     sky: ['#1a1530', '#3d2a5c'], deco: ['🍿', '🎬', '🛋️'],
     intro: ['금요일 밤, 거실 불을 끄고 이불을 깔았다.', '{name}: "오늘 영화는 내가 고를래! 아니 같이 골라!"'],
     steps: [
@@ -307,6 +314,7 @@ export const SPECIAL_DAYS: SpecialDay[] = [
   },
   {
     id: 'SP_DRIVE', emoji: '🚗', title: '빈 주차장 운전 연습', minAge: 18, maxAge: 19,
+    need: notPoor,
     sky: ['#ffcf9e', '#7aa0d8'], deco: ['🅿️', '🚧', '🌇'],
     intro: ['{name}: "운전 좀 가르쳐 줘! 딱 한 번만!"', '일요일 저녁, 텅 빈 마트 주차장. 조수석에서 손잡이를 꽉 잡았다.'],
     steps: [
@@ -320,6 +328,7 @@ export const SPECIAL_DAYS: SpecialDay[] = [
   },
   {
     id: 'SP_SECRET_VISIT', emoji: '☕', title: '아이의 알바 가게', minAge: 17, maxAge: 19,
+    need: (s) => workedJobs(s) >= 2,
     sky: ['#f3dcc2', '#b98b62'], deco: ['☕', '🧁', '🔔'],
     intro: ['{name}이(가) 주말마다 카페에서 일한다고 했다.', '몰래 한번 가 볼까?'],
     steps: [

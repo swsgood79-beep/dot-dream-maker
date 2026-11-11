@@ -68,6 +68,7 @@ export function giveGift(s: SaveState, gift: Gift): { liked: boolean; reply: str
   const fx: Effect = liked ? { affection: 10, stress: -10, [gift.stat]: 10 } : { affection: 3, stress: -4, [gift.stat]: 4 };
   const delta = applyEffect(s, fx);
   if (liked) s.giftsLiked = (s.giftsLiked ?? 0) + 1;
+  if (gift.id === 'CONSOLE' && !s.flags.includes('GOT_CONSOLE')) s.flags.push('GOT_CONSOLE');
   s.pendingBirthday = false;
   const reply = liked
     ? stage === 'CHILD'

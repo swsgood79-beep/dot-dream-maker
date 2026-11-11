@@ -132,7 +132,7 @@ export const EMO_SCENES: EmoScene[] = [
   }),
   E({
     id: 'EC_CONTEST', stage: 'CHILD', trigger: 'CONTEST_LOSS', emoji: '🏅', feel: '😭', pose: 'mood_cry', title: '대회가 끝나고',
-    scene: '대회가 끝나고 돌아오는 길. {name}이(가) 차 안에서 참았던 울음을 터뜨렸다.',
+    scene: '대회가 끝나고 돌아오는 길. {name}이(가) 참았던 울음을 터뜨렸다.',
     cry: '나 진짜 열심히 했는데... 왜 나만 안 돼...',
     empathy: ['(손을 꼭 잡는다) "정말 열심히 했지. 그래서 더 속상하구나."', '(엉엉) ...매일 연습했단 말이야.'],
     label: ['"노력했는데 결과가 안 나와서 억울하고 실망스럽구나."', '...응. 실망했어.'],

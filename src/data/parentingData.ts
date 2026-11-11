@@ -1,3 +1,4 @@
+import { hasScreen } from '../engine/homeContext';
 import type { StatKey } from '../types/game';
 import type { SaveState } from '../engine/simulation';
 import { ARC_EVENTS } from './arcData';
@@ -166,7 +167,7 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
     id: 'C_CHRISTMAS', emoji: '🎄', title: '크리스마스 선물', minAge: 8, maxAge: 11, months: [12],
     text: '"산타 할아버지한테 게임기 달라고 편지 쓸 거야!" {name이} 들떠 있어요.',
     choices: [
-      { label: '머리맡에 게임기를 몰래 둔다', style: 'WARM', fx: { gold: -300, TEC: 6, affection: 8, stress: -10 }, reply: '산타 할아버지 진짜 있었어!!!' },
+      { label: '머리맡에 게임기를 몰래 둔다', style: 'WARM', fx: { gold: -300, TEC: 6, affection: 8, stress: -10 }, flag: 'GOT_CONSOLE', reply: '산타 할아버지 진짜 있었어!!!' },
       { label: '책을 선물한다', style: 'STRICT', fx: { INT: 10, affection: -1 }, reply: '...고마워요. (게임기 갖고 싶었는데)' },
       { label: '같이 트리를 꾸미며 하루를 보낸다', style: 'FREE', fx: { ART: 8, MOR: 4, affection: 5 }, reply: '우리 트리가 세상에서 제일 예뻐!' },
     ],
@@ -221,6 +222,7 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
   },
   {
     id: 'T_LATE_GAME', emoji: '🎮', title: '새벽 2시의 게임 소리', minAge: 12, maxAge: 16,
+    cond: hasScreen, // 컴퓨터·게임기가 있어야
     text: '새벽 2시인데 {name}의 방에서 키보드 소리가 들려요.',
     choices: [
       { label: '같이 한 판 하고 시간 약속을 잡는다', style: 'WARM', fx: { TEC: 6, affection: 5, stress: -4 }, reply: '엄마 아빠 생각보다 잘하네? 11시까지만 할게.' },

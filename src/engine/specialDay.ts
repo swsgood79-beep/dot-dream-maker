@@ -19,7 +19,7 @@ const seenKey = (s: Pick<SaveState, 'age'>, id: string) => `${id}:${growthStage(
 
 export function eligibleSpecials(s: SaveState): SpecialDay[] {
   const seen = s.specialSeen ?? [];
-  return SPECIAL_DAYS.filter((d) => s.age >= d.minAge && s.age <= d.maxAge && (!d.months || d.months.includes(s.month)) && !seen.includes(seenKey(s, d.id)));
+  return SPECIAL_DAYS.filter((d) => s.age >= d.minAge && s.age <= d.maxAge && (!d.months || d.months.includes(s.month)) && !seen.includes(seenKey(s, d.id)) && (!d.need || d.need(s)));
 }
 
 /**
