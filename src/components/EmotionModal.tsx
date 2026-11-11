@@ -121,6 +121,9 @@ export function EmotionModal({ id, onStart, onClose }: { id: string; onStart: ()
         <div className="flex min-h-[230px] flex-col justify-center bg-[#fffaf0] p-3">
           {phase === 'intro' && (
             <>
+              {game.emoWhy && (
+                <p className="mb-2 rounded border-2 border-dashed border-ink/50 bg-[#fff1c2] px-2 py-1 text-center text-[11px] leading-snug font-bold">📌 {T(game.emoWhy)}</p>
+              )}
               <p className="mb-3 text-center text-xs leading-relaxed">{T(sc.scene)}</p>
               <FirstTip id="emotion" text="아이가 울거나 화낼 때 어떻게 반응하느냐로 '감정 조절력'이 자라요. 혼내거나 달래기 전에, 먼저 마음을 알아주는 게 시작이에요." />
               <PixelButton

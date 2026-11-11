@@ -31,12 +31,13 @@ describe('감정 다루기', () => {
   it('파업한 달에는 파업 장면, 평소엔 몇 달에 한 번', () => {
     const s = createNewGame('하나', 'DAUGHTER', 'INT');
     s.age = 13; s.month = 5;
-    rollEmotion(s, 'STRIKE');
+    rollEmotion(s, 'STRIKE', s.age, [], '이번 달 파업');
     expect(EMO_MAP[s.pendingEmotion!].trigger).toBe('STRIKE');
     expect(EMO_MAP[s.pendingEmotion!].stage).toBe('TEEN');
 
     let g: SaveState = createNewGame('특별', 'SON', 'INT');
     let n = 0;
+    const ids: string[] = [];
     let rng = 11;
     const r = () => ((rng = (rng * 16807) % 2147483647) / 2147483647);
     for (let m = 0; m < 144; m++) {
@@ -47,10 +48,13 @@ describe('감정 다루기', () => {
       g.pendingEvent = null; g.pendingCutscene = null; g.pendingBirthday = false; g.pendingUnlock = null; g.pendingSpecial = null;
       if (g.pendingEmotion) {
         n++;
+        expect(g.emoWhy, g.pendingEmotion).toBeTruthy();
+        expect(ids).not.toContain(g.pendingEmotion);
+        ids.push(g.pendingEmotion);
         resolveEmotion(g, ['GOOD', 'GOOD', 'GOOD'], false);
       }
     }
-    expect(n).toBeGreaterThanOrEqual(15);
-    expect(n).toBeLessThanOrEqual(45);
+    expect(n).toBeGreaterThanOrEqual(4);
+    expect(n).toBeLessThanOrEqual(16);
   });
 });

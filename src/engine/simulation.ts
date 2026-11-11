@@ -126,6 +126,7 @@ export interface SaveState extends GameState {
   emoSeen?: string[];
   emoLog?: { age: number; id: string; good: number; total: number }[];
   lastEmotionAt?: number;
+  emoWhy?: string | null; // 감정의 순간이 생긴 이유 (그 달에 있었던 일)
   // ── v0.41 협상 · 자율 스케줄
   trust?: number; // 신뢰 0~100 (없으면 50)
   defiance?: number; // 반발 0~100
@@ -585,7 +586,8 @@ export function finishContest(s: SaveState, id: ContestId, factor: number, event
     });
   } else {
     events.push(`${def.emoji} ${def.title} 결과... 아쉽게 놓쳤다 (점수 ${score}/${threshold})`);
-    rollEmotion(s, 'CONTEST_LOSS', age);
+    // 아깝게 진 경우(기준의 80% 이상)에만 — 크게 진 건 아이도 예상한 일
+    if (score >= threshold * 0.8) rollEmotion(s, 'CONTEST_LOSS', age, [], `이번 ${def.title}에서 아깝게 상을 놓쳤어요 (점수 ${score} / 기준 ${threshold}).`);
   }
   return { age, id, title: def.title, stat: def.stat, score, threshold, win, rank, rewards };
 }
@@ -737,7 +739,11 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
     if (s.diaryNew) s.diaryNew = { ...s.diaryNew, lines: s.diaryNew.lines.filter((l) => !l.startsWith(BDAY_MARK)) };
   }
   rollSpecialDay(s);
-  rollEmotion(s, weeks.some((w) => w.outcome === 'STRIKE') ? 'STRIKE' : 'RANDOM');
+  {
+    const strike = weeks.find((w) => w.outcome === 'STRIKE');
+    if (strike) rollEmotion(s, 'STRIKE', s.age, weeks, `이번 달 ${strike.week + 1}주차에 '${strike.actionName.replace(' (거부)', '')}'에 안 가겠다며 파업했어요.`);
+    else rollEmotion(s, 'RANDOM', s.age, weeks);
+  }
   return { state: s, weeks, events, contest: contestResult };
 }
 
