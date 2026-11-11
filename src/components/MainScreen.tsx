@@ -21,6 +21,8 @@ import { autoStopReason } from '../engine/simulation';
 import { planMode } from '../engine/negotiate';
 import { TownModal } from './TownModal';
 import { SpecialDayModal } from './SpecialDayModal';
+import { YearReviewModal } from './YearReviewModal';
+import { goalProgress } from '../engine/yearReview';
 import { EmotionModal } from './EmotionModal';
 import { HomeworkModal, LunchModal } from './ParentTouchModals';
 import { CONTESTS } from '../engine/simulation';
@@ -95,7 +97,10 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
     if (!playing && game.pendingContest && !contestShown) setContestShown(game.pendingContest);
   }, [playing, game.pendingContest, contestShown]);
   // 새 달 시작 순서: 월간 결과 → 성장 컷신 → 성적표 → 육아 상황
-  const idle = !lastResult && !playing && !contestOpen && !showTutorial;
+  const idle0 = !lastResult && !playing && !contestOpen && !showTutorial;
+  // 🪞 새해 첫 달: 지난 1년 돌아보기가 맨 먼저
+  const openYear = idle0 && !!game.pendingYearReview;
+  const idle = idle0 && !openYear;
   const openCut = idle && !eventShown && !reportShown ? (game.pendingCutscene ?? null) : null;
   // 새로 열린 콘텐츠: 성장 컷신 바로 뒤
   const openUnlock = idle && !openCut && !eventShown && !reportShown && !bdayShown && !!game.pendingUnlock;
@@ -112,15 +117,15 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
   const showContest = !!(lastResult && !playing && lastResult.contest && contestSeen !== lastResult);
   // ⏩ 연속 진행: 새 달 창(육아 상황 · 생일 · 특별한 하루 …)을 다 처리하면 같은 스케줄로 다음 달 자동 진행
   const anyWindow =
-    !!openCut || openUnlock || openReport || openBday || !!openEvent || !!openSpecial || !!openEmotion || openAlert || recOpen || nightOpen || townOpen || hwOpen || lunchOpen || diaryOpen || tab !== null;
+    openYear || !!openCut || openUnlock || openReport || openBday || !!openEvent || !!openSpecial || !!openEmotion || openAlert || recOpen || nightOpen || townOpen || hwOpen || lunchOpen || diaryOpen || tab !== null;
   useEffect(() => {
-    if (autoLeft <= 0 || !idle || anyWindow || lastResult || playing) return;
+    if (autoLeft <= 0 || !idle0 || anyWindow || lastResult || playing) return;
     const t = setTimeout(() => {
       const st = useGameStore.getState();
       if (st.autoLeft > 0 && !st.lastResult && !st.playing) runMonth(st.autoLeft);
     }, 900);
     return () => clearTimeout(t);
-  }, [autoLeft, idle, anyWindow, lastResult, playing]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [autoLeft, idle0, anyWindow, lastResult, playing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const stress = game.status.stress;
   const stressColor = stress >= 80 ? '#e5484d' : stress >= 50 ? '#ff9f43' : '#5bd6a8';
@@ -239,6 +244,11 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
           >
             <span className="animate-bounce text-base">📔</span> 일기장이 놓여 있다
           </button>
+        )}
+        {game.yearGoal && autoLeft === 0 && !playing && !placingId && (
+          <div className="pointer-events-none absolute top-2 left-1/2 z-10 -translate-x-1/2 rounded-full border-2 border-ink bg-[#fff6e5]/95 px-2.5 py-0.5 text-[10px] font-bold whitespace-nowrap shadow-[2px_2px_0_rgba(0,0,0,.3)]">
+            🎯 {game.age}살 목표: {game.yearGoal.emoji} {game.yearGoal.title.replace(/ \(.*\)$/, '')} · <span className="text-accent">{goalProgress(game)}</span>
+          </div>
         )}
         {autoLeft > 0 && !playing && (
           <div className="pop-in absolute top-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border-2 border-ink bg-[#d8f0ff] px-2.5 py-1 text-[11px] font-bold whitespace-nowrap shadow-[2px_2px_0_rgba(0,0,0,.35)]">
@@ -427,6 +437,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
       {hwOpen && <HomeworkModal onClose={() => setHwOpen(false)} />}
       {lunchOpen && contestThisMonth && <LunchModal contest={contestThisMonth} onClose={() => setLunchOpen(false)} />}
       {diaryOpen && <DiaryModal onClose={() => setDiaryOpen(false)} />}
+      {openYear && <YearReviewModal />}
       {openCut && <CutsceneModal key={openCut} id={openCut} />}
       {openUnlock && <UnlockModal onClose={() => {}} />}
       {openReport && <ReportCardModal onPick={() => setReportShown(true)} onClose={() => setReportShown(false)} />}

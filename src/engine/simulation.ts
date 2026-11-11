@@ -1,6 +1,7 @@
 import { rollSpecialDay } from './specialDay';
 import { rivalBonus } from './town';
 import { rollEmotion } from './emotion';
+import { snapshotYear } from './yearReview';
 import { monthlyTrust, preparePlan, weekStatMul, weekStressMul } from './negotiate';
 
 /** 감정 조절력이 높으면 파업이 줄고, 낮으면 늘어난다 */
@@ -136,6 +137,10 @@ export interface SaveState extends GameState {
   forcedWeeks?: boolean[]; // 부모가 강제로 정한 주
   support?: import('./negotiate').Support | null; // 청년기 이번 달 뒷받침
   advice?: import('./negotiate').Advice | null; // 진로 상담으로 말해 준 방향
+  // ── v0.42 연말 성장 거울 · 새해 목표
+  yearStart?: import('./yearReview').YearStart;
+  pendingYearReview?: boolean;
+  yearGoal?: import('./yearReview').YearGoal | null;
 }
 
 /** 게임 시작부터 센 달 수 (8세 1월 = 1) */
@@ -628,6 +633,7 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
   const events: string[] = [];
   refreshCombos(s);
 
+  if (!s.yearStart) snapshotYear(s); // 연말 성장 거울용 연초 기록 (새 게임 · 옛 저장은 지금부터)
   if (opts.childPlans) preparePlan(s); // 청소년·청년: 이번 달 계획이 없으면 아이 계획 그대로 (연속 진행 등 협상 없이 맡김)
   const weeks: WeekResult[] = [];
   for (let w = 0; w < 4; w++) weeks.push(simulateWeek(s, w, rng));
@@ -702,6 +708,7 @@ export function runMonth(input: SaveState, rng: Rng = Math.random, opts: { inter
   if (s.month > 12) {
     s.month = 1;
     s.age += 1;
+    if (s.yearStart) s.pendingYearReview = true; // 🪞 지난 1년 돌아보기
     s.history = [...(s.history ?? []), { age: s.age, stats: { ...s.stats }, fame: s.status.fame }];
     addPhoto(s, { emoji: '🎍', title: `${s.age}세 새해`, caption: '올해도 건강하게, 즐겁게!', pose: 'cheer' });
     // 이 나이에 새로 열린 스케줄·가구 → 새해 첫 달에 알림 창 + NEW 표시
@@ -748,5 +755,6 @@ export function autoStopReason(s: SaveState, r: MonthResult): string | null {
   if (s.status.stress >= 80) return '스트레스가 너무 높음';
   if (s.gold < 300) return '돈이 부족함';
   if (s.pendingUnlock) return '새 스케줄·가구가 열림';
+  if (s.pendingYearReview) return '한 해 돌아보기 · 새해 목표';
   return null;
 }

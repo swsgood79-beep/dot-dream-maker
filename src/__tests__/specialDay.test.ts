@@ -86,7 +86,7 @@ describe('연속 진행', () => {
       else goes++;
       s = out.state;
       s.pendingEvent = null; s.pendingCutscene = null; s.pendingBirthday = false; s.pendingUnlock = null; s.pendingSpecial = null;
-      s.pendingEmotion = null; s.pendingContest = null; s.pendingReport = false; s.gold = 5000; if (s.acting) s.acting.seen = true;
+      s.pendingEmotion = null; s.pendingContest = null; s.pendingReport = false; s.pendingYearReview = false; s.gold = 5000; if (s.acting) s.acting.seen = true;
     }
     expect(goes).toBeGreaterThan(8);
     expect(stops).toBeGreaterThan(5);

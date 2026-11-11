@@ -11,6 +11,7 @@ import { canPlace, findFreeSpot } from '../engine/room';
 import { applyEffect, recordStyle, resolveParentingEvent, type EventOutcome } from '../engine/parenting';
 import { REC_CHOICES, bumpAttitude, dominantAttitude } from '../engine/psyche';
 import { visitNight, type HomeworkWay, type Lunch, type NightTouch } from '../engine/parentTouch';
+import { finishYear, type YearGoal } from '../engine/yearReview';
 import { negotiate as negotiateEngine, planMode, preparePlan as preparePlanEngine, SUPPORT_META, type Advice, type NegoLine, type Support } from '../engine/negotiate';
 import { resolveEmotion, type EmoPick, type EmoResult } from '../engine/emotion';
 import { resolveEncounter, type TownOutcome } from '../engine/town';
@@ -68,6 +69,7 @@ interface GameStore {
   giveGift: (giftId: string) => { liked: boolean; reply: string; delta: Effect } | null;
   setScheduleSlot: (slot: number, actionId: string) => void;
   preparePlan: () => void;
+  finishYearReview: (goal: YearGoal | null) => void;
   setNegoHow: (slot: number, how: 'ASK' | 'FORCE') => void;
   doNegotiate: () => NegoLine[];
   /** 방금 한 협상 결과 (저장 안 함) */
@@ -266,6 +268,10 @@ export const useGameStore = create<GameStore>()(
             // 청년기는 아이가 정함, 청소년기는 이야기를 마친 뒤엔 못 바꿈
             if (planMode(g.age) === 'AUTONOMY' || (planMode(g.age) === 'NEGOTIATE' && g.negoDone)) return false;
             g.monthlySchedule[slot] = actionId;
+          }),
+        finishYearReview: (goal) =>
+          void mutate((g) => {
+            finishYear(g, goal);
           }),
         preparePlan: () =>
           void mutate((g) => {
