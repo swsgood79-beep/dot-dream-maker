@@ -1,3 +1,4 @@
+import { FirstTip } from '../FirstTip';
 import { SCHEDULE_ACTIONS } from '../../data/scheduleData';
 import { displayStage } from '../../engine/displayStage';
 import { ADVICE_META, defianceOf, planMode, SUPPORT_META, trustOf, type Advice, type Support } from '../../engine/negotiate';
@@ -55,6 +56,7 @@ export function PlanHeader() {
           ? '아래에서 칸을 바꾸면 💬 설득하거나 ✋ 강제로 정할 수 있어요. 그대로 둔 칸은 ✨자기주도 (능력치 +20% · 스트레스 -20%). 강제할수록 반발이 쌓여 파업할 수 있어요.'
           : '청년기에는 아이가 스스로 정해요. 부모는 한 달에 한 번 뒷받침만 할 수 있어요. 믿음(신뢰)이 클수록 진로 상담을 잘 따라요.'}
       </p>
+      <FirstTip id={mode === 'NEGOTIATE' ? 'nego' : 'auto'} text={mode === 'NEGOTIATE' ? '청소년이 되면 아이가 먼저 하고 싶은 걸 말해요. 다 들어줄 필요는 없지만, 강제로 바꿀수록 반발이 쌓여요. 어디서 양보할지가 중요해요.' : '이제 아이가 스스로 스케줄을 정해요. 부모는 한 달에 한 번 뒷받침만 할 수 있어요. 그동안 쌓은 신뢰만큼 아이가 조언을 따라요.'} />
       {mode === 'NEGOTIATE' && lines && <NegoResult />}
       {mode === 'AUTONOMY' && <SupportCards />}
     </div>

@@ -5,6 +5,7 @@ import { SPECIAL_MAP, type SpStep, type SpecialDay } from '../data/specialDays';
 import { growthStage } from '../engine/room';
 import { fillText, type SpecialPlay } from '../engine/specialDay';
 import { hasFrame, frameName } from '../render/spriteCharacter';
+import { FirstTip } from './FirstTip';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
 import { sceneBg } from './ActivitySceneView';
@@ -84,6 +85,7 @@ export function SpecialDayModal({ id, onStart, onClose }: { id: string; onStart:
                   <p key={i}>{fillText(l, name, [], 0)}</p>
                 ))}
               </div>
+              <FirstTip id="special" text="가끔 이렇게 특별한 하루가 찾아와요. 직접 눌러서 하는 짧은 놀이예요. 잘할수록 결과가 좋아지고, 좋은 순간은 사진첩에 남아요." />
               <PixelButton className="w-full" onClick={() => {
                   sfx('chime');
                   onStart();

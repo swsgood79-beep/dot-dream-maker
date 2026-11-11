@@ -10,6 +10,7 @@ import { ENDINGS, ENDING_MAP, meetsEnding } from '../src/data/endingData';
 import { FURNITURE } from '../src/data/furnitureData';
 import { canPlace, footprint } from '../src/engine/room';
 import { resolveParentingEvent } from '../src/engine/parenting';
+import { preparePlan } from '../src/engine/negotiate';
 import { PARENT_JOB_MAP, randomParent, type ParentJobId, type ParentProfile } from '../src/data/parentData';
 
 /** PARENT=DOCTOR 등 직업 ID, 'random', 없으면 부모 영향 없음 */
@@ -210,7 +211,13 @@ function targetedRun(def: EndingDefinition, seed: number) {
   while (!ending) {
     // 가구: 목표 콤보 세트부터 (돈 여유분은 남김)
     const reserve = def.minGold && s.age >= 16 ? def.minGold : 400;
-    for (const cid of p.combos) for (const fid of COMBO_MAP[cid].requiredFurnitureIds) buy(s, fid, reserve);
+    // 필수 콤보 가구가 아직 나이 제한으로 못 사는 동안엔 자리를 비워 둠 (작은 방에서 다른 콤보가 자리를 다 차지하지 않게)
+    const need = def.requiredComboId ? COMBO_MAP[def.requiredComboId].requiredFurnitureIds : [];
+    const needWait = need.some((fid) => !s.placedFurniture.some((x) => x.furnitureId === fid));
+    for (const cid of p.combos) {
+      if (needWait && cid !== def.requiredComboId) continue;
+      for (const fid of COMBO_MAP[cid].requiredFurnitureIds) buy(s, fid, reserve);
+    }
     if (def.minFurnitureCollectionRate && s.age >= 15) for (const fid of Object.keys(FURNITURE_MAP)) if (!s.collectedFurniture.includes(fid)) buyCollect(s, fid, reserve);
     if (s.pendingEvent) resolveParentingEvent(s, Math.floor(rng() * 3));
     // 매달 대화 (무료) — 실제 대화 버튼처럼 기록 (안 하면 방임으로 쌓임)
@@ -219,6 +226,14 @@ function targetedRun(def: EndingDefinition, seed: number) {
     s.talkedThisMonth = true;
     s.talkKind = 'talk';
     s.monthlySchedule = planMonth(s, p);
+    // REAL=1: 실제 규칙 — 청년기(17~)는 아이가 정하고, 부모는 진로 상담(목표 방향) 또는 활동비 지원만
+    if (process.env.REAL && s.age >= 17) {
+      const top = (Object.entries(def.minStats).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0]?.[0] ?? 'INT') as StatKey;
+      s.advice = top === 'STR' ? 'SPORT' : top === 'ART' || top === 'TEC' ? 'ART' : top === 'CHA' && def.category === 'BIZ' ? 'PART_TIME' : 'EDUCATION';
+      s.planFor = undefined;
+      preparePlan(s);
+      s.support = s.month % 2 ? 'ADVICE' : s.gold > 600 ? 'FUND' : 'CHEER';
+    }
     if (process.env.DBG && s.month === 6 && s.age % 2 === 0) {
       const acts = SCHEDULE_ACTIONS.filter((a) => a.minAge <= s.age);
       console.log(s.age, s.status.stress, s.monthlySchedule.join(','), JSON.stringify(s.stats));

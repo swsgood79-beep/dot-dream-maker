@@ -4,6 +4,7 @@ import { LOCS, LOC_MAP, NPCS, type LocId, type NpcId, type TownEnc } from '../da
 import { displayStage } from '../engine/displayStage';
 import { availableLocs, person, pickEncounter, relTier, townNames, townText, type TownOutcome } from '../engine/town';
 import { frameName } from '../render/spriteCharacter';
+import { FirstTip } from './FirstTip';
 import { useGameStore } from '../store/useGameStore';
 import atlas from '../render/characterAtlas.json';
 import townMapUrl from '../assets/town-map.webp';
@@ -104,6 +105,9 @@ export function TownModal({ onClose }: { onClose: () => void }) {
         {/* 지도 */}
         {view === 'map' && (
           <>
+            <div className="bg-[#fffaf0] px-3 pt-2">
+              <FirstTip id="town" text="한 달에 한 번, 아이와 동네를 돌아다닐 수 있어요. 오전·오후·저녁 세 곳을 고르면 동네 사람을 만나거나 작은 일이 생겨요. 자주 만날수록 사이가 깊어지고, 그 인연은 엔딩까지 이어져요." />
+            </div>
             <TownMap open={open} visited={visited} onGo={go} game={game} tint={time.tint} />
             <div className="flex items-center justify-between gap-2 bg-[#fffaf0] p-3">
               <p className="text-xs font-bold">

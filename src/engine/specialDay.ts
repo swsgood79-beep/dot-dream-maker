@@ -28,7 +28,12 @@ export function eligibleSpecials(s: SaveState): SpecialDay[] {
  */
 export function rollSpecialDay(s: SaveState) {
   if (s.pendingSpecial) return;
-  if (s.age === 8 && s.month <= 2) return; // 첫 두 달은 게임 익히기
+  // 첫 판 첫 달(튜토리얼) 다음 달에는 꼭 하나 — 게임 초반에 재미있는 순간을 빨리 보여 주기
+  if (s.age === 8 && s.month === 2 && !(s.specialSeen ?? []).length) {
+    s.pendingSpecial = 'SP_TOOTH';
+    return;
+  }
+  if (s.age === 8 && s.month <= 2) return;
   if (s.age === 19 && s.month === 12) return;
   if (s.pendingCutscene || s.pendingBirthday || s.pendingUnlock) return;
   if ((Object.keys(CONTESTS) as (keyof typeof CONTESTS)[]).some((k) => CONTESTS[k].month === s.month)) return;

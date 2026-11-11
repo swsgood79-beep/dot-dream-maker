@@ -1,3 +1,4 @@
+import { FirstTip } from './FirstTip';
 import { useMemo, useState } from 'react';
 import { sfx } from '../audio/sfx';
 import { EMO_MAP, STEP_META, type EmoStage } from '../data/emotionData';
@@ -121,6 +122,7 @@ export function EmotionModal({ id, onStart, onClose }: { id: string; onStart: ()
           {phase === 'intro' && (
             <>
               <p className="mb-3 text-center text-xs leading-relaxed">{T(sc.scene)}</p>
+              <FirstTip id="emotion" text="아이가 울거나 화낼 때 어떻게 반응하느냐로 '감정 조절력'이 자라요. 혼내거나 달래기 전에, 먼저 마음을 알아주는 게 시작이에요." />
               <PixelButton
                 className="w-full"
                 color="bg-[#ff8fb1]"

@@ -264,6 +264,7 @@ export function MainScreen({ onTitle }: { onTitle: () => void }) {
             {!game.outingDone && (
               <button onClick={() => { sfx('door'); setTownOpen(true); }} className="pop-in flex items-center gap-1 rounded border-2 border-ink bg-[#8cc56f] px-2 py-1 text-[11px] font-bold text-ink shadow-[2px_2px_0_rgba(0,0,0,.35)]">
                 <span className="animate-bounce">🗺️</span> 주말 나들이 가기
+                {!(game.townRecent ?? []).length && <span className="ml-1 animate-pulse rounded border border-ink bg-[#ff6fae] px-1 text-[9px] text-white">NEW 눌러 보세요!</span>}
               </button>
             )}
             {contestThisMonth && !game.lunchbox && (

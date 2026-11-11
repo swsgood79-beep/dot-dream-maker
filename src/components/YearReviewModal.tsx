@@ -1,3 +1,4 @@
+import { FirstTip } from './FirstTip';
 import { useMemo, useState } from 'react';
 import { sfx } from '../audio/sfx';
 import { displayStage } from '../engine/displayStage';
@@ -72,6 +73,7 @@ export function YearReviewModal() {
 
         {page === 1 && (
           <div className="p-3">
+            <FirstTip id="mirror" text="해마다 지난 1년 동안의 선택이 아이에게 어떤 흔적을 남겼는지 보여 줘요. 초록 칸은 잘한 점, 빨간 칸은 다음 해에 바꿔 볼 점이에요." />
             <p className="mb-2 text-center text-sm font-bold">🪞 당신의 선택이 아이에게 남긴 것</p>
             <div className="mb-3 grid gap-2">
               {rv.mirrors.map((m, i) => (
