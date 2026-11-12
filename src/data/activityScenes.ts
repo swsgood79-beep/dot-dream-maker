@@ -63,13 +63,13 @@ export const SCENES: Record<string, ActivityScene> = {
     lines: { GREAT: '그린 그림이 화실 벽에 걸렸다!', SUCCESS: '스케치북 한 권을 거의 다 채웠다.', FAIL: '물감이 번져서 그림을 망쳐 버렸다.' },
   }),
   EDU_07: S({
-    act: 'kick', place: '유소년 체육·무술 도장', sky: ['#fff6e0', '#f0e2c0'], floor: '#4f9a45',
+    act: 'kick', place: '체육·무술 도장', sky: ['#fff6e0', '#f0e2c0'], floor: '#4f9a45',
     props: [['🥋', 14, 62, 30], ['🏅', 84, 64, 24], ['🥊', 84, 8, 26]],
     fx: ['💥', '💪', '💦'], pose: 'exercise',
     lines: { GREAT: '얍! 송판 세 장을 한 번에 격파했다!', SUCCESS: '땀을 뻘뻘 흘리며 품새를 연습했다.', FAIL: '헉헉... 준비 운동만 하고 지쳐 버렸다.' },
   }),
   EDU_08: S({
-    act: 'raise', place: '어린이 경제·리더십 스쿨', sky: ['#eef3ff', '#dfe7fb'], floor: '#7a8bb5',
+    act: 'raise', place: '경제·리더십 스쿨', sky: ['#eef3ff', '#dfe7fb'], floor: '#7a8bb5',
     props: [['📊', 14, 62, 30], ['💼', 84, 8, 26], ['🪙', 84, 64, 22]],
     board: { text: '사업 계획서\n1. 아이디어 💡', bg: '#fffaf0', color: '#1b1f3b' },
     fx: ['💡', '📈', '🤝'], pose: 'desk',

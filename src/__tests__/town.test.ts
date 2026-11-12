@@ -60,6 +60,18 @@ describe('주말 나들이', () => {
     }
     for (let i = 1; i < ids.length; i++) if (ids[i].startsWith('GR_')) expect(ids.slice(Math.max(0, i - 2), i)).not.toContain(ids[i]);
   });
+  it('끝까지 친해진 사람은 가끔만 나온다 (같은 장면 반복 방지)', () => {
+    const s = createNewGame('하나', 'DAUGHTER', 'INT');
+    s.age = 10;
+    s.people = { GRANNY: { rel: 100, got: [50, 100], met: true } };
+    const ids: string[] = [];
+    for (let i = 0; i < 40; i++) {
+      const e = pickEncounter(s, 'MARKET', () => 0.01);
+      ids.push(e.id);
+      resolveEncounter(s, e.id, 0);
+    }
+    expect(ids.filter((x) => x.startsWith('GR_')).length).toBeLessThanOrEqual(5);
+  });
 });
 
 import { peopleEnding } from '../engine/town';

@@ -120,7 +120,7 @@ export function buildReview(s: SaveState): YearReview {
     );
   if (dRel >= 25) m.push({ w: 4, good: true, icon: '🗺️', did: '주말마다 함께 동네를 다녔어요', left: `친구 · 이웃과의 인연이 깊어졌어요 (인연 ${sign(dRel)})`, tip: '부모 말고도 믿을 어른과 친구가 많은 아이가 더 단단하게 자라요.' });
   m.sort((a, b) => b.w - a.w);
-  const mirrors = m.slice(0, 3).map(({ w: _, ...x }) => x);
+  const mirrors = m.slice(0, 3).map((x) => ({ icon: x.icon, good: x.good, did: x.did, left: x.left, tip: x.tip }));
   if (!mirrors.length)
     mirrors.push({ icon: '🌱', good: true, did: '평범하고 무난한 한 해를 보냈어요', left: '크게 흔들리지 않고 자랐어요', tip: '특별한 일이 없는 해도 아이에게는 소중한 한 해예요.' });
 

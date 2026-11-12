@@ -15,7 +15,11 @@ export interface DiaryEntry {
   secret?: { kind: 'WISH' | 'TEMPER' | 'TRUANT' | 'STRESS' | 'LONELY' | 'CRUSH' | 'DREAM'; hint: string };
 }
 
-const STAGE_END = { CHILD: '참 재미있었다!', TEEN: '...뭐, 나쁘진 않았다.', YOUTH: '내일은 좀 더 잘해 보자.' };
+const STAGE_END = {
+  CHILD: ['참 재미있었다!', '내일도 신나는 일이 있으면 좋겠다!', '이제 자야지. 안녕, 일기장!'],
+  TEEN: ['...뭐, 나쁘진 않았다.', '아 몰라. 잠이나 자자.', '내일은 좀 덜 피곤했으면.'],
+  YOUTH: ['내일은 좀 더 잘해 보자.', '어른이 되는 게 생각보다 어렵다.', '그래도 오늘의 나, 수고했어.'],
+};
 
 const TEMPER_SECRET = {
   SHY: '오늘 발표 시간에 손 들고 싶었는데 결국 못 들었다. 왜 나는 이렇게 떨릴까.',
@@ -89,19 +93,20 @@ export function writeDiary(s: SaveState, weeks: WeekResult[], contest: ContestRe
   } else if (temper && !s.temperRevealed && rng() < 0.6) {
     secret = { kind: 'TEMPER', hint: '아이의 성격에 대한 단서를 얻었어요.' };
     lines.push(TEMPER_SECRET[temper.id]);
-  } else if (stage !== 'CHILD' && s.age >= 14 && s.stats.CHA >= 250 && rng() < 0.25) {
+  } else if (stage !== 'CHILD' && s.age >= 14 && s.stats.CHA >= 250 && s.lastDiarySecret !== 'CRUSH' && rng() < 0.25) {
     secret = { kind: 'CRUSH', hint: '좋아하는 사람이 생겼나 봐요. 모른 척해 주는 게 좋겠어요.' };
-    lines.push(fillName('{friend}한테도 말 못 한 비밀. 좋아하는 사람이 생겼다.', s.childName, s.friend));
-  } else if (s.age >= 15 && rng() < 0.2) {
+    lines.push(fillName(['{friend}한테도 말 못 한 비밀. 좋아하는 사람이 생겼다.', '오늘 복도에서 눈이 마주쳤다. 하루 종일 그 생각만 났다.', '답장이 3분 만에 왔다. ...이거 무슨 뜻이지?'][Math.floor(rng() * 3)], s.childName, s.friend));
+  } else if (s.age >= 15 && s.lastDiarySecret !== 'DREAM' && rng() < 0.2) {
     const keys = ['INT', 'STR', 'ART', 'CHA', 'MOR', 'TEC'] as const;
     const best = keys.reduce((x, y) => (s.stats[y] > s.stats[x] ? y : x));
     const LIKE = { INT: '공부가', STR: '운동이', ART: '그림이랑 음악이', CHA: '사람들 앞에 서는 게', MOR: '누군가를 돕는 게', TEC: '뭔가 만드는 게' };
     const LIKE_HINT = { INT: '공부', STR: '운동', ART: '그림이랑 음악', CHA: '사람들 앞에 서는 것', MOR: '누군가를 돕는 것', TEC: '뭔가 만드는 것' };
     secret = { kind: 'DREAM', hint: `${LIKE_HINT[best]}에 마음이 있어요. 진로에 참고해 보세요.` };
-    lines.push(`사실 나는 ${LIKE[best]} 제일 좋다. 이걸로 먹고살 수 있을까?`);
+    lines.push([`사실 나는 ${LIKE[best]} 제일 좋다. 이걸로 먹고살 수 있을까?`, `요즘은 ${LIKE[best]} 제일 재밌다. 이게 꿈이라는 걸까?`, `진로 조사서에 뭐라고 쓰지... ${LIKE_HINT[best]}? 그걸로 직업이 될까?`][Math.floor(rng() * 3)]);
   }
   if (!secret && rng() >= 0.35) return; // 평범한 달은 가끔만 일기를 쓴다
-  lines.push(STAGE_END[stage]);
+  lines.push(STAGE_END[stage][Math.floor(rng() * STAGE_END[stage].length)]);
+  s.lastDiarySecret = secret?.kind;
   s.diaryNew = { age: s.age, month: s.month, lines, secret };
 }
 

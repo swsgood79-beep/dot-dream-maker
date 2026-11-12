@@ -175,7 +175,7 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
     ],
   },
   {
-    id: 'C_PARENTS_DAY', emoji: '🌹', title: '어버이날 편지', minAge: 8, maxAge: 12, months: [5],
+    id: 'C_PARENTS_DAY', emoji: '🌹', title: '어버이날 편지', minAge: 8, maxAge: 9, months: [5],
     text: '{name이} 삐뚤빼뚤 카네이션과 편지를 내밀어요. "사랑해요"가 "사랑헤요"라고 적혀 있어요.',
     choices: [
       { label: '꼭 안아 준다', style: 'WARM', fx: { affection: 8, stress: -6, MOR: 5 }, reply: '헤헤, 내년에도 써 줄게!' },
@@ -271,7 +271,7 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
     ],
   },
   {
-    id: 'T_PARTTIME', emoji: '🏪', title: '알바 해 보고 싶어', minAge: 15, maxAge: 16,
+    id: 'T_PARTTIME', emoji: '🏪', title: '알바 해 보고 싶어', minAge: 16, maxAge: 17,
     text: '"편의점 알바 해 보고 싶어. 내 돈 벌어 보고 싶어!"',
     choices: [
       { label: '주말에만, 귀가 시간 지키기', style: 'WARM', fx: { gold: 150, MOR: 8, affection: 3 }, reply: '첫 월급 타면 치킨 쏠게!' },
@@ -374,7 +374,7 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
     text: (s) => (notPoor(s) ? '"수능도 끝났으니 운전면허 따고 싶어. 엄마 아빠 태우고 드라이브 갈래!"' : '"수능도 끝났으니 운전면허 따고 싶어. 나중에 차 사면 엄마 아빠 제일 먼저 태워 줄게!"'),
     choices: [
       { label: '학원비를 지원해 준다', style: 'WARM', fx: { gold: -400, TEC: 10, STR: 5, affection: 4 }, reply: '한 번에 합격! 면허증 사진 봐 봐, 잘 나왔지?' },
-      { label: '시험 끝나고 따라고 한다', style: 'STRICT', fx: { INT: 6, affection: -2 }, reply: '...알았어. 그때 꼭 따게 해 줘.' },
+      { label: '대학 입학 전 겨울방학에 따라고 한다', style: 'STRICT', fx: { INT: 6, affection: -2 }, reply: '...알았어. 방학 되면 바로 딸 거야.' },
       { label: '직접 돈 벌어서 따라고 한다', style: 'FREE', fx: { MOR: 8, TEC: 5 }, reply: '알바비 모아서 땄어! 내 힘으로!' },
     ],
   },
@@ -393,7 +393,7 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
     text: '밤 12시가 넘었는데 {name이} 아직 안 들어왔어요. 전화도 안 받아요.',
     choices: [
       { label: '데리러 간다', style: 'WARM', fx: { affection: 5, delinquency: -3 }, reply: '배터리가 나갔어... 걱정시켜서 미안.' },
-      { label: '통금을 한 시간 앞당긴다', style: 'STRICT', fx: { delinquency: -5, affection: -6, MOR: 5 }, reply: '나 이제 열여덟이라고!' },
+      { label: '통금을 한 시간 앞당긴다', style: 'STRICT', fx: { delinquency: -5, affection: -6, MOR: 5 }, reply: '나 이제 고등학생이라고! 애 아니라고!' },
       { label: '다 컸으니 믿고 기다린다', style: 'FREE', fx: { affection: 3, delinquency: 4, CHA: 5 }, reply: '(새벽 1시) 다녀왔어... 미안.' },
     ],
   },

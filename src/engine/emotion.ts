@@ -72,7 +72,7 @@ const CAUSE: Record<string, (s: SaveState, w: Wk[]) => string | null> = {
         ? '입시 공부가 몰린 달이라 스트레스가 높아요.'
         : null,
   EY_JOB: (_s, w) => {
-    const job = w.find((x) => ['JOB_02', 'JOB_03', 'JOB_04'].includes(x.actionId)); // 손님·보호자를 상대하는 일만
+    const job = w.find((x) => ['JOB_02', 'JOB_04'].includes(x.actionId)); // 손님을 직접 상대하는 일만 (베이커리·동물병원)
     if (!job) return null;
     return w.some((x) => x.actionId === job.actionId && x.outcome === 'FAIL') ? `이번 달 '${ACT_NAME(job.actionId)}'에서 실수한 주가 있었어요.` : `이번 달 '${ACT_NAME(job.actionId)}'에서 일했어요.`;
   },

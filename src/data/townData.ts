@@ -85,10 +85,15 @@ const C = (label: string, fx: Effect, reply: string, rel?: number): TownChoice =
 
 export const TOWN_ENCS: TownEnc[] = [
   // ───────── 단짝 ─────────
-  { id: 'FR_0', loc: 'ANY_HOME', npc: 'FRIEND', tier: 0, emoji: '🧒', title: '{friend}', text: '{friend}이(가) 혼자 그네를 타고 있다. "어? {name}! 같이 놀자!"',
+  { id: 'FR_0', loc: 'ANY_HOME', npc: 'FRIEND', tier: 0, maxAge: 12, emoji: '🧒', title: '{friend}', text: '{friend}이(가) 혼자 그네를 타고 있다. "어? {name}! 같이 놀자!"',
     choices: [C('신나게 달려가게 두기', { CHA: 2, stress: -3 }, '둘이 해 질 때까지 모래성을 쌓았다.', 10), C('"숙제 먼저!" 인사만 하고 오게 하기', { MOR: 1 }, '{friend}이(가) 손을 흔들어 줬다. "내일 학교에서 봐!"', 4)] },
-  { id: 'FR_1', loc: 'ANY_HOME', npc: 'FRIEND', tier: 1, emoji: '🧒', title: '{friend}', text: '{friend}: "{name}! 나 비밀 기지 찾았어! 같이 가자!"',
+  { id: 'FR_1', loc: 'ANY_HOME', npc: 'FRIEND', tier: 1, maxAge: 12, emoji: '🧒', title: '{friend}', text: '{friend}: "{name}! 나 비밀 기지 찾았어! 같이 가자!"',
     choices: [C('신나게 따라가게 둔다', { STR: 2, stress: -5 }, '덤불 속 비밀 기지에 둘만의 깃발을 꽂았다.', 9), C('"위험한 데는 안 돼" 조심시키기', { MOR: 2 }, '"알았어~" 대신 놀이터에 기지를 만들었다.', 5)] },
+  // 청소년이 된 단짝 (13세~)
+  { id: 'FR_0T', loc: 'ANY_HOME', npc: 'FRIEND', tier: 0, minAge: 13, emoji: '🧒', title: '{friend}', text: '{friend}이(가) 편의점 앞에서 손을 흔든다. "{name}! 컵라면 먹고 갈래?"',
+    choices: [C('같이 먹고 오게 두기', { CHA: 2, stress: -3 }, '둘이 한참 수다를 떨다 왔다.', 10), C('"숙제 먼저!" 인사만 하고 오게 하기', { MOR: 1 }, '{friend}: "내일 학교에서 봐!"', 4)] },
+  { id: 'FR_1T', loc: 'ANY_HOME', npc: 'FRIEND', tier: 1, minAge: 13, emoji: '🧒', title: '{friend}', text: '{friend}: "{name}, 주말에 같이 시험공부 할래? 끝나고 노래방!"',
+    choices: [C('신나게 다녀오게 둔다', { INT: 1, stress: -5 }, '공부 반, 수다 반. 그래도 즐거웠다.', 9), C('"공부는 꼭 하고!" 다짐받기', { INT: 2 }, '"알았어~" 진짜로 문제집을 챙겨 갔다.', 5)] },
   { id: 'FR_2', loc: 'ANY_HOME', npc: 'FRIEND', tier: 2, emoji: '🧒', title: '{friend}', text: '{friend}: "우리 어른 돼도 계속 친구 하는 거다?"',
     choices: [C('새끼손가락 걸고 약속', { selfEsteem: 3, stress: -4 }, '도장, 복사, 코팅까지 완료!', 6), C('"당연하지!" 어깨동무', { CHA: 2, stress: -3 }, '둘이 깔깔 웃으며 아이스크림을 나눠 먹었다.', 5)] },
   { id: 'FR_50', loc: 'ANY_HOME', npc: 'FRIEND', milestone: 50, emoji: '📿', title: '우정 팔찌', text: '{friend}이(가) 꼼지락꼼지락 만든 실 팔찌를 내민다. "이거 너 주려고 만들었어!"',

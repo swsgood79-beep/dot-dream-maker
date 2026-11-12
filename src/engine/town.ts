@@ -83,11 +83,15 @@ export function pickEncounter(s: SaveState, loc: LocId, rng: () => number = Math
   const npcEnc = (id: NpcId) => {
     const m = dueMilestone(s, id);
     const p = person(s, id);
-    return TOWN_ENCS.find((e) => e.npc === id && (m ? e.milestone === m : e.tier === relTier(p.rel) && !e.milestone))!;
+    const fits = (e: TownEnc) => age >= (e.minAge ?? 0) && age <= (e.maxAge ?? 99); // 같은 단계도 나이에 맞는 장면으로
+    const list = TOWN_ENCS.filter((e) => e.npc === id && (m ? e.milestone === m : e.tier === relTier(p.rel) && !e.milestone));
+    return list.find(fits) ?? list[0];
   };
   // 같은 사람은 나들이 3번에 한 번까지만 (같은 인사 장면이 몇 번씩 반복되지 않도록)
+  // 이미 끝까지 친해진 사람(보상까지 다 받음)은 더 볼 장면이 없으니 가끔만 (나들이 8번에 한 번)
   const visits = s.townVisits ?? 0;
-  const rested = (id: NpcId) => person(s, id).seenAt === undefined || visits - person(s, id).seenAt! >= 3;
+  const done = (id: NpcId) => person(s, id).rel >= 100 && (person(s, id).got ?? []).includes(100);
+  const rested = (id: NpcId) => person(s, id).seenAt === undefined || visits - person(s, id).seenAt! >= (done(id) ? 8 : 3);
   const npcs = (Object.keys(NPCS) as NpcId[]).filter((id) => NPCS[id].homes.includes(loc) && npcHere(s, id) && (dueMilestone(s, id) || rested(id)));
   const milestone = npcs.map((id) => ({ id, m: dueMilestone(s, id) })).find((x) => x.m);
   const generic = TOWN_ENCS.filter((e) => e.loc === loc && !e.npc && age >= (e.minAge ?? 0) && age <= (e.maxAge ?? 99));

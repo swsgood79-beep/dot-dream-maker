@@ -121,6 +121,7 @@ export interface SaveState extends GameState {
   people?: Partial<Record<import('../data/townData').NpcId, import('./town').Person>>;
   townRecent?: string[];
   townVisits?: number;
+  lastDiarySecret?: string; // 지난 일기에 쓴 비밀 종류 (같은 고백 연달아 안 쓰게)
   specialYear?: { age: number; n: number }; // 올해 본 특별한 하루 수 // 나들이 횟수 (같은 사람 연달아 안 만나게)
   // ── v0.39 감정 다루기
   pendingEmotion?: string | null;

@@ -121,7 +121,7 @@ export const ARC_EVENTS: ParentingEvent[] = [
     text: '"고백할까 말까... 차이면 어떡하지? 내일 학교 어떻게 가?" {name이} 밤새 뒤척여요.',
     choices: [
       { label: '용기를 북돋아 준다', style: 'WARM', fx: { CHA: 5, affection: 4 }, reply: '...해 볼게. 내일 꼭!' },
-      { label: '수능 끝나고 하라고 말린다', style: 'STRICT', fx: { INT: 6, stress: 4 }, reply: '...알았어. 참을게.' },
+      { label: '졸업하고 하라고 말린다', style: 'STRICT', fx: { INT: 6, stress: 4 }, reply: '...알았어. 참을게.' },
       { label: '네 마음 가는 대로 하라고 한다', style: 'FREE', fx: { stress: -3 }, reply: '음... 일단 자고 생각할래.' },
     ],
     onResolve: (s, style) => {
@@ -158,7 +158,7 @@ export const ARC_EVENTS: ParentingEvent[] = [
   {
     id: 'A_LOVE_3W', emoji: '⏳', title: '첫사랑 ③ 마음속에 접어 둔 편지', minAge: 15, maxAge: 18,
     arc: { id: 'LOVE', step: 3, variant: 'WAIT', final: true },
-    text: '{name}의 책상 서랍에 전하지 못한 편지가 있어요. "수능 끝나면... 그때 줄 거야."',
+    text: '{name}의 책상 서랍에 전하지 못한 편지가 있어요. "졸업하면... 그때 줄 거야."',
     choices: [
       { label: '"그때 꼭 전해" 하고 응원한다', style: 'WARM', fx: { affection: 5, MOR: 4 }, reply: '응. 그때까지 멋있어져 있을 거야.' },
       { label: '잘 참았다고 칭찬한다', style: 'STRICT', fx: { MOR: 8, INT: 4 }, reply: '...그래도 좀 아쉽긴 해.' },

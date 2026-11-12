@@ -318,7 +318,7 @@ export const SPECIAL_DAYS: SpecialDay[] = [
     id: 'SP_DRIVE', emoji: '🚗', title: '빈 주차장 운전 연습', minAge: 19, maxAge: 19,
     need: notPoor,
     sky: ['#ffcf9e', '#7aa0d8'], deco: ['🅿️', '🚧', '🌇'],
-    intro: ['{name}: "운전 좀 가르쳐 줘! 딱 한 번만!"', '일요일 저녁, 텅 빈 마트 주차장. 조수석에서 손잡이를 꽉 잡았다.'],
+    intro: ['{name}: "수능 끝나면 바로 면허 딸 거니까, 미리 운전 좀 가르쳐 줘!"', '일요일 저녁, 텅 빈 마트 주차장. 조수석에서 손잡이를 꽉 잡았다.'],
     steps: [
       { kind: 'timing', prompt: '선 안에 딱 맞춰 브레이크!', icon: '🚗', rounds: 3, speed: 1.0, zone: 20, hitText: '주차 성공', missText: '끼익!!' },
     ],

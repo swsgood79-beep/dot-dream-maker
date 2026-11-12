@@ -13,8 +13,8 @@ export const SCHEDULE_ACTIONS: ScheduleAction[] = [
   { id: 'EDU_04', name: '코딩·게임 제작 부트캠프', type: 'EDUCATION', minAge: 10, weeklyGoldDelta: -175, weeklyStatGains: { TEC: 9, INT: 5 }, weeklyStressDelta: 7, aptitudeGain: { key: 'APT_IT', exp: 4 }, targetFurnitureCategory: 'TECH', emoji: '💻' },
   { id: 'EDU_05', name: '실용음악·댄스 아카데미', type: 'EDUCATION', minAge: 8, weeklyGoldDelta: -188, weeklyStatGains: { ART: 7, CHA: 7, STR: 2 }, weeklyStressDelta: 7, aptitudeGain: { key: 'APT_ENT', exp: 4 }, targetFurnitureCategory: 'ART', emoji: '🎤' },
   { id: 'EDU_06', name: '미술·웹툰 창작 화실', type: 'EDUCATION', minAge: 8, weeklyGoldDelta: -163, weeklyStatGains: { ART: 9, TEC: 4 }, weeklyStressDelta: 6, aptitudeGain: { key: 'APT_ENT', exp: 4 }, targetFurnitureCategory: 'ART', emoji: '🎨' },
-  { id: 'EDU_07', name: '유소년 체육·무술 도장', type: 'EDUCATION', minAge: 8, weeklyGoldDelta: -125, weeklyStatGains: { STR: 10, MOR: 2 }, weeklyStressDelta: 6, aptitudeGain: { key: 'APT_ADV', exp: 3 }, targetFurnitureCategory: 'FITNESS', emoji: '🥋' },
-  { id: 'EDU_08', name: '어린이 경제·리더십 스쿨', type: 'EDUCATION', minAge: 8, weeklyGoldDelta: -175, weeklyStatGains: { CHA: 7, INT: 6 }, weeklyStressDelta: 7, aptitudeGain: { key: 'APT_BIZ', exp: 4 }, targetFurnitureCategory: 'STUDY', emoji: '💼' },
+  { id: 'EDU_07', name: '체육·무술 도장', type: 'EDUCATION', minAge: 8, weeklyGoldDelta: -125, weeklyStatGains: { STR: 10, MOR: 2 }, weeklyStressDelta: 6, aptitudeGain: { key: 'APT_ADV', exp: 3 }, targetFurnitureCategory: 'FITNESS', emoji: '🥋' },
+  { id: 'EDU_08', name: '경제·리더십 스쿨', type: 'EDUCATION', minAge: 8, weeklyGoldDelta: -175, weeklyStatGains: { CHA: 7, INT: 6 }, weeklyStressDelta: 7, aptitudeGain: { key: 'APT_BIZ', exp: 4 }, targetFurnitureCategory: 'STUDY', emoji: '💼' },
 
   // ── 5.2 아르바이트
   { id: 'JOB_01', name: '집안일 돕기', type: 'PART_TIME', minAge: 8, weeklyGoldDelta: 60, weeklyStatGains: { MOR: 3, TEC: 2 }, statusGains: { affection: 1 }, weeklyStressDelta: 3, targetFurnitureCategory: 'TECH', emoji: '🧹' },
