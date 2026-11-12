@@ -10,7 +10,7 @@ import atlas from '../render/characterAtlas.json';
 import townMapUrl from '../assets/town-map.webp';
 import { CatchGame, PickButtons, TimingGame } from './SpecialDayModal';
 import { Sprite } from './Sprite';
-import { EffectChips, PixelButton } from './ui';
+import { EffectChips, PixelButton, short } from './ui';
 
 /** 장소 배경 일러스트 (src/assets/town/{장소}.webp) */
 const PLACE_BG: Partial<Record<LocId, string>> = Object.fromEntries(
@@ -174,8 +174,9 @@ export function TownModal({ onClose }: { onClose: () => void }) {
                   {enc.e.choices && (
                     <div className="grid gap-1.5">
                       {enc.e.choices.map((c, i) => (
-                        <button key={i} className="pixel-btn bg-white px-2 py-2 text-left text-xs" onClick={() => done(i)}>
+                        <button key={i} className="pixel-btn bg-white px-2 py-2 text-left text-xs disabled:opacity-45" disabled={short(c.fx, game.gold)} onClick={() => done(i)}>
                           {T(c.label)}
+                          {short(c.fx, game.gold) && <span className="ml-1 font-bold text-[#e5484d]">(돈 부족)</span>}
                         </button>
                       ))}
                     </div>

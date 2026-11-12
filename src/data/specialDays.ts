@@ -1,5 +1,5 @@
 import type { SaveState } from '../engine/simulation';
-import { notPoor, workedJobs } from '../engine/homeContext';
+import { notPoor } from '../engine/homeContext';
 import type { Effect } from './parentingData';
 
 /**
@@ -96,7 +96,7 @@ export const SPECIAL_DAYS: SpecialDay[] = [
     ],
   },
   {
-    id: 'SP_FIRST_SNOW', emoji: '⛄️', title: '첫눈 오는 날', months: [12, 1], minAge: 8, maxAge: 19,
+    id: 'SP_FIRST_SNOW', emoji: '⛄️', title: '첫눈 오는 날', months: [12, 1], minAge: 8, maxAge: 14,
     sky: ['#9fb6d8', '#eef4ff'], deco: ['❄️', '❄️', '☁️'],
     intro: ['아침에 일어나니 온 세상이 하얗다!', '{name}: "눈사람 만들자!! 빨리빨리!"'],
     steps: [
@@ -114,7 +114,7 @@ export const SPECIAL_DAYS: SpecialDay[] = [
     ],
   },
   {
-    id: 'SP_BLACKOUT', emoji: '🕯️', title: '장마철 정전', months: [7], minAge: 8, maxAge: 16,
+    id: 'SP_BLACKOUT', emoji: '🕯️', title: '장마철 정전', months: [7], minAge: 8, maxAge: 11,
     sky: ['#0d0f1e', '#3b2c1a'], deco: ['🌧️', '⚡', '🕯️'],
     intro: ['우르르 쾅! 번개와 함께 불이 꺼졌다.', '{name}: "엄마 아빠... 무서워..." 촛불을 켰다.'],
     steps: [
@@ -249,7 +249,7 @@ export const SPECIAL_DAYS: SpecialDay[] = [
   {
     id: 'SP_GIMBAP', emoji: '🍙', title: '같이 김밥 말기', minAge: 8, maxAge: 19,
     sky: ['#fff0c4', '#ffd7a8'], deco: ['🥕', '🥚', '🍚'],
-    intro: ['주말 아침, 냉장고에 재료가 가득하다.', '{name}: "오늘은 내가 김밥 말아 볼래! 알려 줘!"'],
+    intro: ['주말 아침, 김밥 재료를 조금 사 왔다.', '{name}: "오늘은 내가 김밥 말아 볼래! 알려 줘!"'],
     steps: [
       { kind: 'timing', prompt: '김발을 꾹! 단단하게 말기', icon: '🍙', rounds: 3, speed: 1.15, zone: 22, hitText: '단단!', missText: '옆구리 터짐' },
     ],
@@ -327,15 +327,15 @@ export const SPECIAL_DAYS: SpecialDay[] = [
     ],
   },
   {
-    id: 'SP_SECRET_VISIT', emoji: '☕', title: '아이의 알바 가게', minAge: 17, maxAge: 19,
-    need: (s) => workedJobs(s) >= 2,
+    id: 'SP_SECRET_VISIT', emoji: '🥐', title: '아이의 알바 가게', minAge: 17, maxAge: 19,
+    need: (s) => (s.actionCounts.JOB_02 ?? 0) >= 2,
     sky: ['#f3dcc2', '#b98b62'], deco: ['☕', '🧁', '🔔'],
-    intro: ['{name}이(가) 주말마다 카페에서 일한다고 했다.', '몰래 한번 가 볼까?'],
+    intro: ['{name}이(가) 주말마다 동네 베이커리에서 일한다고 했다.', '몰래 한번 가 볼까?'],
     steps: [
       { kind: 'pick', prompt: '어떻게 할까요?', options: [{ emoji: '🕶️', label: '선글라스 끼고 몰래 손님인 척' }, { emoji: '💐', label: '꽃 들고 당당하게 응원 방문' }, { emoji: '🏠', label: '가지 말고 집에서 믿고 기다리기' }] },
     ],
     results: [
-      { title: '바로 들킴', text: '{name}: "...엄마 아빠 맞지? 다 보여ㅋㅋ" 그래도 서비스 쿠키를 줬다', fx: { affection: 6, stress: -4 } },
+      { title: '바로 들킴', text: '{name}: "...엄마 아빠 맞지? 다 보여ㅋㅋ" 그래도 갓 구운 빵을 서비스로 줬다', fx: { affection: 6, stress: -4 } },
       { title: '창피해!', text: '{name}의 얼굴이 빨개졌다. "아 진짜..." 그날 밤 "근데 고마워"라는 문자', fx: { affection: 7, CHA: 2, selfEsteem: 3 } },
       { title: '믿어 주는 마음', text: '그날 저녁 {name}이(가) 먼저 말했다. "오늘 손님 엄청 많았는데 나 잘했어!"', fx: { affection: 5, autonomy: 5, selfEsteem: 2 } },
     ],

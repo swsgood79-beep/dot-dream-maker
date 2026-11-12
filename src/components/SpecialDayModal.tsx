@@ -13,7 +13,7 @@ import { npcArt } from './TownModal';
 import atlas from '../render/characterAtlas.json';
 
 const frameH = (stage: string, g: string) => (atlas as Record<string, { h: number }>)[`${stage}_${g}_stand`]?.h ?? 66;
-import { EffectChips, PixelButton } from './ui';
+import { EffectChips, PixelButton, short } from './ui';
 
 type Done = { picks: number[]; score?: number; tier?: 0 | 1 | 2 };
 
@@ -305,6 +305,7 @@ function PickScene({ day, st, stage, gender }: { day: SpecialDay; st: Extract<Sp
 }
 
 export function PickButtons({ st, name, onDone }: { st: Extract<SpStep, { kind: 'pick' }>; name: string; onDone: (i: number) => void }) {
+  const gold = useGameStore((g) => g.game?.gold ?? 0);
   // 뒤집힌 카드는 순서를 섞어 둔다 (어떤 봉투가 큰지 모르게)
   const order = useMemo(() => {
     const o = st.options.map((_, i) => i);
@@ -345,8 +346,9 @@ export function PickButtons({ st, name, onDone }: { st: Extract<SpStep, { kind: 
       ) : (
         <div className="grid gap-1.5">
           {order.map((oi, slot) => (
-            <button key={slot} className="pixel-btn bg-white px-2 py-2 text-left text-xs" onClick={() => choose(slot)}>
+            <button key={slot} className="pixel-btn bg-white px-2 py-2 text-left text-xs disabled:opacity-45" disabled={short(st.options[oi].fx, gold)} onClick={() => choose(slot)}>
               {st.options[oi].emoji} {st.options[oi].label}
+              {short(st.options[oi].fx, gold) && <span className="ml-1 font-bold text-[#e5484d]">(돈 부족)</span>}
             </button>
           ))}
         </div>

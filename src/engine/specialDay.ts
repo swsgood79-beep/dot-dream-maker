@@ -15,11 +15,13 @@ export function hashRng(seed: string) {
   };
 }
 
-const seenKey = (s: Pick<SaveState, 'age'>, id: string) => `${id}:${growthStage(s.age)}`;
+/** 명절·계절 이벤트(months 있음)는 성장 단계마다 한 번, 나머지 일상 이벤트는 한 판에 한 번 */
+const seenKey = (s: Pick<SaveState, 'age'>, d: Pick<SpecialDay, 'id' | 'months'>) => (d.months ? `${d.id}:${growthStage(s.age)}` : d.id);
+const wasSeen = (seen: string[], s: Pick<SaveState, 'age'>, d: SpecialDay) => seen.includes(seenKey(s, d)) || (!d.months && seen.some((k) => k.startsWith(`${d.id}:`)));
 
 export function eligibleSpecials(s: SaveState): SpecialDay[] {
   const seen = s.specialSeen ?? [];
-  return SPECIAL_DAYS.filter((d) => s.age >= d.minAge && s.age <= d.maxAge && (!d.months || d.months.includes(s.month)) && !seen.includes(seenKey(s, d.id)) && (!d.need || d.need(s)));
+  return SPECIAL_DAYS.filter((d) => s.age >= d.minAge && s.age <= d.maxAge && (!d.months || d.months.includes(s.month)) && !wasSeen(seen, s, d) && (!d.need || d.need(s)));
 }
 
 /**
@@ -122,7 +124,7 @@ export function resolveSpecial(s: SaveState, p: SpecialPlay): { day: SpecialDay;
   const words = pickWords(d, p.picks);
   const text = fillText(result.text, s.childName, words, p.score);
   if (result.photo) addPhoto(s, { ...result.photo, caption: fillText(result.photo.caption, s.childName, words, p.score) });
-  s.specialSeen = [...(s.specialSeen ?? []), seenKey(s, d.id)];
+  s.specialSeen = [...(s.specialSeen ?? []), seenKey(s, d)];
   s.lastSpecialAt = monthIndex(s);
   s.pendingSpecial = null;
   return { day: d, result, text, delta };

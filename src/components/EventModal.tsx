@@ -8,7 +8,7 @@ import { frameName, hasFrame } from '../render/spriteCharacter';
 import { FirstTip } from './FirstTip';
 import { useGameStore } from '../store/useGameStore';
 import { Sprite } from './Sprite';
-import { EffectChips, PixelButton } from './ui';
+import { EffectChips, PixelButton, short } from './ui';
 import { TEMPERAMENT_MAP } from '../data/temperamentData';
 
 /** 육아 상황: 부모가 대응을 고르면 아이의 반응과 변화를 보여 준다 (결과는 미리 공개하지 않음) */
@@ -53,7 +53,8 @@ export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => 
               {ev.choices.map((c, i) => (
                 <button
                   key={i}
-                  className="pixel-btn bg-white px-2 py-2 text-left text-xs"
+                  className="pixel-btn bg-white px-2 py-2 text-left text-xs disabled:opacity-45"
+                  disabled={short(c.fx, game.gold)}
                   onClick={() => {
                     onPick();
                     const out = resolve(i);
@@ -64,6 +65,7 @@ export function EventModal({ id, onPick, onClose }: { id: string; onPick: () => 
                   }}
                 >
                   {fillName(c.label, game.childName, game.friend)}
+                  {short(c.fx, game.gold) && <span className="ml-1 font-bold text-[#e5484d]">(돈 부족)</span>}
                 </button>
               ))}
             </div>

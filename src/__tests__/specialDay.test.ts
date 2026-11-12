@@ -32,7 +32,7 @@ describe('특별한 하루', () => {
         expect(s.pendingSpecial).toBeNull();
       }
     }
-    expect(seen.length).toBeGreaterThanOrEqual(30);
+    expect(seen.length).toBeGreaterThanOrEqual(22); // 일상 이벤트는 한 판에 한 번 → 한 해 2번 꼴
     for (let i = 1; i < seen.length; i++) {
       const gap = (seen[i].age - seen[i - 1].age) * 12 + seen[i].month - seen[i - 1].month;
       expect(gap).toBeGreaterThanOrEqual(2);

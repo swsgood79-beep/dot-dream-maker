@@ -180,3 +180,6 @@ export function EffectChips({ fx }: { fx: Partial<Record<string, number>> }) {
     </span>
   );
 }
+
+/** 이 선택지를 고르기엔 돈이 모자란가 (가진 돈보다 비싼 선택은 막는다) */
+export const short = (fx: { gold?: number } | undefined, gold: number) => (fx?.gold ?? 0) < 0 && gold < -(fx?.gold ?? 0);
