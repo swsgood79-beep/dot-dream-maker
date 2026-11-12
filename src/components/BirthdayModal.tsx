@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { sfx } from '../audio/sfx';
-import { GIFT_PRICE, giftOptions } from '../data/birthdayData';
+import { GIFT_PRICE, HOMEMADE_GIFT, giftOptions } from '../data/birthdayData';
 import type { Effect } from '../data/parentingData';
 import { growthStage } from '../engine/room';
 import { hasFrame, frameName } from '../render/spriteCharacter';
@@ -17,6 +17,7 @@ export function BirthdayModal({ onPick, onClose }: { onPick: () => void; onClose
   const opts = useMemo(() => giftOptions(game), []); // eslint-disable-line react-hooks/exhaustive-deps
   const [res, setRes] = useState<{ liked: boolean; reply: string; delta: Effect } | null>(null);
   const stage = growthStage(game.age);
+  const broke = game.gold < GIFT_PRICE[stage];
   const candles = Math.min(game.age, 20);
 
   return (
@@ -46,7 +47,8 @@ export function BirthdayModal({ onPick, onClose }: { onPick: () => void; onClose
               {opts.map((g) => (
                 <button
                   key={g.id}
-                  className="pixel-btn flex flex-col items-center bg-white px-1 py-2"
+                  className="pixel-btn flex flex-col items-center bg-white px-1 py-2 disabled:opacity-45"
+                  disabled={broke}
                   onClick={() => {
                     onPick();
                     const r = give(g.id);
@@ -60,6 +62,23 @@ export function BirthdayModal({ onPick, onClose }: { onPick: () => void; onClose
                 </button>
               ))}
             </div>
+            {broke && (
+              <>
+                <p className="mt-2 text-center text-[10px] font-bold text-[#e5484d]">선물 살 돈이 모자라요 (보유 {game.gold}G)</p>
+                <button
+                  className="pixel-btn mt-1 flex w-full items-center justify-center gap-2 bg-[#fff1c2] px-2 py-2 text-xs font-bold"
+                  onClick={() => {
+                    onPick();
+                    const r = give(HOMEMADE_GIFT.id);
+                    if (!r) return;
+                    sfx('happy');
+                    setRes(r);
+                  }}
+                >
+                  <span className="text-2xl">{HOMEMADE_GIFT.emoji}</span> {HOMEMADE_GIFT.name} (무료)
+                </button>
+              </>
+            )}
           </>
         ) : (
           <div className="flex flex-col items-center gap-2">

@@ -15,9 +15,9 @@ export function hashRng(seed: string) {
   };
 }
 
-/** 명절·계절 이벤트(months 있음)는 성장 단계마다 한 번, 나머지 일상 이벤트는 한 판에 한 번 */
-const seenKey = (s: Pick<SaveState, 'age'>, d: Pick<SpecialDay, 'id' | 'months'>) => (d.months ? `${d.id}:${growthStage(s.age)}` : d.id);
-const wasSeen = (seen: string[], s: Pick<SaveState, 'age'>, d: SpecialDay) => seen.includes(seenKey(s, d)) || (!d.months && seen.some((k) => k.startsWith(`${d.id}:`)));
+/** 설·추석 같은 명절(yearly)은 성장 단계마다 한 번, 나머지(계절 놀이·일상)는 한 판에 한 번 */
+const seenKey = (s: Pick<SaveState, 'age'>, d: Pick<SpecialDay, 'id' | 'yearly'>) => (d.yearly ? `${d.id}:${growthStage(s.age)}` : d.id);
+const wasSeen = (seen: string[], s: Pick<SaveState, 'age'>, d: SpecialDay) => seen.includes(seenKey(s, d)) || (!d.yearly && seen.some((k) => k.startsWith(`${d.id}:`)));
 
 export function eligibleSpecials(s: SaveState): SpecialDay[] {
   const seen = s.specialSeen ?? [];
@@ -42,14 +42,16 @@ export function rollSpecialDay(s: SaveState) {
   const now = monthIndex(s);
   const gap = now - (s.lastSpecialAt ?? 0);
   if (gap < 2) return;
+  // 한 해에 두 번까지 (어린 시절에 몰려서 다 써 버리지 않게)
+  if ((s.specialYear?.age === s.age ? s.specialYear.n : 0) >= 2) return;
   const rng = hashRng(`${s.childName}|${now}|${(s.specialSeen ?? []).length}`);
   // 육아 상황도 와 있으면 너무 몰리지 않게 오래 비었을 때만
   const chance = s.pendingEvent ? (gap >= 4 ? 1 : 0) : gap >= 3 ? 1 : 0.5;
   if (rng() >= chance) return;
   const pool = eligibleSpecials(s);
   if (!pool.length) return;
-  // 이 달에만 있는 명절·계절 이벤트를 더 잘 나오게
-  const w = pool.map((d) => (d.weight ?? 1) * (d.months ? 3 : 1));
+  // 이 달에만 있는 명절·계절 이벤트를 더 잘 나오게, 나이 창이 곧 닫히는 것을 먼저 (긴 창은 나중 몫으로 아껴 둔다)
+  const w = pool.map((d) => ((d.weight ?? 1) * (d.months ? 3 : 1)) / Math.sqrt(d.maxAge - s.age + 1));
   let r = rng() * w.reduce((a, b) => a + b, 0);
   let pick = pool[pool.length - 1];
   for (let i = 0; i < pool.length; i++) {
@@ -126,6 +128,7 @@ export function resolveSpecial(s: SaveState, p: SpecialPlay): { day: SpecialDay;
   if (result.photo) addPhoto(s, { ...result.photo, caption: fillText(result.photo.caption, s.childName, words, p.score) });
   s.specialSeen = [...(s.specialSeen ?? []), seenKey(s, d)];
   s.lastSpecialAt = monthIndex(s);
+  s.specialYear = { age: s.age, n: (s.specialYear?.age === s.age ? s.specialYear.n : 0) + 1 };
   s.pendingSpecial = null;
   return { day: d, result, text, delta };
 }

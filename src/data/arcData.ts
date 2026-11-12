@@ -1,3 +1,4 @@
+import { hasBatchim, josa } from './josa';
 import type { SaveState } from '../engine/simulation';
 import type { ParentingEvent, ParentStyle } from './parentingData';
 import { ENDINGS, ENDING_MAP } from './endingData';
@@ -170,7 +171,7 @@ export const ARC_EVENTS: ParentingEvent[] = [
   {
     id: 'A_DREAM_1', emoji: '🌟', title: '진로 상담 날', minAge: 17, maxAge: 17, months: [4, 5, 6, 7, 8, 9], weight: 6,
     arc: { id: 'DREAM', step: 1, gap: 2 },
-    text: (s) => `진로 상담을 다녀온 {name이} 진지하게 말해요. "나... ${dreamTitle(s)}이(가) 되고 싶어."`,
+    text: (s) => `진로 상담을 다녀온 {name이} 진지하게 말해요. "나... ${josa(dreamTitle(s), '이', '가')} 되고 싶어."`,
     choices: [
       { label: '"멋지다! 엄마 아빠가 응원할게"', style: 'WARM', fx: { affection: 8, stress: -10 }, reply: '진짜? ...꼭 될게. 지켜봐!' },
       { label: '"더 안정적인 길도 생각해 보자"', style: 'STRICT', fx: { affection: -8, stress: 10 }, reply: '...또 그 소리. 내 꿈은 내가 정해.' },
@@ -194,7 +195,7 @@ export const ARC_EVENTS: ParentingEvent[] = [
   {
     id: 'A_DREAM_2O', emoji: '📋', title: '꿈을 향한 계획표', minAge: 17, maxAge: 19,
     arc: { id: 'DREAM', step: 2, variant: 'OK', final: true },
-    text: (s) => `{name이} 벽에 커다란 계획표를 붙였어요. 맨 위에는 '${dreamTitle(s)}'이라고 적혀 있어요.`,
+    text: (s) => `{name이} 벽에 커다란 계획표를 붙였어요. 맨 위에는 '${dreamTitle(s)}'${hasBatchim(dreamTitle(s)) ? '이라고' : '라고'} 적혀 있어요.`,
     choices: [
       { label: '계획표 옆에 응원 쪽지를 붙인다', style: 'WARM', fx: { affection: 8, stress: -6 }, reply: '이거 보고 매일 힘낼게!' },
       { label: '계획을 같이 점검해 준다', style: 'STRICT', fx: { INT: 6, MOR: 4 }, reply: '오, 이 부분 빠졌었네. 고마워.' },

@@ -32,7 +32,9 @@ describe('특별한 하루', () => {
         expect(s.pendingSpecial).toBeNull();
       }
     }
-    expect(seen.length).toBeGreaterThanOrEqual(22); // 일상 이벤트는 한 판에 한 번 → 한 해 2번 꼴
+    expect(seen.length).toBeGreaterThanOrEqual(16); // 명절 말고는 한 판에 한 번 → 한 해 1~2번
+    expect(seen.filter((x) => x.age >= 14).length).toBeGreaterThanOrEqual(4); // 어린 시절에 몰리지 않고 청소년기에도 남아 있다
+    for (let a = 8; a <= 19; a++) expect(seen.filter((x) => x.age === a).length).toBeLessThanOrEqual(2);
     for (let i = 1; i < seen.length; i++) {
       const gap = (seen[i].age - seen[i - 1].age) * 12 + seen[i].month - seen[i - 1].month;
       expect(gap).toBeGreaterThanOrEqual(2);

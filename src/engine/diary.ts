@@ -46,13 +46,14 @@ export function writeDiary(s: SaveState, weeks: WeekResult[], contest: ContestRe
     };
     if (a.type === 'EDUCATION') lines.push(stage === 'CHILD' ? `이번 달은 ${a.name}에 많이 갔다. ${eduChild[a.id] ?? '숙제가 산더미다.'}` : `${a.name}. 또 ${a.name}. 내 인생은 학원이다.`);
     else if (a.id === 'JOB_01') lines.push(stage === 'CHILD' ? '집안일을 도왔다. 걸레질은 생각보다 힘들다!' : '집안일을 거들었다. 엄마 아빠는 이걸 매일 했구나.');
-    else if (a.type === 'PART_TIME') lines.push(`${a.name}에서 일했다. 돈 버는 건 생각보다 힘들다.`);
+    else if (a.type === 'PART_TIME') lines.push(`${a.name.replace(/ \(.*\)$/, '')}에서 일했다. ${['돈 버는 건 생각보다 힘들다.', '첫 주보다는 손이 빨라졌다.', '퇴근길에 산 붕어빵이 제일 맛있었다.'][Math.floor(rng() * 3)]}`);
     else if (a.id === 'REST_02') lines.push(stage === 'CHILD' ? '가족끼리 캠핑을 갔다. 마시멜로 최고!' : '가족 캠핑. 귀찮았는데... 사실 좀 좋았다.');
     else if (a.type === 'OUTING') lines.push(`${a.name.replace('외출: ', '')}! ${stage === 'CHILD' ? '신났다!' : '오랜만에 숨통이 트였다.'}`);
     else lines.push(stage === 'CHILD' ? '하루 종일 뒹굴뒹굴했다. 최고!' : '이번 달은 좀 쉬었다. 충전 완료.');
   }
-  if (weeks.some((w) => w.outcome === 'GREAT')) lines.push('오늘은 뭐든 술술 됐다. 나 좀 천재인가?');
-  if (contest) lines.push(contest.win ? `${contest.title}에서 이겼다!!! 꿈인가?` : `${contest.title}... 아쉬웠다. 다음엔 꼭.`);
+  if (weeks.some((w) => w.outcome === 'GREAT') && rng() < 0.5)
+    lines.push(['오늘은 뭐든 술술 됐다. 나 좀 천재인가?', '칭찬받았다! 기분 최고.', '어려웠던 게 갑자기 이해됐다. 이 맛에 하나 봐.'][Math.floor(rng() * 3)]);
+  if (contest) lines.push(contest.win ? (contest.id === 'EXAM' ? `${contest.title}에서 1등!!! 꿈인가?` : `${contest.title}에서 이겼다!!! 꿈인가?`) : `${contest.title}... 아쉬웠다. 다음엔 꼭.`);
   // 일기는 다음 달에 읽히므로, 생일 두 달 전에 써야 생일 한 달 전에 읽힌다 (생일 선물보다 먼저)
   if (s.birthMonth && s.birthMonth === ((s.month + 1) % 12) + 1) {
     lines.push(`${BDAY_MARK} ${wantedGift(s).emoji} ${wantedGift(s).name} 받고 싶다... 말할까 말까.`);
@@ -65,7 +66,17 @@ export function writeDiary(s: SaveState, weeks: WeekResult[], contest: ContestRe
   const wish = s.wish ? WISH_MAP[s.wish.id] : null;
   if (s.status.delinquency >= 20 && rng() < 0.6) {
     secret = { kind: 'TRUANT', hint: '요즘 몰래 나쁜 짓을 하는 것 같아요. 타이르기나 대화가 필요해 보여요.' };
-    lines.push(stage === 'CHILD' ? '오늘 학원 안 가고 놀이터에 있었다. 엄마 아빠한텐 비밀.' : '오늘 학원 빼먹고 애들이랑 PC방 갔다. 절대 비밀.');
+    // 그달에 학원을 다녔을 때만 '학원 빼먹고' (알바·외출만 한 달엔 다른 말)
+    const edu = weeks.some((w) => ACTION_MAP[w.actionId]?.type === 'EDUCATION');
+    const bad =
+      stage === 'CHILD'
+        ? edu
+          ? ['오늘 학원 안 가고 놀이터에 있었다. 엄마 아빠한텐 비밀.', '학원 차 안 타고 문구점에서 놀았다. 들키면 끝장.']
+          : ['동네 애들이랑 해 질 때까지 놀았다. 엄마 아빠한텐 비밀.', '친구 따라 몰래 오락실 갔다. 비밀!']
+        : edu
+          ? ['오늘 학원 빼먹고 애들이랑 PC방 갔다. 절대 비밀.', '학원 앞까지 갔다가 그냥 돌아섰다. 아무도 모르겠지.']
+          : ['애들이랑 밤늦게까지 돌아다녔다. 절대 비밀.', '집에는 도서관 간다고 했다. ...미안.'];
+    lines.push(bad[Math.floor(rng() * bad.length)]);
   } else if (s.status.stress >= 60) {
     secret = { kind: 'STRESS', hint: '많이 지쳐 있어요. 휴식이나 캠핑을 넣어 주세요.' };
     lines.push('요즘 너무 힘들다. 근데 말하면 걱정할까 봐 말을 못 하겠다.');
@@ -84,9 +95,10 @@ export function writeDiary(s: SaveState, weeks: WeekResult[], contest: ContestRe
   } else if (s.age >= 15 && rng() < 0.2) {
     const keys = ['INT', 'STR', 'ART', 'CHA', 'MOR', 'TEC'] as const;
     const best = keys.reduce((x, y) => (s.stats[y] > s.stats[x] ? y : x));
-    const LIKE = { INT: '공부', STR: '운동', ART: '그림이랑 음악', CHA: '사람들 앞에 서는 것', MOR: '누군가를 돕는 것', TEC: '뭔가 만드는 것' };
-    secret = { kind: 'DREAM', hint: `${LIKE[best]}에 마음이 있어요. 진로에 참고해 보세요.` };
-    lines.push(`사실 나는 ${LIKE[best]}이(가) 제일 좋다. 이걸로 먹고살 수 있을까?`);
+    const LIKE = { INT: '공부가', STR: '운동이', ART: '그림이랑 음악이', CHA: '사람들 앞에 서는 게', MOR: '누군가를 돕는 게', TEC: '뭔가 만드는 게' };
+    const LIKE_HINT = { INT: '공부', STR: '운동', ART: '그림이랑 음악', CHA: '사람들 앞에 서는 것', MOR: '누군가를 돕는 것', TEC: '뭔가 만드는 것' };
+    secret = { kind: 'DREAM', hint: `${LIKE_HINT[best]}에 마음이 있어요. 진로에 참고해 보세요.` };
+    lines.push(`사실 나는 ${LIKE[best]} 제일 좋다. 이걸로 먹고살 수 있을까?`);
   }
   if (!secret && rng() >= 0.35) return; // 평범한 달은 가끔만 일기를 쓴다
   lines.push(STAGE_END[stage]);

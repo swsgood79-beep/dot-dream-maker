@@ -39,3 +39,49 @@ describe('플레이 테스트 수정 (v0.44.4)', () => {
     expect(SPECIAL_MAP.SP_SECRET_VISIT.need!(s)).toBe(true);
   });
 });
+
+import { EVENT_MAP, eventText } from '../data/parentingData';
+import { josa } from '../data/josa';
+import { GIFT_PRICE, HOMEMADE_GIFT, giftOptions, giveGift } from '../data/birthdayData';
+import { writeDiary } from '../engine/diary';
+
+describe('플레이 테스트 수정 2 (v0.44.5)', () => {
+  it('조사가 받침에 맞게 붙는다', () => {
+    expect(josa('수의사', '이', '가')).toBe('수의사가');
+    expect(josa('약사', '이', '가')).toBe('약사가');
+    expect(josa('공무원', '이', '가')).toBe('공무원이');
+  });
+  it('학년에 맞는 시기: 19세=고3 → 졸업 앨범은 고3 봄, 운전면허는 수능 뒤', () => {
+    const g = EVENT_MAP.Y_GRADUATION;
+    expect(g.minAge).toBe(19);
+    expect(g.months!.every((m) => m >= 3 && m <= 11)).toBe(true);
+    expect(EVENT_MAP.Y_LICENSE.minAge).toBe(19);
+  });
+  it('차 없는 집은 운전면허 이야기도 다르게', () => {
+    const poor = createNewSave();
+    poor.parent = { ...poor.parent!, job: 'DAYLABOR' } as typeof poor.parent;
+    expect(eventText(EVENT_MAP.Y_LICENSE, poor)).not.toContain('드라이브');
+  });
+  it('선물 살 돈이 없으면 손편지와 생일상 (무료)', () => {
+    const s = createNewSave();
+    s.age = 13;
+    s.pendingBirthday = true;
+    s.gold = GIFT_PRICE.TEEN - 1;
+    const paid = giveGift(s, giftOptions(s)[0]);
+    expect(paid.reply).toBe('');
+    expect(s.gold).toBe(GIFT_PRICE.TEEN - 1);
+    const free = giveGift(s, HOMEMADE_GIFT);
+    expect(free.reply.length).toBeGreaterThan(0);
+    expect(s.gold).toBe(GIFT_PRICE.TEEN - 1);
+  });
+  it('일기에 이(가) 같은 괄호 조사나 (위험) 표시가 남지 않는다', () => {
+    const s = createNewSave();
+    s.age = 17;
+    s.stats = { ...s.stats, INT: 900 };
+    for (let i = 0; i < 40; i++) {
+      let x = i + 1;
+      writeDiary(s, [{ actionId: 'JOB_08', actionType: 'PART_TIME', outcome: 'GREAT' } as never], undefined, () => ((x = (x * 16807) % 2147483647) / 2147483647));
+      for (const l of s.diaryNew?.lines ?? []) expect(l).not.toMatch(/\(가\)|\(위험\)/);
+    }
+  });
+});

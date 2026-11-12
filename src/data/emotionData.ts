@@ -92,8 +92,8 @@ const E = (s: EmoScene) => s;
 export const EMO_SCENES: EmoScene[] = [
   // ───────── 유년기 ─────────
   E({
-    id: 'EC_TOY', stage: 'CHILD', trigger: 'RANDOM', emoji: '🧸', feel: '😭', pose: 'mood_tantrum|mood_angry', title: '마트 장난감 코너',
-    scene: '마트 장난감 코너. 사 줄 수 없다고 하자 {name}이(가) 바닥에 드러누웠다.',
+    id: 'EC_TOY', stage: 'CHILD', trigger: 'RANDOM', emoji: '🧸', feel: '😭', pose: 'mood_tantrum|mood_angry', title: '장난감 코너 앞에서',
+    scene: '백화점 장난감 코너. 사 줄 수 없다고 하자 {name}이(가) 바닥에 드러누웠다.',
     cry: '싫어싫어!! 저거 사 줘!! 다른 애들은 다 있단 말이야!!',
     empathy: ['(옆에 쪼그려 앉아 눈을 맞춘다) "저게 정말 갖고 싶었구나."', '...응. (훌쩍) 진짜 진짜 갖고 싶었어.'],
     label: ['"친구들은 다 있는데 너만 없어서 서운하고 속상했구나."', '(끄덕끄덕) ...나만 없어.'],

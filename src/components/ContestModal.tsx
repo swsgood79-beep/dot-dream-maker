@@ -1,3 +1,4 @@
+import { josa } from '../data/josa';
 import { FirstTip } from './FirstTip';
 import { sceneBg } from './ActivitySceneView';
 
@@ -231,7 +232,7 @@ export function ContestReveal({ contest, gender, age, onClose }: { contest: Cont
                   ? '모두의 박수 속에 시상대에 올랐다!'
                   : contest.rank > 0
                     ? '조금만 더 했으면 우승이었는데!'
-                    : `${STAT_META[contest.stat].label}을(를) 더 키워서 다시 도전하자.`}
+                    : `${josa(STAT_META[contest.stat].label, '을', '를')} 더 키워서 다시 도전하자.`}
               </p>
               {contest.rewards.length > 0 && (
                 <div className="flex justify-center gap-1">

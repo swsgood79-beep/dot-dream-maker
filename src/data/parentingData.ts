@@ -1,4 +1,6 @@
-import { hasScreen } from '../engine/homeContext';
+import { hasBatchim, josa } from './josa';
+export { hasBatchim, josa };
+import { hasScreen, notPoor, owns } from '../engine/homeContext';
 import type { StatKey } from '../types/game';
 import type { SaveState } from '../engine/simulation';
 import { ARC_EVENTS } from './arcData';
@@ -223,7 +225,7 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
   {
     id: 'T_LATE_GAME', emoji: '🎮', title: '새벽 2시의 게임 소리', minAge: 12, maxAge: 16,
     cond: hasScreen, // 컴퓨터·게임기가 있어야
-    text: '새벽 2시인데 {name}의 방에서 키보드 소리가 들려요.',
+    text: (s) => `새벽 2시인데 {name}의 방에서 ${owns(s, 'gaming_pc', 'dual_monitor', 'stock_monitor', 'broadcast_cam') ? '키보드 두드리는' : '게임기 버튼'} 소리가 들려요.`,
     choices: [
       { label: '같이 한 판 하고 시간 약속을 잡는다', style: 'WARM', fx: { TEC: 6, affection: 5, stress: -4 }, reply: '엄마 아빠 생각보다 잘하네? 11시까지만 할게.' },
       { label: '게임기를 압수한다', style: 'STRICT', fx: { MOR: 6, delinquency: -3, affection: -8, stress: 8 }, reply: '...(말 안 함)' },
@@ -368,21 +370,22 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
     ],
   },
   {
-    id: 'Y_LICENSE', emoji: '🚗', title: '운전면허', minAge: 18, maxAge: 19,
-    text: '"운전면허 따고 싶어. 엄마 아빠 태우고 드라이브 갈래!"',
+    id: 'Y_LICENSE', emoji: '🚗', title: '운전면허', minAge: 19, maxAge: 19, months: [12],
+    text: (s) => (notPoor(s) ? '"수능도 끝났으니 운전면허 따고 싶어. 엄마 아빠 태우고 드라이브 갈래!"' : '"수능도 끝났으니 운전면허 따고 싶어. 나중에 차 사면 엄마 아빠 제일 먼저 태워 줄게!"'),
     choices: [
-      { label: '학원비를 지원해 준다', style: 'WARM', fx: { gold: -400, TEC: 10, STR: 5, affection: 4 }, reply: '한 번에 합격! 다음 주에 드라이브 가자!' },
+      { label: '학원비를 지원해 준다', style: 'WARM', fx: { gold: -400, TEC: 10, STR: 5, affection: 4 }, reply: '한 번에 합격! 면허증 사진 봐 봐, 잘 나왔지?' },
       { label: '시험 끝나고 따라고 한다', style: 'STRICT', fx: { INT: 6, affection: -2 }, reply: '...알았어. 그때 꼭 따게 해 줘.' },
       { label: '직접 돈 벌어서 따라고 한다', style: 'FREE', fx: { MOR: 8, TEC: 5 }, reply: '알바비 모아서 땄어! 내 힘으로!' },
     ],
   },
   {
-    id: 'Y_GRADUATION', emoji: '🎓', title: '고등학교 졸업식', minAge: 19, maxAge: 19, months: [2],
-    text: '오늘은 {name}의 고등학교 졸업식이에요.',
+    // 19세 = 고3 (졸업식은 게임이 끝난 뒤인 다음 해 2월) → 고3 봄의 졸업 앨범 촬영
+    id: 'Y_GRADUATION', emoji: '🎓', title: '졸업 앨범 촬영', minAge: 19, maxAge: 19, months: [5, 6],
+    text: '오늘은 {name}의 고등학교 졸업 앨범 촬영 날이에요. 아침부터 거울 앞을 떠나질 않아요.',
     choices: [
-      { label: '큰 꽃다발을 들고 간다', style: 'WARM', fx: { affection: 10, stress: -10, gold: -100 }, reply: '꽃다발 제일 컸어! 친구들이 부러워했어!' },
-      { label: '앞으로를 위한 조언을 건넨다', style: 'STRICT', fx: { MOR: 6, INT: 6 }, reply: '명심할게. 이제 진짜 어른이네.' },
-      { label: '친구들과 놀다 오라고 한다', style: 'FREE', fx: { CHA: 6, stress: -8 }, reply: '밤새 노래방 갔다 왔어!' },
+      { label: '새 옷을 한 벌 사 준다', style: 'WARM', fx: { affection: 10, stress: -10, gold: -100 }, reply: '사진 진짜 잘 나왔어! 친구들이 옷 어디서 샀냐고 물어봤어!' },
+      { label: '앞으로를 위한 조언을 건넨다', style: 'STRICT', fx: { MOR: 6, INT: 6 }, reply: '...명심할게. 진짜 졸업이 얼마 안 남았네.' },
+      { label: '친구들과 놀다 오라고 한다', style: 'FREE', fx: { CHA: 6, stress: -8 }, reply: '촬영 끝나고 다 같이 노래방 갔다 왔어!' },
     ],
   },
   {
@@ -548,7 +551,7 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
     text: (s) => {
       const p = s.prevChild!;
       const t = ENDING_TITLE[p.endingId] ?? '어른';
-      return `띵동! 현관에 ${p.name}${hasBatchim(p.name) ? '이' : '가'} 서 있어요. ${t}이(가) 된 첫째가 커다란 선물 상자를 들고 동생을 보러 왔대요!`;
+      return `띵동! 현관에 ${p.name}${hasBatchim(p.name) ? '이' : '가'} 서 있어요. ${josa(t, '이', '가')} 된 첫째가 커다란 선물 상자를 들고 동생을 보러 왔대요!`;
     },
     choices: [
       { label: '저녁을 차려 다 같이 먹는다', style: 'WARM', fx: { affection: 6, stress: -8 }, reply: '우와... 나도 크면 저렇게 멋있어질 거야!' },
@@ -602,7 +605,7 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
     text: '"엄마 아빠! SNS에서 {friend}를 찾았어! 초등학교 때 전학 간 {friend} 기억나?"',
     choices: [
       { label: '이번 방학에 만나러 다녀오라고 한다', style: 'WARM', fx: { affection: 6, CHA: 6, stress: -10, gold: -200 }, reply: '하나도 안 변했어! 아니, 키는 엄청 컸어!' },
-      { label: '시험 끝나고 만나라고 한다', style: 'STRICT', fx: { INT: 5, affection: -2 }, reply: '...응. 수능 끝나고 만나기로 했어.' },
+      { label: '시험 끝나고 만나라고 한다', style: 'STRICT', fx: { INT: 5, affection: -2 }, reply: '...응. 시험 끝나는 날 만나기로 했어.' },
       { label: '반갑겠다~ 실컷 연락해', style: 'FREE', fx: { CHA: 5, stress: -6 }, reply: '밤새 통화했어. 걔도 나 보고 싶었대!' },
     ],
   },
@@ -701,7 +704,7 @@ export const PARENTING_EVENTS: ParentingEvent[] = [
   {
     id: 'M_BULLY', emoji: '🛡️', title: '네 편', minAge: 17, maxAge: 19, weight: 3,
     cond: (s) => mem(s, 'T_BULLY:WARM', 'T_BULLY:STRICT'),
-    text: '"중학교 때 단톡방 일 기억나? 그때 엄마 아빠가 내 편이 되어 준 게... 제일 큰 힘이었어."',
+    text: '"예전에 단톡방 일 기억나? 그때 엄마 아빠가 내 편이 되어 준 게... 제일 큰 힘이었어."',
     choices: [
       { label: '언제까지나 네 편이야', style: 'WARM', fx: { affection: 10, stress: -8 }, reply: '...알아. 그래서 버틸 수 있었어.' },
       { label: '이제 네가 누군가의 편이 되어 줘', style: 'STRICT', fx: { MOR: 10 }, reply: '응. 요즘 전학 온 애 챙기고 있어.' },
@@ -782,11 +785,6 @@ export const WISHES: WishDef[] = [
 export const WISH_MAP: Record<string, WishDef> = Object.fromEntries(WISHES.map((w) => [w.id, w]));
 
 /* ───────── 문장 치환 (조사 자동) ───────── */
-function hasBatchim(word: string) {
-  const c = word.charCodeAt(word.length - 1);
-  if (c < 0xac00 || c > 0xd7a3) return false;
-  return (c - 0xac00) % 28 !== 0;
-}
 
 export function fillName(text: string, name: string, friend = '친구') {
   const b = hasBatchim(name);

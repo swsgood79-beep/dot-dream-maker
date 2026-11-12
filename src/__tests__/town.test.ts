@@ -37,7 +37,10 @@ describe('주말 나들이', () => {
     let got50 = 0;
     for (let i = 0; i < 60; i++) {
       const e = pickEncounter(s, 'MARKET', () => 0.01);
-      if (e.npc !== 'GRANNY') continue;
+      if (e.npc !== 'GRANNY') {
+        resolveEncounter(s, e.id, 0); // 실제 게임처럼 다른 장면도 겪고 지나간다
+        continue;
+      }
       if (e.milestone === 50) got50++;
       if (e.milestone === 100) expect(person(s, 'GRANNY').got).toContain(50);
       resolveEncounter(s, e.id, 0);
@@ -45,6 +48,17 @@ describe('주말 나들이', () => {
     expect(got50).toBe(1);
     expect(person(s, 'GRANNY').rel).toBe(100);
     expect(person(s, 'GRANNY').got).toEqual([50, 100]);
+  });
+  it('같은 인사 장면이 연달아 나오지 않는다', () => {
+    const s = createNewGame('하나', 'DAUGHTER', 'INT');
+    s.age = 10;
+    const ids: string[] = [];
+    for (let i = 0; i < 30; i++) {
+      const e = pickEncounter(s, 'MARKET', () => 0.01);
+      ids.push(e.id);
+      resolveEncounter(s, e.id, 1);
+    }
+    for (let i = 1; i < ids.length; i++) if (ids[i].startsWith('GR_')) expect(ids.slice(Math.max(0, i - 2), i)).not.toContain(ids[i]);
   });
 });
 

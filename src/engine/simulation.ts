@@ -120,6 +120,8 @@ export interface SaveState extends GameState {
   outingDone?: boolean; // 이번 달 나들이를 다녀왔는지
   people?: Partial<Record<import('../data/townData').NpcId, import('./town').Person>>;
   townRecent?: string[];
+  townVisits?: number;
+  specialYear?: { age: number; n: number }; // 올해 본 특별한 하루 수 // 나들이 횟수 (같은 사람 연달아 안 만나게)
   // ── v0.39 감정 다루기
   pendingEmotion?: string | null;
   eq?: number; // 감정 조절력 0~100 (없으면 40)
@@ -587,7 +589,7 @@ export function finishContest(s: SaveState, id: ContestId, factor: number, event
   } else {
     events.push(`${def.emoji} ${def.title} 결과... 아쉽게 놓쳤다 (점수 ${score}/${threshold})`);
     // 아깝게 진 경우(기준의 80% 이상)에만 — 크게 진 건 아이도 예상한 일
-    if (score >= threshold * 0.8) rollEmotion(s, 'CONTEST_LOSS', age, [], `이번 ${def.title}에서 아깝게 상을 놓쳤어요 (점수 ${score} / 기준 ${threshold}).`);
+    if (score >= threshold * 0.8) rollEmotion(s, 'CONTEST_LOSS', age, [], `이번 ${def.title}에서 아깝게 ${id === 'EXAM' ? '1등을' : '상을'} 놓쳤어요 (점수 ${score} / 기준 ${threshold}).`);
   }
   return { age, id, title: def.title, stat: def.stat, score, threshold, win, rank, rewards };
 }

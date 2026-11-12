@@ -1,3 +1,4 @@
+import { josa } from '../data/josa';
 import { useEffect, useMemo, useState } from 'react';
 import { sfx } from '../audio/sfx';
 import { CATEGORY_LABEL, ENDINGS } from '../data/endingData';
@@ -322,7 +323,7 @@ export function EndingScreen({ onDone }: { onDone: () => void }) {
               <p className="text-[10px] opacity-60">{ending.id}</p>
               <h2 className="text-2xl font-bold">{ending.title}</h2>
               <p className="mt-2 min-h-10 text-sm">
-                <Typewriter text={`${game.childName}은(는) ${ending.epilogueText}`} />
+                <Typewriter text={`${josa(game.childName, '은', '는')} ${ending.epilogueText}`} />
               </p>
               {(() => {
                 const dom = dominantStyle(game);

@@ -7,7 +7,7 @@ import { ENDING_IDS, ENDING_MAP } from '../data/endingData';
 import type { EndingDefinition, Gender, StatKey } from '../types/game';
 import { TEMPERAMENTS, type TemperamentId } from '../data/temperamentData';
 import { DEFAULT_PARENT, parentTalkBonus, type ParentProfile } from '../data/parentData';
-import { canPlace, findFreeSpot } from '../engine/room';
+import { canPlace, findFreeSpot, growthStage } from '../engine/room';
 import { applyEffect, recordStyle, resolveParentingEvent, type EventOutcome } from '../engine/parenting';
 import { REC_CHOICES, bumpAttitude, dominantAttitude } from '../engine/psyche';
 import { visitNight, type HomeworkWay, type Lunch, type NightTouch } from '../engine/parentTouch';
@@ -19,7 +19,7 @@ import { resolveSpecial, type SpecialPlay } from '../engine/specialDay';
 import { resolveReport } from '../engine/school';
 import { readDiary as readDiaryEngine, respondCaught as respondCaughtEngine, skipDiary as skipDiaryEngine } from '../engine/diary';
 import { CUTSCENE_MAP } from '../data/cutsceneData';
-import { giftOptions, giveGift } from '../data/birthdayData';
+import { GIFT_PRICE, HOMEMADE_GIFT, giftOptions, giveGift } from '../data/birthdayData';
 import { makeHallEntry, newAchievements, type HallEntry } from '../data/legacyData';
 import type { Effect, ParentStyle } from '../data/parentingData';
 import { monthIndex, addPhoto, finishContest, perfFactor, type ContestResult, createNewGame, refreshCombos, runMonth, type MonthResult, type SaveState } from '../engine/simulation';
@@ -580,7 +580,8 @@ export const useGameStore = create<GameStore>()(
           let out: { liked: boolean; reply: string; delta: Effect } | null = null;
           mutate((g) => {
             if (!g.pendingBirthday) return false;
-            const gift = giftOptions(g).find((x) => x.id === giftId);
+            const gift = giftId === HOMEMADE_GIFT.id ? HOMEMADE_GIFT : giftOptions(g).find((x) => x.id === giftId);
+            if (gift && gift !== HOMEMADE_GIFT && g.gold < GIFT_PRICE[growthStage(g.age)]) return false;
             if (!gift) return false;
             out = giveGift(g, gift);
           });

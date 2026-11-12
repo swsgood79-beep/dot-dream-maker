@@ -1,3 +1,4 @@
+import { josa } from '../data/josa';
 import { useEffect } from 'react';
 import { sfx } from '../audio/sfx';
 import { FURNITURE_MAP } from '../data/furnitureData';
@@ -24,7 +25,7 @@ export function UnlockModal({ onClose }: { onClose: () => void }) {
       <div className="pixel-box pop-in max-h-full w-full overflow-y-auto p-3 text-sm">
         <p className="text-center text-[11px] font-bold text-wood">🎂 {u.age}세가 되었어요</p>
         <p className="mb-2 text-center text-xl font-bold">🔓 새로 열렸어요!</p>
-        <p className="mb-3 text-center text-[11px] opacity-70">이제 {game.childName}(이)가 할 수 있는 일이 늘었어요. 목록에서 <b className="rounded border border-ink bg-[#ff6fae] px-1 text-[9px] text-white">NEW</b> 표시를 찾아보세요.</p>
+        <p className="mb-3 text-center text-[11px] opacity-70">이제 {josa(game.childName, '이', '가')} 할 수 있는 일이 늘었어요. 목록에서 <b className="rounded border border-ink bg-[#ff6fae] px-1 text-[9px] text-white">NEW</b> 표시를 찾아보세요.</p>
         {u.actions.length > 0 && (
           <>
             <p className="mb-1 text-[11px] font-bold text-wood">📅 새 스케줄</p>

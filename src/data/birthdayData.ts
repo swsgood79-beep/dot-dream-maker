@@ -40,6 +40,8 @@ export const GIFTS: Record<'CHILD' | 'TEEN' | 'YOUTH', Gift[]> = {
   ],
 };
 export const GIFT_PRICE = { CHILD: 100, TEEN: 200, YOUTH: 300 };
+/** 선물 살 돈이 없을 때: 직접 차린 생일상과 손편지 (무료) */
+export const HOMEMADE_GIFT: Gift = { id: 'HOMEMADE', emoji: '💌', name: '손편지와 직접 차린 생일상', stat: 'MOR' };
 
 /** 아이가 원하는 선물: 가장 높은 스탯 분야 */
 export function wantedGift(s: SaveState): Gift {
@@ -63,6 +65,15 @@ export function giftOptions(s: SaveState): Gift[] {
 
 export function giveGift(s: SaveState, gift: Gift): { liked: boolean; reply: string; delta: Effect } {
   const stage = growthStage(s.age);
+  if (gift.id === HOMEMADE_GIFT.id) {
+    const delta = applyEffect(s, { affection: 6, stress: -6, MOR: 4 });
+    s.pendingBirthday = false;
+    const reply =
+      stage === 'CHILD' ? '엄마 아빠가 쓴 편지! 미역국도 최고야! 이거 평생 간직할래!' : stage === 'TEEN' ? '...편지는 좀 오글거리는데. 그래도 고마워. 진짜로.' : '손편지... 사실 이런 게 제일 오래 남더라. 고마워.';
+    addPhoto(s, { emoji: '🎂', title: `${s.age}살 생일 파티`, caption: '💌 손편지와 직접 차린 생일상', pose: 'stand' });
+    return { liked: false, reply, delta };
+  }
+  if (s.gold < GIFT_PRICE[stage]) return { liked: false, reply: '', delta: {} }; // 돈이 모자라면 살 수 없다 (화면에서도 막음)
   const liked = gift.id === wantedGift(s).id;
   s.gold = Math.max(0, s.gold - GIFT_PRICE[stage]);
   const fx: Effect = liked ? { affection: 10, stress: -10, [gift.stat]: 10 } : { affection: 3, stress: -4, [gift.stat]: 4 };

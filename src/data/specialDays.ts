@@ -47,6 +47,8 @@ export interface SpecialDay {
   results: SpResult[];
   weight?: number;
   /** 이 집 사정에 맞을 때만 (형편 · 가진 물건 · 해 본 일) */
+  /** 명절: 성장 단계마다 다시 나온다 (그 밖의 날은 한 판에 한 번) */
+  yearly?: boolean;
   need?: (s: SaveState) => boolean;
 }
 
@@ -69,7 +71,7 @@ export const SPECIAL_DAYS: SpecialDay[] = [
     ],
   },
   {
-    id: 'SP_CHUSEOK', emoji: '🌕', title: '추석 송편 빚기', months: [9], minAge: 8, maxAge: 19,
+    id: 'SP_CHUSEOK', emoji: '🌕', title: '추석 송편 빚기', months: [9], yearly: true, minAge: 8, maxAge: 19,
     sky: ['#1f2a55', '#d98b4a'], deco: ['🌕', '🍂', '🏮'],
     intro: ['할머니 댁에 온 가족이 모였다.', '할머니: "송편을 예쁘게 빚으면 예쁜 짝을 만난단다~"'],
     steps: [
@@ -82,7 +84,7 @@ export const SPECIAL_DAYS: SpecialDay[] = [
     ],
   },
   {
-    id: 'SP_SEOLLAL', emoji: '🧧', title: '설날 세뱃돈', months: [1, 2], minAge: 8, maxAge: 19,
+    id: 'SP_SEOLLAL', emoji: '🧧', title: '설날 세뱃돈', months: [1, 2], yearly: true, minAge: 8, maxAge: 19,
     sky: ['#7a1f2b', '#e8b04a'], deco: ['🧧', '🎍', '🪁'],
     intro: ['곱게 한복을 입고 세배를 했다.', '친척 어른들이 봉투 세 개를 내밀었다. "하나만 골라 보렴~"'],
     steps: [
@@ -313,7 +315,7 @@ export const SPECIAL_DAYS: SpecialDay[] = [
     ],
   },
   {
-    id: 'SP_DRIVE', emoji: '🚗', title: '빈 주차장 운전 연습', minAge: 18, maxAge: 19,
+    id: 'SP_DRIVE', emoji: '🚗', title: '빈 주차장 운전 연습', minAge: 19, maxAge: 19,
     need: notPoor,
     sky: ['#ffcf9e', '#7aa0d8'], deco: ['🅿️', '🚧', '🌇'],
     intro: ['{name}: "운전 좀 가르쳐 줘! 딱 한 번만!"', '일요일 저녁, 텅 빈 마트 주차장. 조수석에서 손잡이를 꽉 잡았다.'],

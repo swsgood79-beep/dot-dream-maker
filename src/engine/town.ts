@@ -7,6 +7,8 @@ export interface Person {
   rel: number; // 0~100
   got?: number[]; // 받은 관계 보상 (50, 100)
   met?: boolean;
+  /** 마지막으로 만난 나들이 번호 (s.townVisits 기준) */
+  seenAt?: number;
 }
 
 const RIVALS = { SON: ['태오', '준서', '건우', '현우'], DAUGHTER: ['다은', '지민', '소율', '예린'] };
@@ -78,15 +80,18 @@ function dueMilestone(s: SaveState, id: NpcId): 50 | 100 | null {
 export function pickEncounter(s: SaveState, loc: LocId, rng: () => number = Math.random): TownEnc {
   const age = s.age;
   const recent = s.townRecent ?? [];
-  const npcs = (Object.keys(NPCS) as NpcId[]).filter((id) => NPCS[id].homes.includes(loc) && npcHere(s, id));
-  const milestone = npcs.map((id) => ({ id, m: dueMilestone(s, id) })).find((x) => x.m);
-  const generic = TOWN_ENCS.filter((e) => e.loc === loc && !e.npc && age >= (e.minAge ?? 0) && age <= (e.maxAge ?? 99));
-  const fresh = generic.filter((e) => !recent.includes(e.id));
   const npcEnc = (id: NpcId) => {
     const m = dueMilestone(s, id);
     const p = person(s, id);
     return TOWN_ENCS.find((e) => e.npc === id && (m ? e.milestone === m : e.tier === relTier(p.rel) && !e.milestone))!;
   };
+  // 같은 사람은 나들이 3번에 한 번까지만 (같은 인사 장면이 몇 번씩 반복되지 않도록)
+  const visits = s.townVisits ?? 0;
+  const rested = (id: NpcId) => person(s, id).seenAt === undefined || visits - person(s, id).seenAt! >= 3;
+  const npcs = (Object.keys(NPCS) as NpcId[]).filter((id) => NPCS[id].homes.includes(loc) && npcHere(s, id) && (dueMilestone(s, id) || rested(id)));
+  const milestone = npcs.map((id) => ({ id, m: dueMilestone(s, id) })).find((x) => x.m);
+  const generic = TOWN_ENCS.filter((e) => e.loc === loc && !e.npc && age >= (e.minAge ?? 0) && age <= (e.maxAge ?? 99));
+  const fresh = generic.filter((e) => !recent.includes(e.id));
   if (milestone && rng() < 0.85) return npcEnc(milestone.id);
   if (npcs.length && (rng() < 0.55 || !fresh.length)) {
     // 덜 친한 사람을 조금 더 자주 (골고루 만나도록)
@@ -121,17 +126,20 @@ export function resolveEncounter(s: SaveState, encId: string, pick: number): Tow
     const p = { ...person(s, e.npc) };
     const before = p.rel;
     p.met = true;
+    p.seenAt = s.townVisits ?? 0;
     if (e.milestone) {
       p.got = [...(p.got ?? []), e.milestone];
       out.rel = { npc: e.npc, before, after: before, tierUp: false, perk: e.milestone === 50 ? NPCS[e.npc].perk50 : NPCS[e.npc].perk100 };
     } else {
-      const gain = (opt as { rel?: number }).rel ?? 0;
+      // 같은 장면이 덜 반복되도록 한 번 만날 때 조금 더 친해진다
+      const gain = Math.round(((opt as { rel?: number }).rel ?? 0) * 1.5);
       p.rel = Math.min(100, before + gain);
       out.rel = { npc: e.npc, before, after: p.rel, tierUp: relTier(p.rel) > relTier(before) };
     }
     s.people = { ...(s.people ?? {}), [e.npc]: p };
   }
   s.townRecent = [...(s.townRecent ?? []).filter((x) => x !== e.id), e.id].slice(-8);
+  s.townVisits = (s.townVisits ?? 0) + 1;
   return out;
 }
 

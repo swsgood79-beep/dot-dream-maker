@@ -43,7 +43,7 @@ const ACT_NAME = (id: string) => SCHEDULE_ACTIONS.find((a) => a.id === id)?.name
  * 화면 맨 위에 "📌 왜 이런 일이?"로 그대로 보여 줌
  */
 const CAUSE: Record<string, (s: SaveState, w: Wk[]) => string | null> = {
-  EC_TOY: (_s, w) => (w.some((x) => x.actionId === 'OUT_SHOP') ? '이번 달 백화점에 쇼핑하러 갔던 날이에요.' : null),
+  EC_TOY: (_s, w) => (w.some((x) => x.actionId === 'OUT_SHOP') ? '이번 달 백화점에 쇼핑하러 갔어요.' : null),
   EC_DRAWING: (s, w) => {
     const art = w.filter((x) => x.actionId === 'EDU_06');
     if (!art.length) return null;
@@ -76,7 +76,7 @@ const CAUSE: Record<string, (s: SaveState, w: Wk[]) => string | null> = {
     if (!job) return null;
     return w.some((x) => x.actionId === job.actionId && x.outcome === 'FAIL') ? `이번 달 '${ACT_NAME(job.actionId)}'에서 실수한 주가 있었어요.` : `이번 달 '${ACT_NAME(job.actionId)}'에서 일했어요.`;
   },
-  EY_BEHIND: (s) => (s.age >= 18 && (s.month === 12 || s.month <= 2) ? '친구들의 대학 합격 소식이 들려오는 때예요.' : null),
+  EY_BEHIND: (s) => (s.age === 19 && s.month >= 10 ? '수시 합격 소식이 하나둘 들려오는 때예요.' : null), // 19세 = 고3
 };
 
 /**

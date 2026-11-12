@@ -85,8 +85,8 @@ const C = (label: string, fx: Effect, reply: string, rel?: number): TownChoice =
 
 export const TOWN_ENCS: TownEnc[] = [
   // ───────── 단짝 ─────────
-  { id: 'FR_0', loc: 'ANY_HOME', npc: 'FRIEND', tier: 0, emoji: '🧒', title: '{friend}', text: '{friend}이(가) 혼자 그네를 타고 있다. {name}이(가) 힐끔힐끔 쳐다본다.',
-    choices: [C('"같이 놀자!" 말 걸어 보라고 등 떠밀기', { CHA: 2, stress: -3 }, '둘이 해 질 때까지 모래성을 쌓았다.', 10), C('인사만 하고 지나가기', { MOR: 1 }, '{friend}이(가) 손을 흔들어 줬다.', 4)] },
+  { id: 'FR_0', loc: 'ANY_HOME', npc: 'FRIEND', tier: 0, emoji: '🧒', title: '{friend}', text: '{friend}이(가) 혼자 그네를 타고 있다. "어? {name}! 같이 놀자!"',
+    choices: [C('신나게 달려가게 두기', { CHA: 2, stress: -3 }, '둘이 해 질 때까지 모래성을 쌓았다.', 10), C('"숙제 먼저!" 인사만 하고 오게 하기', { MOR: 1 }, '{friend}이(가) 손을 흔들어 줬다. "내일 학교에서 봐!"', 4)] },
   { id: 'FR_1', loc: 'ANY_HOME', npc: 'FRIEND', tier: 1, emoji: '🧒', title: '{friend}', text: '{friend}: "{name}! 나 비밀 기지 찾았어! 같이 가자!"',
     choices: [C('신나게 따라가게 둔다', { STR: 2, stress: -5 }, '덤불 속 비밀 기지에 둘만의 깃발을 꽂았다.', 9), C('"위험한 데는 안 돼" 조심시키기', { MOR: 2 }, '"알았어~" 대신 놀이터에 기지를 만들었다.', 5)] },
   { id: 'FR_2', loc: 'ANY_HOME', npc: 'FRIEND', tier: 2, emoji: '🧒', title: '{friend}', text: '{friend}: "우리 어른 돼도 계속 친구 하는 거다?"',
@@ -152,7 +152,7 @@ export const TOWN_ENCS: TownEnc[] = [
     game: { kind: 'timing', prompt: '그네가 뒤로 왔을 때 힘껏 밀기!', icon: '🛝', rounds: 2, speed: 1.2, zone: 24, hitText: '휘익~!', missText: '어이쿠' },
     results: [{ text: '타이밍이 엇갈려 그네가 비틀비틀. 그래도 깔깔.', fx: { stress: -3 } }, { text: '구름 가까이 올라갔다!', fx: { stress: -5, STR: 1 } }, { text: '"엄마 아빠 최고!" 하늘까지 날아오를 것 같았다.', fx: { stress: -6, STR: 2 } }] },
   { id: 'P_CAT', loc: 'PARK', emoji: '🐈', title: '길고양이', text: '벤치 밑에 노란 길고양이 한 마리. {name}이(가) 쪼그려 앉았다.',
-    choices: [C('편의점 간식을 사서 준다', { MOR: 2, gold: -10 }, '고양이가 {name}의 손에 머리를 비볐다.'), C('멀리서 조용히 관찰하기', { INT: 1, MOR: 1 }, '"고양이는 꼬리로 기분을 말한대!" 꼬마 관찰 일지가 생겼다.')] },
+    choices: [C('편의점 간식을 사서 준다', { MOR: 2, gold: -10 }, '고양이가 {name}의 손에 머리를 비볐다.'), C('멀리서 조용히 관찰하기', { INT: 1, MOR: 1 }, '"고양이는 꼬리로 기분을 말한대!" 관찰 일지가 한 장 늘었다.')] },
   { id: 'P_LOST', loc: 'PARK', emoji: '😭', title: '길 잃은 꼬마', text: '어린 꼬마가 엉엉 울고 있다. "엄마가 없어..."',
     choices: [C('같이 엄마를 찾아 준다', { MOR: 3, CHA: 1 }, '꼬마 엄마가 몇 번이고 고맙다고 하셨다. {name}이(가) 으쓱.'), C('관리사무소에 데려다준다', { MOR: 2, INT: 1 }, '방송이 나오고 금방 엄마가 달려왔다.')] },
 
